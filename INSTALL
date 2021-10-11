@@ -1,7 +1,17 @@
-Install instructions for quadromania
+# Install instructions for quadromania
 
 This program currently is not installable at all.
 Just compile and run it from its directory.
+
+## Install sdl libraries with homebrew
+
+$ brew install sdl sdl2 sdl_image sdl_mixer
+
+## Clone github repository
+
+$ git clone https://github.com/mjanker4247/quadromania.git
+
+or download source and compile it
 
 $ tar xvzf quadromania.tar.gz
 $ cd quadromania/
@@ -14,6 +24,8 @@ $ make
 $ ./quadromania
 
 Run with switch -f for fullscreen mode.
+
+$ ./quadromania -f
 
 Make sure to have the data/ subdirectory below your working directory.
 Perhaps some day i'll write a proper installable version.
