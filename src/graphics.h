@@ -28,7 +28,7 @@
     #include "version.h"
 	#include "sysconfig.h"
 	#include "boolean.h"
-	#include <SDL/SDL.h>
+	#include <SDL.h>
 
 	/************
 	 * DEFINES  *

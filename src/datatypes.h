@@ -29,7 +29,7 @@
 	#include "sysconfig.h"
 
 #if(HAVE_SDL_DATATYPES == 1)
-	#include <SDL/SDL.h>
+	#include <SDL.h>
 #else
 	/* we have to typedef the datatypes with SDL naming conventions if we don't have them */
 	/* FIXME: if stdint.h is available point to those instead */

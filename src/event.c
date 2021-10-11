@@ -23,7 +23,7 @@
  *
  */
 
-#include <SDL/SDL.h>
+#include <SDL.h>
 #include "datatypes.h"
 #include "event.h"
 #include "boolean.h"

@@ -33,7 +33,7 @@ endif
 SDL_LIB=`sdl-config --libs`
 
 # the compiler to use - please use the GNU C Compiler if possible
-CC=gcc
+CC=clang
 
 # object files needed to link the executable
 OBJS = main.o graphics.o event.o random.o SFont.o quadromania.o gui.o highscore.o sound.o

@@ -32,7 +32,7 @@
 #include "boolean.h"
 
 #if(HAVE_AUDIO == 1)
-#include <SDL/SDL_mixer.h>
+#include <SDL_mixer.h>
 #endif
 
 /* data structures... */
