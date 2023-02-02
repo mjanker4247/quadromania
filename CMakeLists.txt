@@ -1,60 +1,59 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.24)
 
-Project ( Quadromania )
+include(cmake/app_utils.cmake)
+setup_vcpkg_before_project()
 
-set (
-   SOURCES
-src/boolean.h
-src/datatypes.h
-src/event.c
-src/event.h
-src/graphics.c
-src/graphics.h
-src/gui.c
-src/gui.h
-src/highscore.c
-src/highscore.h
-src/main.c
-src/main.h
-src/quadromania.c
-src/quadromania.h
-src/random.c
-src/random.h
-src/SFont.c
-src/SFont.h
-src/sound.c
-src/sound.h
-src/sysconfig.h
-src/version.h
+project ( Quadromania CXX )
 
+set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+   "cmake/app_utils.cmake")
+set(BUILD_SHARED_LIBS OFF)
+set (SOURCES
+   src/boolean.h
+   src/datatypes.h
+   src/event.c
+   src/event.h
+   src/graphics.c
+   src/graphics.h
+   src/gui.c
+   src/gui.h
+   src/highscore.c
+   src/highscore.h
+   src/main.c
+   src/main.h
+   src/quadromania.c
+   src/quadromania.h
+   src/random.c
+   src/random.h
+   src/SFont.c
+   src/SFont.h
+   src/sound.c
+   src/sound.h
+   src/sysconfig.h
+   src/version.h
 )
 
 include_directories (
 	src/
 )
 
-# REQUIRED does not work in CMake <=2.4.6 for SDL
-Find_Package ( SDL REQUIRED )
-# if using SDL_image
-Find_Package ( SDL_image REQUIRED )
-# if using SDL_mixer
-Find_Package ( SDL_mixer REQUIRED )
-
-# Workaround for the non-working REQUIRED flag
-if ( NOT SDL_FOUND )
-   message ( FATAL_ERROR "SDL not found!" )
-endif ( NOT SDL_FOUND )
-
-link_libraries (
-   ${SDL_LIBRARY}
-   ${SDLIMAGE_LIBRARY} # if using SDL_image, obviously
-   ${SDLMIXER_LIBRARY} # if using SDL_mixer
-   SDLmain # Sadly not included in SDL_LIBRARY variable
-)
-
 add_executable (
-   quadromania
+   ${PROJECT_NAME}
    ${SOURCES} # We could've listed the source files here directly instead of using a variable to store them
-   ChangeLog
-   README
+   ${VerifyCXX}
 )
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
+
+find_package(SDL2 CONFIG REQUIRED)
+find_package(SDL2_image CONFIG REQUIRED)
+find_package(SDL2_mixer CONFIG REQUIRED)
+
+target_link_libraries(${PROJECT_NAME}
+   PRIVATE
+   SDL2::SDL2main
+   SDL2::SDL2-static
+   SDL2_image::SDL2_image-static
+   SDL2_mixer::SDL2_mixer-static
+)
+target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)

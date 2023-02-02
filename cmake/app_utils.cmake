@@ -1,0 +1,23 @@
+function(setup_vcpkg_before_project)
+    if(DEFINED ENV{VCPKG_ROOT})
+        set(vcpkg_toolchain_path "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")
+        get_filename_component(vcpkg_toolchain_path "${vcpkg_toolchain_path}" ABSOLUTE)
+    endif()
+
+    if(DEFINED CMAKE_TOOLCHAIN_FILE AND vcpkg_toolchain_path)
+        get_filename_component(supplied_toolchain_file "${CMAKE_TOOLCHAIN_FILE}" ABSOLUTE)
+        if(NOT supplied_toolchain_file STREQUAL vcpkg_toolchain_path)
+            set(VCPKG_CHAINLOAD_TOOLCHAIN_FILE "${CMAKE_TOOLCHAIN_FILE}" CACHE STRING "")
+        endif()
+    endif()
+
+    if(vcpkg_toolchain_path AND EXISTS "${vcpkg_toolchain_path}")
+        set(CMAKE_TOOLCHAIN_FILE "${vcpkg_toolchain_path}" CACHE STRING "" FORCE)
+        message(STATUS "Using vcpkg from $ENV{VCPKG_ROOT}")
+    endif()
+
+    if(DEFINED ENV{VCPKG_DEFAULT_TRIPLET} AND NOT VCPKG_TARGET_TRIPLET)
+        set(VCPKG_TARGET_TRIPLET "$ENV{VCPKG_DEFAULT_TRIPLET}" CACHE STRING "")
+    endif()
+    message(STATUS "Using vcpkg triplet ${VCPKG_TARGET_TRIPLET}")
+endfunction()
