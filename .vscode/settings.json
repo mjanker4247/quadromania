@@ -1,0 +1,5 @@
+{
+    "cmake.buildEnvironment": {
+        "CMAKE_TOOLCHAIN_FILE": "/Users/marcojanker/vcpkg/scripts/buildsystems/vcpkg.cmake"
+    }
+}
