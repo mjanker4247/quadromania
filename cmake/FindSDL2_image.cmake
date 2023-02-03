@@ -2,7 +2,7 @@ find_path(SDL2_image_INCLUDE_DIR names SDL_image.h
     HINTS "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg_installed"
     DOC "SDL2_image include directory")
 
-find_library(SDL2_image_LIBRARY names SDL_image
+find_library(SDL2_image_LIBRARY names SDL2_image
     HINTS "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg_installed"
     DOC "SDL2_image library")
 

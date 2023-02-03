@@ -42,9 +42,10 @@ add_executable (
    ${SOURCES} # We could've listed the source files here directly instead of using a variable to store them
    ${VerifyCXX}
 )
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+# list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
 
+# ---- Own find routine
 find_package(SDL2 CONFIG REQUIRED)
 find_package(SDL2_image CONFIG REQUIRED)
 find_package(SDL2_mixer CONFIG REQUIRED)
@@ -56,4 +57,24 @@ target_link_libraries(${PROJECT_NAME}
    SDL2_image::SDL2_image-static
    SDL2_mixer::SDL2_mixer-static
 )
+# ---- Find routine
+
+# sdl2 provides CMake targets:
+find_package(SDL2 CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME}
+   PRIVATE
+   $<TARGET_NAME_IF_EXISTS:SDL2::SDL2main>
+   $<IF:$<TARGET_EXISTS:SDL2::SDL2>,SDL2::SDL2,SDL2::SDL2-static>
+)
+
+# sdl2-image provides CMake targets:
+
+find_package(SDL2_image CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE $<IF:$<TARGET_EXISTS:SDL2_image::SDL2_image>,SDL2_image::SDL2_image,SDL2_image::SDL2_image-static>)
+
+# sdl2-mixer provides CMake targets:
+
+find_package(SDL2_mixer CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE $<IF:$<TARGET_EXISTS:SDL2_mixer::SDL2_mixer>,SDL2_mixer::SDL2_mixer,SDL2_mixer::SDL2_mixer-static>)
+
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)

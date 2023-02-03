@@ -2,7 +2,7 @@ find_path(SDL2_mixer_INCLUDE_DIR names SDL_mixer.h
     HINTS "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg_installed"
     DOC "SDL2_mixer include directory")
 
-find_library(SDL2_mixer_LIBRARY names SDL_mixer
+find_library(SDL2_mixer_LIBRARY names SDL2_mixer
     HINTS "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg_installed"
     DOC "SDL2_mixer library")
 
