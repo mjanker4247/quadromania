@@ -1,0 +1,44 @@
+quadromania v0.5
+
+(c) 2002/2003/2009/2010 by Matthias Arndt <marndt@asmsoftware.de>
+a game by ASM Software (http://www.asmsoftware.de/)
+
+The GNU General Public License applies. See the file COPYING for details
+or visit http://www.gnu.org/ for more information.
+
+This file contains release notes specific to the port to the Dingoo A320 running Dingux.
+
+Port by zLouD and z_man3007
+
+Currently the port has no Dingoo specific input method so you need to install and
+use a mouse emulation. Check http://is.gd/d51ER- how to get it.
+
+Installation
+============
+
+IMPORTANT: quadromania requires the dingux Linux system. It will not work with the
+           default Dingoo firmware. Installation of dingux is not covered here.
+
+To install the game, simply unzip the binary distribution for your Dingoo
+to your SD Card root directory. The ZIP includes the necessary folder structure.
+
+After unzipping to the SD Card, run quadromania.dge to launch the game.
+
+
+Button mapping
+==============
+
+Use the shoulder buttons to alter volume of audio effects and effects.
+
+Press SELECT to abort a game or to quit Quadromania from the main menu.  
+
+Known Bugs
+==========
+
+1. Missing mouse stylus input - for the time being this port has no direct support
+                                of the Dingoo dpad. An upcoming release will
+                                feature a non-mouse input method.
+
+2. Highscores are saved to your $HOME folder folder on your SD card.
+
+3. Volume levels - this is not saved and restored to disk yet.

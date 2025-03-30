@@ -1,0 +1,15 @@
+#!/bin/sh
+#
+# quadromania
+#
+# (c) 2002/2003/2009/2010 by Matthias Arndt <marndt@asmsoftware.de>
+# a game by ASM Software (http://www.asmsoftware.de/)
+#
+# The GNU General Public License applies. See the file COPYING for details
+# or visit http://www.gnu.org/ for more information.
+#
+cd quadromania
+./quadromania.gpe
+sync
+cd /usr/gp2x
+exec /usr/gp2x/gp2xmenu

@@ -1,0 +1,141 @@
+08.04.2015
+	- auto generate correct version information string for window title and debug output
+
+21.02.2013:
+	- added CMakeLists.txt to generate Makefiles with CMake (aid crosscompilation)
+
+18.11.2010:
+	- started documenting the game's source code with Doxygen
+
+17.11.2010:
+	- fix the highscore table bug when presing ESC
+
+06.07.2010:
+	- ship libSDL with tearing fix for the GP2X Wiz target by default
+
+04.07.2010:
+	- added initial support and infrastructure for directional pad / cursor keys
+
+03.07.2010:
+	- added music
+	- activated sound for Dingoo A320
+	- added dist target for Dingoo A320
+	- v0.5 release
+
+29.06.2010:
+	- added volume control
+	- added documentation
+
+27.06.2010:
+	- moved sources to src/ directory
+	- added initial sound sound support and actual audiofiles
+
+26.06.2010:
+	- made selection of SDL_Surface type even more flexible: USE_DOUBLEBUFFEREDSURFACE
+	- slight rewrote of SDL graphics init routine
+	- commented and documented system configuration options in sysconfig.h
+	- port for Dingoo Dingux by zLouD and z_man3007
+
+25.06.2010:
+	- made selection of SDL_Surface type more flexible: USE_HARDWARESURFACE
+	- added PHONY targets to the Makefiles
+
+12.06.2010:
+	- dropped highscore checksumming
+	- save and load highscores to and from disk
+
+10.04.2010:
+	- use a timestamp as name for highscore entry
+
+06.03.2010:
+	- bugfixes highscore handling
+
+05.03.2010:
+	- introduced highscore handling module
+
+09.02.2010:
+	- introduced datatypes.h to encapsulate used data types
+	- fixed instructions screen to be loaded from a graphic file (now fist onscreen properly)
+
+05.02.2010:
+	- ensure the TODO list is delivered with binary distributions for Wiz
+
+30.01.2010:
+	- move all screen handling into Graphics module for abstraction
+
+29.01.2010:
+	- v0.3 release version
+	- small documentation fixes
+
+27.01.2010:
+	- added 24x24 pixel icon for GP2X Wiz
+	- added GP2X Wiz specific README
+	- added TODO list
+	- updated the INSTALL file
+
+26.01.2010:
+	- added infrastructure for future Wiz release as ZIP file which can be directly unzipped to NAND or SD-Card
+
+25.01.2010:
+  - added support for window icon
+  - moved loading of graphics resources into a subfunction Graphics_LoadGraphicsResource()
+  - FIXED: missing SDL_FreeSurface calls in Graphics_CleanUp()
+  - slight update of INSTALL and README documentation
+  - updated copyright year in all source files
+
+24.01.2010:
+	- added support for GP2X (clean up of Graphics module, disable mouse pointer if configured)
+
+21.01.2010:
+	- added a user interface module to handle menus, highscore inputs and display of various screens
+	- fixed limit of maximum rotations (data type was to small to hold the intended amount, producing an overflow)
+
+19.01.2010:
+	- added dynamic sizes of graphics data
+	- screen mode configurable by #define SCREENRES
+	- added sysconfig.h to allow for port specific settings at compile time
+
+15.11.2009:
+	- added event handling module (event.c)
+
+13.11.2009:
+	- added data/icons/ directory with window icons
+	- created tag release-0.2
+
+12.11.2009:
+	- basic scoring implemented
+	- added GAMEOVER possibility (turn limit hit)
+	- added VERSION information header
+	- added instructions screen
+
+11.11.2009:
+	- refactored function and procedures names according to <<Module>>_Function convention
+	- refactored main() into distinct parts and subroutines
+	- LINT
+
+10.11.2009:
+	- project resurrected for future port to GP2X Wiz
+	- cleanup source formatting
+	- cleanup datatypes in use (where applicable)
+	- typedefed BOOLEAN properly
+	- added INCLUDE sentries to all project header files
+
+26.01.2003:
+	- game at least playable (no counters, no timer)
+	- simple screen for winning the game
+
+20.12.2002:
+	- first code for the game logic
+	- changed to platform independant SDL data types for int and long
+	- added menu code for the game settings
+	- added a graphic with copyright message
+
+19.12.2002:
+	- source compiled on MinGW 2.0 without modifications - Windows port possible!
+
+17.12.2002:
+	- project started
+	- graphics module added
+	- made a simple graphics set (any volunteers to make a better one? :) )
+	- skeleton of main module
+

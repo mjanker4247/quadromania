@@ -1,0 +1,106 @@
+#
+# Quadromania
+# (c) 2002/2003/2009/2010 by Matthias Arndt <marndt@asmsoftware.de> / ASM Software
+#
+# File: Makefile.wiz - Makefile for building quadromania for a GP2X Wiz target 
+# last Modified: 06.07.2010 : 18:36
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+#
+# THIS SOFTWARE IS SUPPLIED AS IT IS WITHOUT ANY WARRANTY!
+#
+#
+
+# locations of the GPX2 Wiz toolchain
+TOOLCHAINDIR = /opt/arm-openwiz-linux-gnu
+
+# sdl-config of toolchain 
+SDL_CONFIG = $(TOOLCHAINDIR)/arm-openwiz-linux-gnu/sys-root/usr/bin/sdl-config
+
+# cflags and lib config
+CFLAGS=`$(SDL_CONFIG) --cflags` -D__GP2X_WIZ -W -Wall -ggdb -O3
+SDL_LIB=`$(SDL_CONFIG) --libs`
+
+# determine whether a DEBUG build is desired
+ifeq ($(DEBUG),1)
+CFLAGS += -D_DEBUG
+endif
+
+# special libs needed for linking
+LIBS = -lSDL_image -lpng -lz -lSDL_mixer
+
+# the compiler to use - please use the GNU C Compiler if possible
+CC = $(TOOLCHAINDIR)/bin/arm-openwiz-linux-gnu-gcc
+
+# object files needed to link the executable
+OBJS = main.o graphics.o event.o random.o SFont.o quadromania.o gui.o highscore.o sound.o
+# sources are located here
+VPATH = src
+# name of executable
+EXECUTABLE = quadromania.gpe
+	
+all: $(EXECUTABLE)
+
+$(EXECUTABLE): $(OBJS)
+	$(CC) $(CFLAGS) -o $(EXECUTABLE) $(OBJS) $(SDL_LIB) $(LIBS)
+
+main.o: main.c main.h version.h event.h gui.h
+
+graphics.o: graphics.c graphics.h version.h
+
+gui.o: gui.c gui.h graphics.o
+
+random.o: random.c random.h
+
+quadromania.o: quadromania.c quadromania.h version.h boolean.h
+
+sound.o: sound.c sound.h version.h
+
+event.o: event.c event.h boolean.h
+
+highscore.o: highscore.c highscore.h datatypes.h
+
+SFont.o: SFont.c SFont.h
+
+# default make rule for .c files - compile to .o
+.c.o:  datatypes.h
+	$(CC) $(CFLAGS) -c $<
+
+# tasks without a generated result
+.PHONY: clean dist
+
+# cleanup
+clean:
+	rm -f *.o $(EXECUTABLE) quadromania-wiz.zip
+
+# create a distribution zip for the GP2X Wiz
+dist: $(EXECUTABLE)
+	mkdir game/
+	mkdir game/quadromania/
+	mkdir game/quadromania/data/
+	mkdir game/quadromania/data/sound/
+	mkdir game/quadromania/data/lowres/
+	mkdir game/quadromania/data/icons/
+	cp data/lowres/*.png game/quadromania/data/lowres/
+	cp data/icons/*.png game/quadromania/data/icons/
+	cp data/sound/*.wav game/quadromania/data/sound/
+	cp data/sound/*.ogg game/quadromania/data/sound/
+	cp TODO README ChangeLog AUTHORS COPYING game/quadromania/
+	cp $(EXECUTABLE) game/quadromania/
+	cp GP2X_Wiz/quadromania.ini game/
+	cp GP2X_Wiz/README.wiz game/quadromania
+	cp GP2X_Wiz/quadromania-wrapper.gpe game/quadromania/
+	cp GP2X_Wiz/libSDL-1.2.so.0 game/quadromania/
+	zip -rm quadromania-wiz.zip game/

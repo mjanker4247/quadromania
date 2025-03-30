@@ -1,0 +1,102 @@
+#
+# Quadromania
+# (c) 2002/2003/2009/2010 by Matthias Arndt <marndt@asmsoftware.de> / ASM Software
+#
+# File: Makefile
+# last Modified: 03.07.2010 : 18:22 (zLouD)
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+#
+# THIS SOFTWARE IS SUPPLIED AS IT IS WITHOUT ANY WARRANTY!
+#
+#
+
+# location of your Dingux toolchain
+TOOLCHAINDIR = /opt/mipsel-linux-uclibc
+
+# sdl-config of your toolchain
+SDL_CONFIG = $(TOOLCHAINDIR)/usr/bin/sdl-config
+
+# CFLAGS
+CFLAGS = `$(SDL_CONFIG) --cflags` -D__DINGUX -W -Wall -O3
+
+# LDFLAGS
+LDFLAGS = `$(SDL_CONFIG) --libs`
+
+# determine whether a DEBUG build is desired
+ifeq ($(DEBUG),1)
+CFLAGS += -D_DEBUG -g
+endif
+
+# the compiler to use - please use the GNU C Compiler if possible
+CC=$(TOOLCHAINDIR)/usr/bin/mipsel-linux-gcc
+
+# object files needed to link the executable
+OBJS = main.o graphics.o sound.o event.o random.o SFont.o quadromania.o gui.o highscore.o
+# sources are located here
+VPATH = src
+# name of executable
+EXECUTABLE = quadromania
+
+all: quadromania
+
+quadromania: $(OBJS)
+	$(CC) $(CFLAGS) -o $(EXECUTABLE) $(OBJS) $(LDFLAGS) -lSDL_image -lSDL_mixer
+
+main.o: main.c main.h version.h event.h gui.h
+
+graphics.o: graphics.c graphics.h version.h
+
+gui.o: gui.c gui.h graphics.o
+
+sound.o: sound.c sound.h version.h
+
+random.o: random.c random.h
+
+quadromania.o: quadromania.c quadromania.h version.h boolean.h
+
+event.o: event.c event.h boolean.h
+
+highscore.o: highscore.c highscore.h datatypes.h
+
+SFont.o: SFont.c SFont.h
+
+# default make rule for .c files - compile to .o
+.c.o: datatypes.h
+	$(CC) $(CFLAGS) -c $<
+
+# tasks without a generated result
+.PHONY: clean dist
+
+# cleanup
+clean:
+	rm -f *.o quadromania
+	
+# create a distribution zip for the Dingoo A320
+dist: $(EXECUTABLE)
+	mkdir quadromania-dingux/
+	mkdir quadromania-dingux/data/
+	mkdir quadromania-dingux/data/sound/
+	mkdir quadromania-dingux/data/lowres/
+	mkdir quadromania-dingux/data/icons/
+	cp data/lowres/*.png quadromania-dingux/data/lowres/
+	cp data/icons/*.png quadromania-dingux/data/icons/
+	cp data/sound/*.wav quadromania-dingux/data/sound/
+	cp data/sound/*.ogg quadromania-dingux/data/sound/
+	cp TODO README ChangeLog AUTHORS COPYING quadromania-dingux/
+	cp $(EXECUTABLE) quadromania-dingux/
+	cp Dingux/quadromania.dge quadromania-dingux/
+	cp Dingux/README.dingux quadromania-dingux/
+	zip -rm quadromania-dingux.zip quadromania-dingux/

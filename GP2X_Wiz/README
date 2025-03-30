@@ -1,0 +1,15 @@
+quadromania
+
+(c) 2002/2003/2009/2010 by Matthias Arndt <marndt@asmsoftware.de>
+a game by ASM Software (http://www.asmsoftware.de/)
+
+The GNU General Public License applies. See the file COPYING for details
+or visit http://www.gnu.org/ for more information.
+
+This folder contains files necessary to build a ZIP distribution of
+Quadromania for the GP2X Wiz.
+
+quadromania.ini            - .ini File for the GP2X WIZ menu to show an
+                             icon for the game
+quadromania-wrapper.gpe    - wrapper shell skript to make Quadromania
+                             return properly to the GP2X Wiz menu

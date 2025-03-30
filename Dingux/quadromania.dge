@@ -1,0 +1,24 @@
+#!/bin/sh
+#
+# quadromania
+#
+# (c) 2002/2003/2009/2010 by Matthias Arndt <marndt@asmsoftware.de>
+# a game by ASM Software (http://www.asmsoftware.de/)
+#
+# The GNU General Public License applies. See the file COPYING for details
+# or visit http://www.gnu.org/ for more information.
+#
+# quadromania port for Dingux
+# porter:
+#   zLouD
+#   z_man3007
+#
+cd `dirname $0`
+if [ -e /dev/input/mice ]; then
+    echo "Yeah! We got mouse emulation! :)"
+    SDL_NOMOUSE=0 ./quadromania "$@"
+else
+    echo -e "Aww! You need a mouse to play this game!\n" \
+        "check this page for the Keyboard Mouse Emulator:\n" \
+        "URL: http://is.gd/d51ER-"
+fi

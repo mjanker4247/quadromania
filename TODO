@@ -1,0 +1,9 @@
+TODO list for quadromania
+	
+	* save and restore volume setting from disk
+	* add keyboard/joystick controlled extra cursors for platforms without touchscreen like the Dingoo A320	
+	* add highscore management for all levels and game settings
+	* add more ports (old GP2X, Atari, Mac)
+	* add splash screen
+	* random generator: ensure the seed is initialized
+	

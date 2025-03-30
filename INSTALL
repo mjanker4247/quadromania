@@ -1,0 +1,24 @@
+Install instructions for quadromania
+
+This program currently is not installable at all.
+Just compile and run it from its directory.
+
+$ tar xvzf quadromania.tar.gz
+$ cd quadromania/
+
+Edit the Makefile for your target platform. You may need to tweak it, especially the CC= directive. 
+You'll need SDL, SDL_image including development headers to properly compile
+quadromania.
+
+$ make
+$ ./quadromania
+
+Run with switch -f for fullscreen mode.
+
+Make sure to have the data/ subdirectory below your working directory.
+Perhaps some day i'll write a proper installable version.
+
+If you try to build for a not supported target platform, you should create a patch for sysconfig.h
+and a Makefile tailored for the new port.
+
+Have fun! 
