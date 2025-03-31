@@ -35,6 +35,7 @@
 #include "highscore.h"
 #include "boolean.h"
 #include "SFont.h"
+#include "debug.h"
 
 #include "main.h"
 #include "event.h"
@@ -43,73 +44,54 @@
 /* the main function - program execution starts here... */
 int main(int argc, char *argv[])
 {
-	Uint16 i;
-	BOOLEAN ok = FALSE;
-#if(HAVE_WINDOWED_MODE == 1)
 	BOOLEAN fullscreen = FALSE;
-#else
-	const BOOLEAN fullscreen = TRUE;
-#endif
+	BOOLEAN debug = FALSE;
 
-	/* parse command line and set startup flags accordingly... */
-	for (i = 1; i < argc; i++)
+	/* parse command line arguments... */
+	while (argc > 1)
 	{
-		ok = FALSE;
-#if(HAVE_WINDOWED_MODE == 1)
-		if ((strcmp(argv[i], "-f") == 0) || (strcmp(argv[i], "--fullscreen")
-				== 0))
+		if (strcmp(argv[1], "-f") == 0 || strcmp(argv[1], "--fullscreen") == 0)
 		{
-			/* fullscreen mode requested... */
 			fullscreen = TRUE;
-			ok = TRUE;
 		}
-#endif
-
-		if ((strcmp(argv[i], "-v") == 0) || (strcmp(argv[i], "--version") == 0))
+		else if (strcmp(argv[1], "-d") == 0 || strcmp(argv[1], "--debug") == 0)
 		{
-			/* print version information.... */
-			fprintf(stderr, "%s\n\n", VERSION);
-			fprintf(
-					stderr,
-					"(c) 2002/2003/2009/2010 by Matthias Arndt <marndt@asmsoftware.de>\na game by ASM Software http://www.asmsoftware.de/\nThe GNU General Public License applies. See the file COPYING for details.\n");
-			fprintf(stderr, "Compiled on %s at %s\n\n", __DATE__, __TIME__);
-			return (1);
+			debug = TRUE;
 		}
-
-		if ((strcmp(argv[i], "-h") == 0) || (strcmp(argv[i], "--help") == 0)
-				|| (strcmp(argv[i], "-?") == 0))
+		else if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0)
 		{
-			/* general program help.... */
-			fprintf(stderr, "%s\n\n", VERSION);
-			fprintf(
-					stderr,
-					"Usage: %s [-f|--fullscreen] [-v|--version] [-h|-?|--help] \n",
-					argv[0]);
-#if(HAVE_WINDOWED_MODE == 1)
-			fprintf(stderr, "              -f  activate fullscreen mode\n");
-#endif
-			fprintf(stderr, "              -v  prints version information\n\n");
-			return (1);
+			fprintf(stderr, "Quadromania v%s\n", VERSION);
+			fprintf(stderr, "Copyright (c) 2002-2010 by Matthias Arndt / ASM Software\n");
+			fprintf(stderr, "2925 Modified by Marco Janker\n");
+			fprintf(stderr, "This program is free software under the GNU General Public License\n\n");
+			fprintf(stderr, "Usage: %s [options]\n", argv[0]);
+			fprintf(stderr, "Options:\n");
+			fprintf(stderr, "  -f, --fullscreen    Run in fullscreen mode\n");
+			fprintf(stderr, "  -d, --debug         Enable debug output\n");
+			fprintf(stderr, "  -h, --help          Show this help message\n");
+			return 0;
 		}
-
-		/* check for error in command line... */
-		if (!ok)
-		{
-			fprintf(stderr, "%s\n\n", VERSION);
-			fprintf(stderr, "Unknown command line option: %s\n", argv[i]);
-			return (2);
-		}
+		argc--;
+		argv++;
 	}
 
-	if (InitGameEngine(fullscreen) == TRUE)
+	/* Initialize debug system */
+	DEBUG_INIT(debug);
+
+	/* initialize game engine... */
+	if (InitGameEngine(fullscreen))
 	{
+		/* initialize event handler */
+		Event_Init();
+		Quadromania_ClearPlayfield();
 		MainHandler();
-		return (0);
 	}
 	else
 	{
 		return (1);
 	}
+
+	return (0);
 }
 
 /**
@@ -299,9 +281,8 @@ void MainHandler()
 							- Graphics_GetDotHeight())
 							/ Graphics_GetDotHeight());
 
-#ifdef _DEBUG
-					fprintf(stderr,"click at %d,%d\n",xraster,yraster);
-#endif
+					DEBUG_PRINT("Click at %d,%d", xraster, yraster);
+
 					/* valid click on playfield? */
 					if ((xraster > 0) && (xraster < 17) && (yraster > 0)
 							&& (yraster < 12))
@@ -313,9 +294,8 @@ void MainHandler()
 
 						/* update score */
 						score = Quadromania_GetPercentOfSolution();
-#ifdef _DEBUG
-						fprintf(stderr,"Score: %d\n",score);
-#endif
+						DEBUG_PRINT("Score: %d%%", score);
+
 						/* make noise */
 						Sound_PlayEffect(SOUND_TURN);
 						/* check for unsuccessful end*/
@@ -325,7 +305,6 @@ void MainHandler()
 						/* check for successful game end... */
 						if (Quadromania_IsGameWon())
 							status = WON; /* if yes (board cleared to red) - well go to end screen :) */
-
 					}
 
 				}
@@ -367,9 +346,7 @@ void MainHandler()
 			{
 				highscore_entry = Highscore_GetNameFromTimestamp();
 				Highscore_EnterScore(level-1, score, highscore_entry , highscore_position);
-#ifdef _DEBUG
-				fprintf(stderr,"highscore: %d, Position %d\n",score,highscore_position);
-#endif
+				DEBUG_PRINT("Highscore: %d, Position %d", score, highscore_position);
 				status = SHOW_HIGHSCORES;
 			}
 			else

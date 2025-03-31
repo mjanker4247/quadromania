@@ -27,6 +27,8 @@
 #include "datatypes.h"
 #include "highscore.h"
 #include "boolean.h"
+#include "sysconfig.h"
+#include "debug.h"
 
 #include <string.h>
 #include <time.h>
@@ -72,15 +74,11 @@ void Highscore_LoadTable(void)
 					hiscores.Entry[j][i] = empty;
 				}
 			}
-#ifdef _DEBUG
-			fprintf(stderr,"Quadromania: highscores loaded with error - scores resetted!\n");
-#endif
+			DEBUG_PRINT("Highscores loaded with error - scores reset");
 		}
 		else
 		{
-#ifdef _DEBUG
-			fprintf(stderr,"Quadromania: highscores loaded!\n");
-#endif
+			DEBUG_PRINT("Highscores loaded successfully");
 		}
 		fclose(fp);
 	}
@@ -100,17 +98,13 @@ void Highscore_SaveTable(void)
 		fwrite(&hiscores, sizeof(HighscoreFile), 1, fp);
 		fclose(fp);
 
-#ifdef _DEBUG
-		fprintf(stderr,"Quadromania: highscore saved to disk\n");
-#endif
+		DEBUG_PRINT("Highscore saved to disk");
 		/* only save scores if we really had an entry */
 		hiscore_entry = FALSE;
 	}
 	else
 	{
-#ifdef _DEBUG
-		fprintf(stderr,"Quadromania: highscore not saved - no changes!\n");
-#endif
+		DEBUG_PRINT("Highscore not saved - no changes");
 	}
 	return;
 }
@@ -211,8 +205,6 @@ char* Highscore_GetFilename()
 	sprintf(filename_buffer,"./%s",HIGHSCORE_FILENAME);
 #endif
 
-#ifdef _DEBUG
-	fprintf(stderr,"Quadromania: highscore file = %s\n",&filename_buffer[0]);
-#endif
+	DEBUG_PRINT("Highscore file: %s", filename_buffer);
 	return(filename_buffer);
 }

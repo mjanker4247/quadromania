@@ -30,6 +30,8 @@
 #include "datatypes.h"
 #include "event.h"
 #include "boolean.h"
+#include "sysconfig.h"
+#include "debug.h"
 
 #include "sound.h"
 
@@ -214,9 +216,7 @@ void Event_ProcessInput()
 			{
 			case JOYSTICK_BUTTON_ESC:
 				ESCpressed = TRUE;
-#ifdef _DEBUG
-				fprintf(stderr,"Quadromania: Joystick ESC pressed\n");
-#endif
+				DEBUG_PRINT("Joystick ESC pressed");
 				break;
 #if(HAVE_JOYSTICK ==_GP2X_JOYSTICK)
 			case GP2X_BUTTON_UP:
@@ -461,6 +461,11 @@ void Event_DebounceKeys()
 {
 	debounce_tmr_keys = Event_Debounce_timeslices;
 	ESCpressed = FALSE;
+	key.up = FALSE;
+	key.down = FALSE;
+	key.left = FALSE;
+	key.right = FALSE;
+	key.button = FALSE;
 }
 
 #if(HAVE_JOYSTICK != _NO_JOYSTICK)
@@ -469,50 +474,14 @@ void Event_DebounceKeys()
  */
 void Joystick_Init()
 {
-#ifdef _DEBUG
-	Uint8 i;
+#if(HAVE_JOYSTICK != _NO_JOYSTICK)
+	joystick.up = FALSE;
+	joystick.down = FALSE;
+	joystick.left = FALSE;
+	joystick.right = FALSE;
+	joystick.button = FALSE;
+	debounce_tmr_joystick = 0;
 #endif
-	int JoystickCount;
-
-	/* Initialize the joystick subsystem */
-	SDL_InitSubSystem(SDL_INIT_JOYSTICK);
-
-	JoystickCount = SDL_NumJoysticks();
-#ifdef _DEBUG
-	fprintf(stderr,"Quadromania: %i joysticks found\n", JoystickCount);
-
-	if(JoystickCount > 0)
-	{
-		for(i = 0; i< JoystickCount; i++)
-		{
-			CurrentJoystick = SDL_JoystickOpen(i);
-			if(CurrentJoystick == NULL)
-			{
-				fprintf(stderr,"Quadromania: Unable to open joystick %i.\n", i+1);
-			}
-			else
-			{
-				fprintf(stderr,"Quadromania: Joystick %i: %s\n", i+1, SDL_JoystickName(i));
-				SDL_JoystickClose(CurrentJoystick);
-				CurrentJoystick = NULL;
-			}
-		}
-	}
-#endif
-
-	/* try to use first available joystick */
-	CurrentJoystick = SDL_JoystickOpen(0);
-#ifdef _DEBUG
-	if(CurrentJoystick == NULL)
-	{
-				fprintf(stderr,"Quadromania: Unable to open joystick %i.\n", 1);
-	}
-	else
-	{
-				fprintf(stderr,"Quadromania: Joystick %i in use: %s\n", 1, SDL_JoystickName(0));
-	}
-
-#endif
-
+	return;
 }
 #endif

@@ -36,6 +36,7 @@
 #include "graphics.h"
 #include "SFont.h"
 #include "highscore.h"
+#include "debug.h"
 
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
@@ -191,9 +192,7 @@ void Graphics_ListHighscores(Uint16 nr_of_table)
 	for(i = 0; i < HIGHSCORE_NR_OF_ENTRIES_PER_TABLE; i++)
 	{
 		entry=Highscore_GetEntry(nr_of_table, i);
-#ifdef _DEBUG
-		fprintf(stderr, "%s %d\n",entry->name, entry->score);
-#endif
+		DEBUG_PRINT("Highscore entry %d: %s %d", i, entry->name, entry->score);
 
 		y = highscore_y + ((i + 2) * font_height);
 
@@ -353,7 +352,7 @@ BOOLEAN Graphics_Init(BOOLEAN set_fullscreen)
 	/* Get the actual window size (may be different on high DPI displays) */
 	int window_width, window_height;
 	SDL_GetWindowSize(window, &window_width, &window_height);
-	fprintf(stderr, "Window created with dimensions: %dx%d\n", window_width, window_height);
+	DEBUG_PRINT("Window created with dimensions: %dx%d", window_width, window_height);
 
 	/* Create renderer */
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
@@ -364,7 +363,7 @@ BOOLEAN Graphics_Init(BOOLEAN set_fullscreen)
 
 	/* Set logical size to match the original game's resolution */
 	SDL_RenderSetLogicalSize(renderer, 320, 240);
-	fprintf(stderr, "Renderer logical size set to: 320x240\n");
+	DEBUG_PRINT("Renderer logical size set to: 320x240");
 
 	/* Set window icon */
 	SDL_Surface *icon_surface = Graphics_LoadGraphicsResource("*ICON*");
@@ -405,13 +404,9 @@ BOOLEAN Graphics_Init(BOOLEAN set_fullscreen)
 	copyright = SDL_CreateTextureFromSurface(renderer, temp_surface);
 	SDL_FreeSurface(temp_surface);
 
-#ifdef _DEBUG
-	fprintf(stderr,"images loaded....\n");
-#endif
+	DEBUG_PRINT("Images loaded");
 	InitFont(font);
-#ifdef _DEBUG
-	fprintf(stderr,"font ready...\n");
-#endif
+	DEBUG_PRINT("Font ready");
 
 	/* did our graphics load properly? */
 	if((textures==NULL)||(frame==NULL)||(dots==NULL)||(titel==NULL)||(copyright==NULL)||(font==NULL))
@@ -425,21 +420,21 @@ BOOLEAN Graphics_Init(BOOLEAN set_fullscreen)
 	SDL_QueryTexture(frame, NULL, NULL, &w, &h);
 	frame_width = (Uint16)w;
 	frame_height = (Uint16)h;
-	fprintf(stderr, "Frame texture: %dx%d\n", frame_width, frame_height);
+	DEBUG_PRINT("Frame texture: %dx%d", frame_width, frame_height);
 	
 	SDL_QueryTexture(dots, NULL, NULL, &w, &h);
 	dot_width = (Uint16)(w / NR_OF_DOTS);
 	dot_height = (Uint16)h;
-	fprintf(stderr, "Dots texture: %dx%d (each dot: %dx%d)\n", w, h, dot_width, dot_height);
+	DEBUG_PRINT("Dots texture: %dx%d (each dot: %dx%d)", w, h, dot_width, dot_height);
 	
 	SDL_QueryTexture(textures, NULL, NULL, &w, &h);
 	texture_width = (Uint16)(w / NR_OF_TEXTURES);
 	texture_height = (Uint16)h;
-	fprintf(stderr, "Textures: %dx%d (each texture: %dx%d)\n", w, h, texture_width, texture_height);
+	DEBUG_PRINT("Textures: %dx%d (each texture: %dx%d)", w, h, texture_width, texture_height);
 	
 	SDL_QueryTexture(font, NULL, NULL, &w, &h);
 	font_height = (Uint16)h;
-	fprintf(stderr, "Font texture: %dx%d (height: %d)\n", w, h, font_height);
+	DEBUG_PRINT("Font texture: %dx%d (height: %d)", w, h, font_height);
 
 	atexit(Graphics_CleanUp);
 
@@ -554,7 +549,7 @@ SDL_Surface* Graphics_LoadGraphicsResource(char* inputfilename)
 		snprintf(filename, sizeof(filename), "%s/data/%s%s", source_dir, GFXPREFIX, inputfilename);
 	}
 
-	fprintf(stderr, "Attempting to load resource: %s\n", filename);
+	DEBUG_PRINT("Attempting to load resource: %s\n", filename);
 	
 	// Check if file exists
 	FILE *f = fopen(filename, "r");
@@ -570,7 +565,7 @@ SDL_Surface* Graphics_LoadGraphicsResource(char* inputfilename)
 	if (surface == NULL) {
 		fprintf(stderr, "Error loading image %s: %s\n", filename, IMG_GetError());
 	} else {
-		fprintf(stderr, "Successfully loaded: %s\n", filename);
+		DEBUG_PRINT("Successfully loaded: %s\n", filename);
 	}
 	
 	return surface;

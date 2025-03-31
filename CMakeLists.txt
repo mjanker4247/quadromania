@@ -34,6 +34,7 @@ src/sound.c
 src/sound.h
 src/sysconfig.h
 src/version.h
+src/debug.c
 )
 
 include_directories (

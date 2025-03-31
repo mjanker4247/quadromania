@@ -4,6 +4,7 @@
 
 #include "SFont.h"
 #include "graphics.h"
+#include "debug.h"
 
 static Uint32 GetPixel(SDL_Surface *, Sint32, Sint32);
 static SFont_FontInfo InternalFont;
@@ -104,7 +105,7 @@ void InitFont(SDL_Texture *FontTexture)
 	FontHeight = h;
 	FontWidth = w / 256;  // Each character is 1/256th of the total width
 	
-	fprintf(stderr, "Font dimensions: %dx%d (each char: %dx%d)\n", w, h, FontWidth, FontHeight);
+	DEBUG_PRINT("Font dimensions: %dx%d (each char: %dx%d)\n", w, h, FontWidth, FontHeight);
 	
 	for(i = 0; i < 256; i++)
 	{

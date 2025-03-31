@@ -32,6 +32,7 @@
 #include "sound.h"
 #include "datatypes.h"
 #include "boolean.h"
+#include "debug.h"
 
 #if(HAVE_AUDIO == 1)
 #include <SDL_mixer.h>
@@ -103,9 +104,7 @@ void Sound_Init()
 
 	atexit(Sound_Exit);
 
-#ifdef _DEBUG
-	fprintf(stderr,"audio initialized....\n");
-#endif
+	DEBUG_PRINT("Audio initialized");
 #endif
 	return;
 }
@@ -173,9 +172,7 @@ void Sound_IncreaseVolume()
 	if (sound_volume < 100)
 		sound_volume = sound_volume + 10;
 	Sound_SetVolume(sound_volume);
-#ifdef _DEBUG
-	fprintf(stderr,"Volume increased....\n");
-#endif
+	DEBUG_PRINT("Volume increased to %d%%", sound_volume);
 	return;
 }
 
@@ -184,9 +181,7 @@ void Sound_DecreaseVolume()
 {
 	if (sound_volume > 0)
 		sound_volume = sound_volume - 10;
-#ifdef _DEBUG
-	fprintf(stderr,"Volume decreased....\n");
-#endif
+	DEBUG_PRINT("Volume decreased to %d%%", sound_volume);
 	Sound_SetVolume(sound_volume);
 	return;
 }

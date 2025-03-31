@@ -30,6 +30,7 @@
 #include "graphics.h"
 #include "event.h"
 #include "quadromania.h"
+#include "debug.h"
 
 /*******************************
  * data structures for the GUI *
@@ -104,10 +105,10 @@ void GUI_InitMenuCoordinates()
 	const Uint16 start_pos = (SCREEN_HEIGHT / 2) - 20;  // Start closer to middle
 	const Uint16 offset_per_line = Graphics_GetFontHeight() + 5;  // Reduce spacing
 
-	fprintf(stderr, "Screen dimensions: %dx%d\n", SCREEN_WIDTH, SCREEN_HEIGHT);
-	fprintf(stderr, "Font height: %d\n", Graphics_GetFontHeight());
-	fprintf(stderr, "Menu start position: %d\n", start_pos);
-	fprintf(stderr, "Offset per line: %d\n", offset_per_line);
+	DEBUG_PRINT("Screen dimensions: %dx%d", SCREEN_WIDTH, SCREEN_HEIGHT);
+	DEBUG_PRINT("Font height: %d", Graphics_GetFontHeight());
+	DEBUG_PRINT("Menu start position: %d", start_pos);
+	DEBUG_PRINT("Offset per line: %d", offset_per_line);
 
 	// Initialize all menu positions
 	GUI_MenuPosition[MENU_UNDEFINED] = 0;  // Not displayed
@@ -118,9 +119,9 @@ void GUI_InitMenuCoordinates()
 	GUI_MenuPosition[MENU_HIGHSCORES] = start_pos + (offset_per_line * 4);
 	GUI_MenuPosition[MENU_QUIT] = start_pos + (offset_per_line * 5);
 
-	fprintf(stderr, "Menu positions:\n");
+	DEBUG_PRINT("Menu positions:");
 	for (int i = 0; i < MAX_NR_OF_MENU_ENTRIES; i++) {
-		fprintf(stderr, "Entry %d: y=%d\n", i, GUI_MenuPosition[i]);
+		DEBUG_PRINT("Entry %d: y=%d", i, GUI_MenuPosition[i]);
 	}
 }
 

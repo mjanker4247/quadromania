@@ -27,6 +27,9 @@
 	#define __VERSION_H
 
     #define PACKAGE "quadromania"
-    #define VERSION "quadromania " __DATE__  " "
+    #define VERSION_MAJOR "1"
+    #define VERSION_MINOR "0"
+    #define VERSION_PATCH "0"
+    #define VERSION VERSION_MAJOR "." VERSION_MINOR "." VERSION_PATCH
 
 #endif
