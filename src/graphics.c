@@ -27,6 +27,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <libgen.h>  // for dirname()
+#ifdef __APPLE__
+#include <mach-o/dyld.h>  // for _NSGetExecutablePath
+#endif
+#include <unistd.h>  // for readlink
 
 #include "graphics.h"
 #include "SFont.h"
@@ -35,7 +40,7 @@
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 static SDL_Texture *textures = NULL, *frame = NULL, *dots = NULL, *font = NULL, 
-                   *titel = NULL, *copyright = NULL, *window_icon = NULL;
+                   *titel = NULL, *copyright = NULL;
 
 static Uint16 frame_width, frame_height, dot_width, dot_height, texture_width,
 		texture_height, font_height;
@@ -61,8 +66,8 @@ void Graphics_DrawBackground(Uint8 texture)
 			src.h = texture_height;
 			dest.x = i * texture_width;
 			dest.y = j * texture_height;
-			dest.w = 0;
-			dest.h = 0;
+			dest.w = texture_width;  /* Set destination width */
+			dest.h = texture_height; /* Set destination height */
 			SDL_RenderCopy(renderer, textures, &src, &dest);
 		}
 }
@@ -80,8 +85,8 @@ void Graphics_DrawDot(Uint16 x, Uint16 y, Uint8 number)
 	src.h = dot_height;
 	dest.x = x;
 	dest.y = y;
-	dest.w = 0;
-	dest.h = 0;
+	dest.w = dot_width;  /* Set destination width */
+	dest.h = dot_height; /* Set destination height */
 	SDL_RenderCopy(renderer, dots, &src, &dest);
 }
 
@@ -98,8 +103,8 @@ void Graphics_DrawTitle()
 	src.h = texture_height;
 	dest.x = ((SCREEN_WIDTH / 2) - (texture_width / 2));
 	dest.y = dot_height;
-	dest.w = 0;
-	dest.h = 0;
+	dest.w = texture_width;  /* Set destination width */
+	dest.h = texture_height; /* Set destination height */
 	SDL_RenderCopy(renderer, titel, &src, &dest);
 
 	src.x = 0;
@@ -108,8 +113,8 @@ void Graphics_DrawTitle()
 	src.h = texture_height;
 	dest.x = ((SCREEN_WIDTH / 2) - (texture_width / 2));
 	dest.y = ((SCREEN_HEIGHT * 120) / 480);
-	dest.w = 0;
-	dest.h = 0;
+	dest.w = texture_width;  /* Set destination width */
+	dest.h = texture_height; /* Set destination height */
 	SDL_RenderCopy(renderer, copyright, &src, &dest);
 }
 
@@ -214,16 +219,34 @@ void Graphics_DrawOuterFrame()
 	src.h = frame_height;
 	dest.x = 0;
 	dest.y = 0;
-	dest.w = frame_width;
-	dest.h = frame_height;
+	dest.w = SCREEN_WIDTH;  /* Use logical screen width */
+	dest.h = SCREEN_HEIGHT; /* Use logical screen height */
 	SDL_RenderCopy(renderer, frame, &src, &dest);
 }
 
 /**
- * This utility function writes some text with the default font on the screen at the given coordinates.
+ * This function draws text at the given screen coordinate.
  */
 void Graphics_DrawText(Uint16 x, Uint16 y, char *text)
 {
+	// First draw a semi-transparent dark background
+	SDL_Rect bg;
+	bg.x = x - 5;  // Add some padding
+	bg.y = y - 2;
+	bg.w = TextWidth(text) + 10;  // Add padding on both sides
+	bg.h = Graphics_GetFontHeight() + 4;  // Add padding top and bottom
+	
+	// Set blend mode for transparency
+	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+	// Draw dark background (R=0, G=0, B=0, A=180)
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 180);
+	SDL_RenderFillRect(renderer, &bg);
+	
+	// Reset blend mode and color
+	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
+	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+	
+	// Draw the text
 	PutString(renderer, x, y, text);
 }
 
@@ -312,7 +335,7 @@ BOOLEAN Graphics_Init(BOOLEAN set_fullscreen)
 	atexit(SDL_Quit);
 
 	/* Create window */
-	Uint32 window_flags = SDL_WINDOW_SHOWN;
+	Uint32 window_flags = SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI;
 	if (set_fullscreen) {
 		window_flags |= SDL_WINDOW_FULLSCREEN;
 	}
@@ -327,6 +350,11 @@ BOOLEAN Graphics_Init(BOOLEAN set_fullscreen)
 		return FALSE;
 	}
 
+	/* Get the actual window size (may be different on high DPI displays) */
+	int window_width, window_height;
+	SDL_GetWindowSize(window, &window_width, &window_height);
+	fprintf(stderr, "Window created with dimensions: %dx%d\n", window_width, window_height);
+
 	/* Create renderer */
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 	if (!renderer) {
@@ -334,8 +362,16 @@ BOOLEAN Graphics_Init(BOOLEAN set_fullscreen)
 		return FALSE;
 	}
 
+	/* Set logical size to match the original game's resolution */
+	SDL_RenderSetLogicalSize(renderer, 320, 240);
+	fprintf(stderr, "Renderer logical size set to: 320x240\n");
+
 	/* Set window icon */
-	Graphics_SetWindowIcon();
+	SDL_Surface *icon_surface = Graphics_LoadGraphicsResource("*ICON*");
+	if (icon_surface) {
+		SDL_SetWindowIcon(window, icon_surface);
+		SDL_FreeSurface(icon_surface);
+	}
 
 #if(HAVE_MOUSE_POINTER == 0)
 	/* disable mouse pointer if configured */
@@ -378,7 +414,7 @@ BOOLEAN Graphics_Init(BOOLEAN set_fullscreen)
 #endif
 
 	/* did our graphics load properly? */
-	if((textures==NULL)||(frame==NULL)||(dots==NULL)||(titel==NULL)||(copyright==NULL)||(font==NULL)||(window_icon==NULL))
+	if((textures==NULL)||(frame==NULL)||(dots==NULL)||(titel==NULL)||(copyright==NULL)||(font==NULL))
 	{
 		fprintf (stderr, "%s initgraphics(): One or more image files failed to load properly!\n\n",PACKAGE);
 		exit(2);
@@ -389,17 +425,21 @@ BOOLEAN Graphics_Init(BOOLEAN set_fullscreen)
 	SDL_QueryTexture(frame, NULL, NULL, &w, &h);
 	frame_width = (Uint16)w;
 	frame_height = (Uint16)h;
+	fprintf(stderr, "Frame texture: %dx%d\n", frame_width, frame_height);
 	
 	SDL_QueryTexture(dots, NULL, NULL, &w, &h);
 	dot_width = (Uint16)(w / NR_OF_DOTS);
 	dot_height = (Uint16)h;
+	fprintf(stderr, "Dots texture: %dx%d (each dot: %dx%d)\n", w, h, dot_width, dot_height);
 	
 	SDL_QueryTexture(textures, NULL, NULL, &w, &h);
 	texture_width = (Uint16)(w / NR_OF_TEXTURES);
 	texture_height = (Uint16)h;
+	fprintf(stderr, "Textures: %dx%d (each texture: %dx%d)\n", w, h, texture_width, texture_height);
 	
 	SDL_QueryTexture(font, NULL, NULL, &w, &h);
 	font_height = (Uint16)h;
+	fprintf(stderr, "Font texture: %dx%d (height: %d)\n", w, h, font_height);
 
 	atexit(Graphics_CleanUp);
 
@@ -418,7 +458,6 @@ void Graphics_CleanUp()
 	SDL_DestroyTexture(font);
 	SDL_DestroyTexture(titel);
 	SDL_DestroyTexture(copyright);
-	SDL_DestroyTexture(window_icon);
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 
@@ -448,7 +487,10 @@ Uint16 Graphics_GetDotHeight()
  */
 Uint16 Graphics_GetScreenWidth()
 {
-	return(texture_width);
+	int w, h;
+	SDL_GetWindowSize(window, &w, &h);
+	/* Return the logical width (320) instead of the physical window width */
+	return 320;
 }
 
 /**
@@ -456,7 +498,10 @@ Uint16 Graphics_GetScreenWidth()
  */
 Uint16 Graphics_GetScreenHeight()
 {
-	return(texture_height);
+	int w, h;
+	SDL_GetWindowSize(window, &w, &h);
+	/* Return the logical height (240) instead of the physical window height */
+	return 240;
 }
 
 /**
@@ -474,30 +519,61 @@ Uint16 Graphics_GetFontHeight()
  */
 SDL_Surface* Graphics_LoadGraphicsResource(char* inputfilename)
 {
-	char filename[255]; /* temporary filename buffer */
+	char filename[1024]; /* temporary filename buffer */
+	char exec_path[1024];
+	char *exec_dir;
+	char *source_dir;
+	
+	/* Get the directory where the executable is located */
+	#ifdef __APPLE__
+		uint32_t size = sizeof(exec_path);
+		if (_NSGetExecutablePath(exec_path, &size) == 0) {
+			exec_dir = dirname(exec_path);
+			/* Go up one level to get to the source directory */
+			source_dir = dirname(exec_dir);
+		} else {
+			source_dir = ".";
+		}
+	#else
+		ssize_t count = readlink("/proc/self/exe", exec_path, sizeof(exec_path));
+		if (count != -1) {
+			exec_dir = dirname(exec_path);
+			/* Go up one level to get to the source directory */
+			source_dir = dirname(exec_dir);
+		} else {
+			source_dir = ".";
+		}
+	#endif
+
 	if(strcmp("*ICON*", inputfilename) == 0)
 	{
-		sprintf ( filename, "data/icons/quadromania32.png"); /* construct filename */
+		snprintf(filename, sizeof(filename), "%s/data/icons/quadromania32.png", source_dir);
 	}
 	else
 	{
-		sprintf ( filename, "data/%s%s", GFXPREFIX, inputfilename); /* construct filename */
+		snprintf(filename, sizeof(filename), "%s/data/%s%s", source_dir, GFXPREFIX, inputfilename);
 	}
-#ifdef _DEBUG
-	fprintf(stderr,"%s\n", filename);
-#endif
-	return(IMG_Load(filename));
-}
 
-/**
- * This function loads the window icon from a file and initializes it for use.
- */
-void Graphics_SetWindowIcon()
-{
-	SDL_Surface *temp_surface;
-	temp_surface = Graphics_LoadGraphicsResource("*ICON*");
-	SDL_SetWindowIcon(window, temp_surface);
-	SDL_FreeSurface(temp_surface);
+	fprintf(stderr, "Attempting to load resource: %s\n", filename);
+	
+	// Check if file exists
+	FILE *f = fopen(filename, "r");
+	if (f == NULL) {
+		fprintf(stderr, "Error: File does not exist: %s\n", filename);
+		fprintf(stderr, "Current working directory: %s\n", getcwd(NULL, 0));
+		fprintf(stderr, "Source directory: %s\n", source_dir);
+		return NULL;
+	}
+	fclose(f);
+
+	SDL_Surface *surface = IMG_Load(filename);
+	if (surface == NULL) {
+		fprintf(stderr, "Error loading image %s: %s\n", filename, IMG_GetError());
+	} else {
+		fprintf(stderr, "Successfully loaded: %s\n", filename);
+	}
+	
+	return surface;
 }
 
 /**

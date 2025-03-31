@@ -7,10 +7,15 @@
 
 static Uint32 GetPixel(SDL_Surface *, Sint32, Sint32);
 static SFont_FontInfo InternalFont;
-static SDL_Texture *Font = NULL;
+SDL_Texture *Font = NULL;
 static int FontH;
 static Uint8 *FontMap;
 static SDL_Rect FontRect;
+
+/* Global variables declared in header */
+Uint16 FontWidth = 0;
+Uint16 FontHeight = 0;
+SDL_Rect CharPos[256];
 
 static Uint32 GetPixel(SDL_Surface *Surface, Sint32 X, Sint32 Y)
 {
@@ -88,17 +93,27 @@ void InitFont2(SFont_FontInfo *Font)
 			Font->Surface->h - 1));
 }
 
-void InitFont(SDL_Texture *font)
+void InitFont(SDL_Texture *FontTexture)
 {
-	int x = 0;
-	int width;
-	SDL_QueryTexture(font, NULL, NULL, &width, &FontH);
-	FontMap = (Uint8*)malloc(sizeof(Uint8) * width);
-
-	Font = font;
-	FontRect.h = FontH;
-	FontRect.y = 0;
-	FontRect.x = 0;
+	Uint16 i;
+	SDL_Rect src;
+	int w, h;
+	
+	Font = FontTexture;
+	SDL_QueryTexture(Font, NULL, NULL, &w, &h);
+	FontHeight = h;
+	FontWidth = w / 256;  // Each character is 1/256th of the total width
+	
+	fprintf(stderr, "Font dimensions: %dx%d (each char: %dx%d)\n", w, h, FontWidth, FontHeight);
+	
+	for(i = 0; i < 256; i++)
+	{
+		src.x = i * FontWidth;
+		src.y = 0;
+		src.w = FontWidth;
+		src.h = FontHeight;
+		CharPos[i] = src;
+	}
 }
 
 void PutString2(SDL_Renderer *renderer, SFont_FontInfo *Font, int x, int y,
@@ -138,18 +153,21 @@ void PutString2(SDL_Renderer *renderer, SFont_FontInfo *Font, int x, int y,
 	SDL_DestroyTexture(font_texture);
 }
 
-void PutString(SDL_Renderer *renderer, int x, int y, char *text)
+void PutString(SDL_Renderer *renderer, Uint16 x, Uint16 y, char *Text)
 {
-	if(text == NULL)
-		return;
+	SDL_Rect dest;
+	Uint16 i;
+	Uint8 CurrentChar;
 
-	int i;
-	for(i = 0; text[i] != '\0' && x <= Graphics_GetScreenWidth(); i++) {
-		FontRect.x = FontMap[text[i]];
-		FontRect.w = FontMap[text[i] + 1] - FontRect.x;
-		SDL_Rect dest = {x, y, FontRect.w, FontH};
-		SDL_RenderCopy(renderer, Font, &FontRect, &dest);
-		x += FontRect.w;
+	dest.y = y;
+	dest.w = FontWidth / 2;   /* Set destination width to quarter size */
+	dest.h = FontHeight / 2;  /* Set destination height to quarter size */
+
+	for(i = 0; i < strlen(Text); i++)
+	{
+		CurrentChar = Text[i];
+		dest.x = x + (i * (FontWidth / 2));  /* Adjust x position for quarter size */
+		SDL_RenderCopy(renderer, Font, &CharPos[CurrentChar], &dest);
 	}
 }
 
@@ -177,16 +195,7 @@ int TextWidth2(SFont_FontInfo *Font, char *text)
 
 int TextWidth(char *text)
 {
-	int i;
-	int width = 0;
-
-	if(text == NULL)
-		return 0;
-
-	for(i = 0; text[i] != '\0'; i++)
-		width += FontMap[text[i] + 1] - FontMap[text[i]];
-
-	return width;
+	return (strlen(text) * FontWidth) / 4;  /* Return quarter width */
 }
 
 void XCenteredString2(SDL_Renderer *renderer, SFont_FontInfo *Font, int y,
@@ -198,9 +207,10 @@ void XCenteredString2(SDL_Renderer *renderer, SFont_FontInfo *Font, int y,
 			text);
 }
 
-void XCenteredString(SDL_Renderer *renderer, int y, char *text)
+void XCenteredString(SDL_Renderer *renderer, Uint16 y, char *Text)
 {
-	PutString(renderer, (Graphics_GetScreenWidth() - TextWidth(text)) / 2, y, text);
+	Uint16 x = (Graphics_GetScreenWidth() - TextWidth(Text)) / 2;
+	PutString(renderer, x, y, Text);
 }
 
 void SFont_Input(SDL_Renderer *renderer, int x, int y, int Width, char *text)

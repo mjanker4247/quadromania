@@ -101,19 +101,27 @@ Uint16 GUI_GetMenuColumnRight()
 /* initialize position list of menu entries */
 void GUI_InitMenuCoordinates()
 {
-	const Uint16 start_pos = ((SCREEN_HEIGHT * 240) / 480);
-	const Uint16 offset_per_line = Graphics_GetFontHeight() + (SCREEN_HEIGHT
-			/ 120);
+	const Uint16 start_pos = (SCREEN_HEIGHT / 2) - 20;  // Start closer to middle
+	const Uint16 offset_per_line = Graphics_GetFontHeight() + 5;  // Reduce spacing
 
+	fprintf(stderr, "Screen dimensions: %dx%d\n", SCREEN_WIDTH, SCREEN_HEIGHT);
+	fprintf(stderr, "Font height: %d\n", Graphics_GetFontHeight());
+	fprintf(stderr, "Menu start position: %d\n", start_pos);
+	fprintf(stderr, "Offset per line: %d\n", offset_per_line);
+
+	// Initialize all menu positions
+	GUI_MenuPosition[MENU_UNDEFINED] = 0;  // Not displayed
 	GUI_MenuPosition[MENU_START_GAME] = start_pos;
-	GUI_MenuPosition[MENU_CHANGE_NR_OF_COLORS] = start_pos + offset_per_line;
-	GUI_MenuPosition[MENU_CHANGE_NR_OF_ROTATIONS] = start_pos + offset_per_line
-			* 2;
-	GUI_MenuPosition[MENU_HIGHSCORES] = start_pos + offset_per_line
-				* 3;
-	GUI_MenuPosition[MENU_INSTRUCTIONS] = start_pos + offset_per_line * 4;
-	GUI_MenuPosition[MENU_QUIT] = start_pos + offset_per_line * 5;
-	return;
+	GUI_MenuPosition[MENU_CHANGE_NR_OF_COLORS] = start_pos + (offset_per_line * 1);
+	GUI_MenuPosition[MENU_CHANGE_NR_OF_ROTATIONS] = start_pos + (offset_per_line * 2);
+	GUI_MenuPosition[MENU_INSTRUCTIONS] = start_pos + (offset_per_line * 3);
+	GUI_MenuPosition[MENU_HIGHSCORES] = start_pos + (offset_per_line * 4);
+	GUI_MenuPosition[MENU_QUIT] = start_pos + (offset_per_line * 5);
+
+	fprintf(stderr, "Menu positions:\n");
+	for (int i = 0; i < MAX_NR_OF_MENU_ENTRIES; i++) {
+		fprintf(stderr, "Entry %d: y=%d\n", i, GUI_MenuPosition[i]);
+	}
 }
 
 /* determines the currently pointed to mainmenu entry via the Event interface */
