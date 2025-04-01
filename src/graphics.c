@@ -22,8 +22,9 @@
  * THIS SOFTWARE IS SUPPLIED AS IT IS WITHOUT ANY WARRANTY!
  *
  */
-#include <SDL.h>
-#include <SDL_image.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+#include <SDL2/SDL_ttf.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,14 +38,26 @@
 #include "SFont.h"
 #include "highscore.h"
 #include "debug.h"
+#include "ttf_font.h"
 
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 static SDL_Texture *textures = NULL, *frame = NULL, *dots = NULL, *font = NULL, 
                    *titel = NULL, *copyright = NULL;
+static TTF_Font *game_font = NULL;
 
 static Uint16 frame_width, frame_height, dot_width, dot_height, texture_width,
 		texture_height, font_height;
+
+/**
+ * @return width of the text in pixels for TTF font
+ */
+static Uint16 TTF_TextWidth(char *text)
+{
+	int w, h;
+	TTF_SizeText(game_font, text, &w, &h);
+	return (Uint16)w;
+}
 
 /**
  * This function textures the complete screen with 1 out of 10 textures.
@@ -156,7 +169,7 @@ void Graphics_DrawInstructions()
 	dest.h = 0;
 	SDL_RenderCopy(renderer, SDL_CreateTextureFromSurface(renderer, instructions_gfx), &src, &dest);
 
-	Graphics_DrawText((SCREEN_WIDTH - TextWidth((char *)continue_msg)),(SCREEN_HEIGHT - font_height),(char *)continue_msg);
+	Graphics_DrawText((SCREEN_WIDTH - TTF_Font_GetTextWidth((char *)continue_msg)),(SCREEN_HEIGHT - font_height),(char *)continue_msg);
 	Graphics_UpdateScreen();
 
 	SDL_FreeSurface(instructions_gfx);
@@ -228,25 +241,7 @@ void Graphics_DrawOuterFrame()
  */
 void Graphics_DrawText(Uint16 x, Uint16 y, char *text)
 {
-	// First draw a semi-transparent dark background
-	SDL_Rect bg;
-	bg.x = x - 5;  // Add some padding
-	bg.y = y - 2;
-	bg.w = TextWidth(text) + 10;  // Add padding on both sides
-	bg.h = Graphics_GetFontHeight() + 4;  // Add padding top and bottom
-	
-	// Set blend mode for transparency
-	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-	// Draw dark background (R=0, G=0, B=0, A=180)
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 180);
-	SDL_RenderFillRect(renderer, &bg);
-	
-	// Reset blend mode and color
-	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
-	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-	
-	// Draw the text
-	PutString(renderer, x, y, text);
+	TTF_Font_DrawText(renderer, x, y, text);
 }
 
 /**
@@ -330,8 +325,16 @@ BOOLEAN Graphics_Init(BOOLEAN set_fullscreen)
 				SDL_GetError());
 		return (FALSE);
 	}
+	
+	/* initialize SDL_ttf */
+	if (TTF_Init() < 0) {
+		fprintf(stderr, "Unable to initialize SDL_ttf: %s\n", TTF_GetError());
+		return (FALSE);
+	}
+	
 	/* make sure to shutdown SDL at program end... */
 	atexit(SDL_Quit);
+	atexit(TTF_Quit);
 
 	/* Create window */
 	Uint32 window_flags = SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI;
@@ -436,6 +439,70 @@ BOOLEAN Graphics_Init(BOOLEAN set_fullscreen)
 	font_height = (Uint16)h;
 	DEBUG_PRINT("Font texture: %dx%d (height: %d)", w, h, font_height);
 
+	/* Load TTF font */
+	char font_path[1024];
+	char exec_path[1024];
+	char *exec_dir;
+	char *source_dir;
+
+#ifdef __APPLE__
+    uint32_t size = sizeof(exec_path);
+    if (_NSGetExecutablePath(exec_path, &size) == 0) {
+        exec_dir = dirname(exec_path);
+        source_dir = dirname(exec_dir);
+    } else {
+        source_dir = ".";
+    }
+#else
+    ssize_t count = readlink("/proc/self/exe", exec_path, sizeof(exec_path));
+    if (count != -1) {
+        exec_dir = dirname(exec_path);
+        source_dir = dirname(exec_dir);
+    } else {
+        source_dir = ".";
+    }
+#endif
+
+    // Try loading system fonts in order of preference
+    const char *font_names[] = {
+        // macOS system fonts
+        "/System/Library/Fonts/Helvetica.ttc",
+        "/System/Library/Fonts/STHeiti Light.ttc",
+        "/System/Library/Fonts/STHeiti Medium.ttc",
+        // Linux system fonts
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+        "/usr/share/fonts/truetype/droid/DroidSansFallback.ttf",
+        // Windows system fonts (if running under Wine)
+        "C:\\Windows\\Fonts\\arial.ttf",
+        "C:\\Windows\\Fonts\\msyh.ttc",
+        "C:\\Windows\\Fonts\\simhei.ttf",
+        NULL
+    };
+
+    game_font = NULL;
+    for (int i = 0; font_names[i] != NULL; i++) {
+        game_font = TTF_OpenFont(font_names[i], 16);  // Adjust size as needed
+        if (game_font != NULL) {
+            DEBUG_PRINT("Successfully loaded system font: %s", font_names[i]);
+            break;
+        }
+    }
+
+    if (game_font == NULL) {
+        // If no system fonts were found, try loading from the data directory as fallback
+        snprintf(font_path, sizeof(font_path), "%s/data/fonts/DejaVuSans.ttf", source_dir);
+        game_font = TTF_OpenFont(font_path, 16);
+        if (game_font == NULL) {
+            fprintf(stderr, "Failed to load any font: %s\n", TTF_GetError());
+            return (FALSE);
+        }
+        DEBUG_PRINT("Loaded fallback font from data directory");
+    }
+
+    font_height = TTF_FontHeight(game_font);
+    DEBUG_PRINT("Font loaded successfully, height: %d", font_height);
+
 	atexit(Graphics_CleanUp);
 
 	return(TRUE);
@@ -447,6 +514,9 @@ BOOLEAN Graphics_Init(BOOLEAN set_fullscreen)
  */
 void Graphics_CleanUp()
 {
+	if (game_font != NULL) {
+		TTF_CloseFont(game_font);
+	}
 	SDL_DestroyTexture(textures);
 	SDL_DestroyTexture(frame);
 	SDL_DestroyTexture(dots);
@@ -504,7 +574,7 @@ Uint16 Graphics_GetScreenHeight()
  */
 Uint16 Graphics_GetFontHeight()
 {
-	return(font_height);
+	return font_height;
 }
 
 /**

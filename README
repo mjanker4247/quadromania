@@ -21,7 +21,56 @@ Currently quadromania is known to run on the following target platforms:
 	* GP2X Wiz
 	* Dingoo A320 with dingux Linux system
 	* Atari MinT (compilable and running but too slow to be playable)
+	* macOS (with SDL2 and Ninja build system)
 
+
+Build Requirements
+=================
+
+To build Quadromania, you need the following:
+
+1. CMake (version 3.10 or higher)
+2. Ninja build system
+3. SDL2 development libraries:
+   - libSDL2
+   - libSDL2_image
+   - libSDL2_mixer
+   - libSDL2_ttf
+
+On macOS, you can install these dependencies using Homebrew:
+```bash
+brew install cmake ninja sdl2 sdl2_image sdl2_mixer sdl2_ttf
+```
+
+On Linux, you can install these dependencies using your package manager:
+```bash
+# Ubuntu/Debian
+sudo apt-get install cmake ninja-build libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev
+
+# Fedora
+sudo dnf install cmake ninja-build SDL2-devel SDL2_image-devel SDL2_mixer-devel SDL2_ttf-devel
+```
+
+Build Instructions
+=================
+
+1. Create a build directory and navigate to it:
+```bash
+mkdir build
+cd build
+```
+
+2. Configure the project with CMake:
+```bash
+cmake ..
+```
+
+3. Build the project:
+```bash
+ninja
+```
+
+The executable will be created in the build directory.$$
 
 Installation
 ============

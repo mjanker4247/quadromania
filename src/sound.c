@@ -23,7 +23,7 @@
  *
  */
 
-#include <SDL.h>
+#include <SDL2/SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -35,7 +35,7 @@
 #include "debug.h"
 
 #if(HAVE_AUDIO == 1)
-#include <SDL_mixer.h>
+#include <SDL2/SDL_mixer.h>
 #endif
 
 /* data structures... */

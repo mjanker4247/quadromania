@@ -31,7 +31,7 @@ extern "C" {
 #endif
 
 #include "sysconfig.h"
-#include <SDL.h>
+#include <SDL2/SDL.h>
 
 #if(HAVE_SDL_DATATYPES == 0)
 	typedef unsigned char Uint8;

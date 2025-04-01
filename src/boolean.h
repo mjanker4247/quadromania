@@ -22,13 +22,14 @@
  * THIS SOFTWARE IS SUPPLIED AS IT IS WITHOUT ANY WARRANTY!
  *
  */
-#ifndef __BOOLEAN_H
-	#define __BOOLEAN_H
+#ifndef _BOOLEAN_H_
+#define _BOOLEAN_H_
 
-	#include "datatypes.h"
+#include "datatypes.h"
 
-	#define FALSE 0
-	#define TRUE 1
+#define FALSE 0
+#define TRUE 1
 
-	typedef Uint8 BOOLEAN;
-#endif
+typedef Uint8 BOOLEAN;
+
+#endif /* _BOOLEAN_H_ */
