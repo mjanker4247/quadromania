@@ -43,7 +43,7 @@
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 static SDL_Texture *textures = NULL, *frame = NULL, *dots = NULL, *font = NULL, 
-                   *titel = NULL, *copyright = NULL;
+                   *title = NULL, *copyright = NULL;
 static TTF_Font *game_font = NULL;
 
 static Uint16 frame_width, frame_height, dot_width, dot_height, texture_width,
@@ -119,7 +119,7 @@ void Graphics_DrawTitle()
 	dest.y = dot_height;
 	dest.w = texture_width;  /* Set destination width */
 	dest.h = texture_height; /* Set destination height */
-	SDL_RenderCopy(renderer, titel, &src, &dest);
+	SDL_RenderCopy(renderer, title, &src, &dest);
 
 	src.x = 0;
 	src.y = 0;
@@ -156,7 +156,7 @@ void Graphics_DrawInstructions()
 	dest.y = dot_height;
 	dest.w = 0;
 	dest.h = 0;
-	SDL_RenderCopy(renderer, titel, &src, &dest);
+	SDL_RenderCopy(renderer, title, &src, &dest);
 	XCenteredString(renderer, instruction_y, "Instructions");
 	/* draw instructions */
 	src.x = 0;
@@ -198,7 +198,7 @@ void Graphics_ListHighscores(Uint16 nr_of_table)
 	dest.y = dot_height;
 	dest.w = 0;
 	dest.h = 0;
-	SDL_RenderCopy(renderer, titel, &src, &dest);
+	SDL_RenderCopy(renderer, title, &src, &dest);
 	sprintf(txt,"High scores for Level %d",nr_of_table+1);
 	XCenteredString(renderer, highscore_y, txt);
 
@@ -399,8 +399,8 @@ BOOLEAN Graphics_Init(BOOLEAN set_fullscreen)
 	font = SDL_CreateTextureFromSurface(renderer, temp_surface);
 	SDL_FreeSurface(temp_surface);
 	
-	temp_surface = Graphics_LoadGraphicsResource("titel.png");
-	titel = SDL_CreateTextureFromSurface(renderer, temp_surface);
+	temp_surface = Graphics_LoadGraphicsResource("title.png");
+	title = SDL_CreateTextureFromSurface(renderer, temp_surface);
 	SDL_FreeSurface(temp_surface);
 	
 	temp_surface = Graphics_LoadGraphicsResource("copyright.png");
@@ -412,7 +412,7 @@ BOOLEAN Graphics_Init(BOOLEAN set_fullscreen)
 	DEBUG_PRINT("Font ready");
 
 	/* did our graphics load properly? */
-	if((textures==NULL)||(frame==NULL)||(dots==NULL)||(titel==NULL)||(copyright==NULL)||(font==NULL))
+	if((textures==NULL)||(frame==NULL)||(dots==NULL)||(title==NULL)||(copyright==NULL)||(font==NULL))
 	{
 		fprintf (stderr, "%s initgraphics(): One or more image files failed to load properly!\n\n",PACKAGE);
 		exit(2);
@@ -521,7 +521,7 @@ void Graphics_CleanUp()
 	SDL_DestroyTexture(frame);
 	SDL_DestroyTexture(dots);
 	SDL_DestroyTexture(font);
-	SDL_DestroyTexture(titel);
+	SDL_DestroyTexture(title);
 	SDL_DestroyTexture(copyright);
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
