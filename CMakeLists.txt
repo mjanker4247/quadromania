@@ -16,10 +16,10 @@ Project ( Quadromania )
 
 # Find SDL2
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(SDL2 REQUIRED sdl2)
-pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
-pkg_check_modules(SDL2_MIXER REQUIRED SDL2_mixer)
-pkg_check_modules(SDL2_TTF REQUIRED SDL2_ttf)
+pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
+pkg_check_modules(SDL2_IMAGE REQUIRED IMPORTED_TARGET SDL2_image)
+pkg_check_modules(SDL2_MIXER REQUIRED IMPORTED_TARGET SDL2_mixer)
+pkg_check_modules(SDL2_TTF REQUIRED IMPORTED_TARGET SDL2_ttf)
 
 message(STATUS "SDL2_INCLUDE_DIRS: ${SDL2_INCLUDE_DIRS}")
 message(STATUS "SDL2_LIBRARIES: ${SDL2_LIBRARIES}")
@@ -73,10 +73,10 @@ add_executable(quadromania
 )
 
 target_link_libraries(quadromania PRIVATE
-   ${SDL2_LIBRARIES}
-   ${SDL2_IMAGE_LIBRARIES}
-   ${SDL2_MIXER_LIBRARIES}
-   ${SDL2_TTF_LIBRARIES}
+    PkgConfig::SDL2
+    PkgConfig::SDL2_IMAGE
+    PkgConfig::SDL2_MIXER
+    PkgConfig::SDL2_TTF
 )
 
 # Copy data directory to build directory

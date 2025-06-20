@@ -41,12 +41,7 @@ extern "C" {
 
 	#define NR_OF_TEXTURES 	10
 	#define NR_OF_DOTS     	5
-
-#if(SCREENRES == _LOW)
-	#define GFXPREFIX "lowres/"
-#else
 	#define GFXPREFIX ""
-#endif
 
 	/**********
 	 * MACROS *

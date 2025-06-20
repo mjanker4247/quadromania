@@ -214,11 +214,11 @@ void Event_ProcessInput()
 		case SDL_JOYBUTTONDOWN:
 			switch(event.jbutton.button)
 			{
+#if(HAVE_JOYSTICK == _GP2X_JOYSTICK)
 			case JOYSTICK_BUTTON_ESC:
 				ESCpressed = TRUE;
 				DEBUG_PRINT("Joystick ESC pressed");
 				break;
-#if(HAVE_JOYSTICK ==_GP2X_JOYSTICK)
 			case GP2X_BUTTON_UP:
 				/* up arrow */
 				key.up = TRUE;

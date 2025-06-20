@@ -46,8 +46,11 @@ static SDL_Texture *textures = NULL, *frame = NULL, *dots = NULL, *font = NULL,
                    *title = NULL, *copyright = NULL;
 static TTF_Font *game_font = NULL;
 
-static Uint16 frame_width, frame_height, dot_width, dot_height, texture_width,
-		texture_height, font_height;
+static Uint16 frame_width, frame_height, 
+		dot_width, dot_height, texture_width,
+		texture_height, font_height, 
+		title_width, title_height, 
+		copyright_width, copyright_height;
 
 /**
  * @return width of the text in pixels for TTF font
@@ -113,23 +116,25 @@ void Graphics_DrawTitle()
 
 	src.x = 0;
 	src.y = 0;
-	src.w = texture_width;
-	src.h = texture_height;
-	dest.x = ((SCREEN_WIDTH / 2) - (texture_width / 2));
+	src.w = title_width;
+	src.h = title_height;
+	dest.x = ((SCREEN_WIDTH / 2) - (title_width / 2));
 	dest.y = dot_height;
-	dest.w = texture_width;  /* Set destination width */
-	dest.h = texture_height; /* Set destination height */
+	dest.w = title_width;
+	dest.h = title_height;
 	SDL_RenderCopy(renderer, title, &src, &dest);
 
+	// Draw the copyright image
 	src.x = 0;
 	src.y = 0;
-	src.w = texture_width;
-	src.h = texture_height;
-	dest.x = ((SCREEN_WIDTH / 2) - (texture_width / 2));
+	src.w = copyright_width;
+	src.h = copyright_height;
+	dest.x = ((SCREEN_WIDTH / 2) - (copyright_width / 2));
 	dest.y = ((SCREEN_HEIGHT * 120) / 480);
-	dest.w = texture_width;  /* Set destination width */
-	dest.h = texture_height; /* Set destination height */
+	dest.w = copyright_width;
+	dest.h = copyright_height;
 	SDL_RenderCopy(renderer, copyright, &src, &dest);
+
 }
 
 /**
@@ -153,9 +158,9 @@ void Graphics_DrawInstructions()
 	src.w = texture_width;
 	src.h = texture_height;
 	dest.x = ((SCREEN_WIDTH / 2) - (texture_width / 2));
-	dest.y = dot_height;
-	dest.w = 0;
-	dest.h = 0;
+	dest.y = instruction_y + (dot_height/2);
+	dest.w = src.w;
+	dest.h = src.h;
 	SDL_RenderCopy(renderer, title, &src, &dest);
 	XCenteredString(renderer, instruction_y, "Instructions");
 	/* draw instructions */
@@ -165,8 +170,8 @@ void Graphics_DrawInstructions()
 	src.h = instructions_gfx->h;
 	dest.x = ((SCREEN_WIDTH / 2) - (instructions_gfx->w / 2));
 	dest.y = instruction_y + (dot_height/2);
-	dest.w = 0;
-	dest.h = 0;
+	dest.w = src.w;
+	dest.h = src.h;
 	SDL_RenderCopy(renderer, SDL_CreateTextureFromSurface(renderer, instructions_gfx), &src, &dest);
 
 	Graphics_DrawText((SCREEN_WIDTH - TTF_Font_GetTextWidth((char *)continue_msg)),(SCREEN_HEIGHT - font_height),(char *)continue_msg);
@@ -196,8 +201,8 @@ void Graphics_ListHighscores(Uint16 nr_of_table)
 	src.h = texture_height;
 	dest.x = ((SCREEN_WIDTH / 2) - (texture_width / 2));
 	dest.y = dot_height;
-	dest.w = 0;
-	dest.h = 0;
+	dest.w = src.w;
+	dest.h = src.h;
 	SDL_RenderCopy(renderer, title, &src, &dest);
 	sprintf(txt,"High scores for Level %d",nr_of_table+1);
 	XCenteredString(renderer, highscore_y, txt);
@@ -309,14 +314,6 @@ void Graphics_DrawGameoverMessage()
  */
 BOOLEAN Graphics_Init(BOOLEAN set_fullscreen)
 {
-	/* determine video scaling */
-#if(SCREENRES == _HIGH)
-	const int screen_factor = 2;
-#elif(SCREENRES == _LOW)
-	const int screen_factor = 1;
-#else
-#error screen resolution is not properly defined
-#endif
 
 	/* initialize SDL...  */
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
@@ -344,7 +341,7 @@ BOOLEAN Graphics_Init(BOOLEAN set_fullscreen)
 	
 	window = SDL_CreateWindow(VERSION,
 		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-		(320 * screen_factor), (240 * screen_factor),
+		(640), (480),
 		window_flags);
 		
 	if (!window) {
@@ -365,8 +362,8 @@ BOOLEAN Graphics_Init(BOOLEAN set_fullscreen)
 	}
 
 	/* Set logical size to match the original game's resolution */
-	SDL_RenderSetLogicalSize(renderer, 320, 240);
-	DEBUG_PRINT("Renderer logical size set to: 320x240");
+	/* SDL_RenderSetLogicalSize(renderer, 320, 240); */
+	/* DEBUG_PRINT("Renderer logical size set to: 320x240"); */
 
 	/* Set window icon */
 	SDL_Surface *icon_surface = Graphics_LoadGraphicsResource("*ICON*");
@@ -435,6 +432,11 @@ BOOLEAN Graphics_Init(BOOLEAN set_fullscreen)
 	texture_height = (Uint16)h;
 	DEBUG_PRINT("Textures: %dx%d (each texture: %dx%d)", w, h, texture_width, texture_height);
 	
+	SDL_QueryTexture(title, NULL, NULL, &w, &h);
+	title_width = (Uint16)(w / NR_OF_TEXTURES);
+	title_height = (Uint16)h;
+	DEBUG_PRINT("Title: %dx%d (each title: %dx%d)", w, h, texture_width, texture_height);
+
 	SDL_QueryTexture(font, NULL, NULL, &w, &h);
 	font_height = (Uint16)h;
 	DEBUG_PRINT("Font texture: %dx%d (height: %d)", w, h, font_height);
@@ -555,7 +557,7 @@ Uint16 Graphics_GetScreenWidth()
 	int w, h;
 	SDL_GetWindowSize(window, &w, &h);
 	/* Return the logical width (320) instead of the physical window width */
-	return 320;
+	return w;
 }
 
 /**
@@ -566,7 +568,7 @@ Uint16 Graphics_GetScreenHeight()
 	int w, h;
 	SDL_GetWindowSize(window, &w, &h);
 	/* Return the logical height (240) instead of the physical window height */
-	return 240;
+	return h;
 }
 
 /**
