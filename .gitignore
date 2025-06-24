@@ -112,3 +112,4 @@ build/
 build-*
 bin/
 .DS_Store
+quadromania.log
