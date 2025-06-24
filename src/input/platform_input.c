@@ -151,34 +151,6 @@ bool PlatformInput_ConvertEvent(const void* platform_event, InputEvent* unified_
 }
 
 /**
- * Get platform-specific key code for unified key code
- */
-uint32_t PlatformInput_GetPlatformKeyCode(uint32_t unified_key_code)
-{
-    if (!platform_input_state.initialized)
-    {
-        return unified_key_code;
-    }
-
-    /* Delegate to SDL2 implementation */
-    return (uint32_t)SDL2Input_GetSDLKeyCode(unified_key_code);
-}
-
-/**
- * Get unified key code for platform-specific key code
- */
-uint32_t PlatformInput_GetUnifiedKeyCode(uint32_t platform_key_code)
-{
-    if (!platform_input_state.initialized)
-    {
-        return platform_key_code;
-    }
-
-    /* Delegate to SDL2 implementation */
-    return SDL2Input_GetUnifiedKeyCode((SDL_Keycode)platform_key_code);
-}
-
-/**
  * Set platform-specific input configuration
  */
 void PlatformInput_SetConfig(const PlatformInputConfig* config)

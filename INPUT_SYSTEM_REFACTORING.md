@@ -7,8 +7,9 @@ This document describes the refactored input system that splits the original mon
 The new input system consists of several layers:
 
 ### 1. Unified Input Manager (`input_manager.h/c`)
+
 - **Purpose**: Provides a single, clean interface for all input handling
-- **Features**: 
+- **Features**:
   - Coordinates all input handlers
   - Maintains unified input state
   - Handles event queuing and processing
@@ -16,9 +17,11 @@ The new input system consists of several layers:
   - Abstracts platform-specific details
 
 ### 2. Input Handlers
+
 Each input handler is responsible for a specific input device type:
 
 #### Keyboard Handler (`keyboard_handler.h/c`)
+
 - **Purpose**: Platform-agnostic keyboard input handling
 - **Features**:
   - Configurable key mappings
@@ -27,6 +30,7 @@ Each input handler is responsible for a specific input device type:
   - Event processing for keyboard events
 
 #### Mouse Handler (`mouse_handler.h/c`)
+
 - **Purpose**: Platform-agnostic mouse input handling
 - **Features**:
   - Configurable button mappings
@@ -35,6 +39,7 @@ Each input handler is responsible for a specific input device type:
   - Event processing for mouse events
 
 #### Joystick Handler (`joystick_handler.h/c`)
+
 - **Purpose**: Platform-agnostic joystick input handling
 - **Features**:
   - Platform-specific configurations (GP2X, Android, iOS, etc.)
@@ -45,6 +50,7 @@ Each input handler is responsible for a specific input device type:
 ### 3. Platform Abstraction Layer
 
 #### Platform Input (`platform_input.h/c`)
+
 - **Purpose**: Abstract interface for platform-specific input implementations
 - **Features**:
   - Platform capability detection
@@ -53,6 +59,7 @@ Each input handler is responsible for a specific input device type:
   - Feature support checking
 
 #### SDL2 Implementation (`platform/sdl2_input.h/c`)
+
 - **Purpose**: SDL2-specific input implementation
 - **Features**:
   - SDL2 event processing
@@ -61,6 +68,7 @@ Each input handler is responsible for a specific input device type:
   - Platform detection
 
 ### 4. Compatibility Layer (`events_compat.h/c`)
+
 - **Purpose**: Maintains backward compatibility with existing code
 - **Features**:
   - Implements the old event API using the new input system
@@ -70,26 +78,31 @@ Each input handler is responsible for a specific input device type:
 ## Key Benefits
 
 ### 1. Modularity
+
 - Each input device type has its own handler
 - Easy to add new input devices or modify existing ones
 - Clear separation of concerns
 
 ### 2. Platform Abstraction
+
 - Platform-specific details are isolated in platform implementations
 - Easy to add support for new platforms
 - Consistent API across different platforms
 
 ### 3. Configuration
+
 - Configurable key mappings, button mappings, and sensitivity settings
 - Platform-specific default configurations
 - Runtime configuration changes
 
 ### 4. Extensibility
+
 - Easy to add new input features (touch, accelerometer, etc.)
 - Event queuing system for complex input scenarios
 - Support for multiple input devices simultaneously
 
 ### 5. Backward Compatibility
+
 - Existing code continues to work without changes
 - Gradual migration path to new API
 - No breaking changes
@@ -176,16 +189,19 @@ while (!Event_QuitRequested()) {
 ## Migration Guide
 
 ### Phase 1: Use Compatibility Layer
+
 1. Replace `#include "input/events.h"` with `#include "input/events_compat.h"`
 2. No other code changes needed
 3. Test that everything works as before
 
 ### Phase 2: Gradual Migration
+
 1. Start using the new input manager API for new features
 2. Gradually replace old event calls with new API calls
 3. Use both APIs simultaneously during transition
 
 ### Phase 3: Complete Migration
+
 1. Replace all old event API calls with new input manager API
 2. Remove compatibility layer includes
 3. Use only the new input system
@@ -193,11 +209,13 @@ while (!Event_QuitRequested()) {
 ## Platform Support
 
 ### Current Platforms
+
 - **SDL2**: Full support with joystick, keyboard, and mouse
 - **GP2X**: Specialized button mappings and configurations
 - **Generic**: Default configurations for unknown platforms
 
 ### Adding New Platforms
+
 1. Create new platform implementation in `platform/` directory
 2. Implement platform-specific event conversion
 3. Add platform detection logic
@@ -206,6 +224,7 @@ while (!Event_QuitRequested()) {
 ## Configuration
 
 ### Keyboard Configuration
+
 ```c
 KeyMapping mapping = {
     .up_key = 0x26,        // Arrow Up
@@ -223,6 +242,7 @@ KeyboardHandler_SetKeyMapping(&mapping);
 ```
 
 ### Mouse Configuration
+
 ```c
 MouseButtonConfig button_config = {
     .left_button = 1,
@@ -241,6 +261,7 @@ MouseHandler_SetSensitivityConfig(&sensitivity_config);
 ```
 
 ### Joystick Configuration
+
 ```c
 JoystickAxisConfig axis_config = {
     .x_axis = 0,
@@ -280,6 +301,7 @@ src/input/
 ## Future Enhancements
 
 ### Planned Features
+
 - Touch input support
 - Accelerometer/gyroscope support
 - Haptic feedback
@@ -288,6 +310,7 @@ src/input/
 - Network input (for multiplayer)
 
 ### Potential Platforms
+
 - Android (native)
 - iOS (native)
 - Web (WebAssembly)
@@ -296,6 +319,7 @@ src/input/
 ## Testing
 
 The new input system includes comprehensive testing capabilities:
+
 - Input event validation
 - Platform detection testing
 - Configuration validation
@@ -313,14 +337,16 @@ The new input system includes comprehensive testing capabilities:
 ## Troubleshooting
 
 ### Common Issues
+
 1. **Input not working**: Check device enable/disable settings
 2. **Wrong key mappings**: Verify platform-specific configurations
 3. **Performance issues**: Adjust debounce timers and event buffer sizes
 4. **Platform detection**: Ensure platform-specific code is properly included
 
 ### Debug Features
+
 - Comprehensive logging
 - Input state inspection
 - Event tracing
 - Performance profiling
-- Memory usage monitoring 
+- Memory usage monitoring
