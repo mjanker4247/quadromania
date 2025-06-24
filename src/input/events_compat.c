@@ -75,7 +75,6 @@ void Event_Init(void)
 
     /* Initialize input manager with default configuration */
     InputConfig config = {
-        .enable_keyboard = true,
         .enable_mouse = true,
         .enable_joystick = true,
         .enable_touch = false,
@@ -189,7 +188,6 @@ void Event_ProcessInput(void)
 
     /* Update quit and ESC states */
     compat_state.QUITrequest = InputManager_IsQuitRequested();
-    compat_state.ESCpressed = InputManager_IsESCPressed();
 
     /* Update debounce timers */
     if (compat_state.debounce_tmr_mouse > 0)
@@ -350,7 +348,6 @@ void Event_DebounceKeys(void)
         return;
     }
 
-    InputManager_DebounceKeyboard();
     compat_state.debounce_tmr_keys = Event_Debounce_timeslices;
     compat_state.ESCpressed = false;
     compat_state.key.up = false;

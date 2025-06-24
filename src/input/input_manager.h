@@ -61,7 +61,6 @@ typedef struct
  */
 typedef enum
 {
-    INPUT_DEVICE_KEYBOARD,
     INPUT_DEVICE_MOUSE,
     INPUT_DEVICE_JOYSTICK,
     INPUT_DEVICE_TOUCH,
@@ -74,8 +73,6 @@ typedef enum
 typedef enum
 {
     INPUT_EVENT_NONE,
-    INPUT_EVENT_KEY_DOWN,
-    INPUT_EVENT_KEY_UP,
     INPUT_EVENT_MOUSE_MOVE,
     INPUT_EVENT_MOUSE_DOWN,
     INPUT_EVENT_MOUSE_UP,
@@ -94,11 +91,6 @@ typedef struct
     InputEventType type;
     union
     {
-        struct
-        {
-            uint32_t key_code;
-            bool is_repeat;
-        } key;
         struct
         {
             uint16_t x, y;
@@ -121,7 +113,6 @@ typedef struct
  */
 typedef struct
 {
-    bool enable_keyboard;
     bool enable_mouse;
     bool enable_joystick;
     bool enable_touch;
@@ -175,12 +166,6 @@ const DpadState* InputManager_GetDpadState(void);
 bool InputManager_IsQuitRequested(void);
 
 /**
- * Check if ESC key was pressed
- * @return true if ESC was pressed
- */
-bool InputManager_IsESCPressed(void);
-
-/**
  * Debounce mouse input
  */
 void InputManager_DebounceMouse(void);
@@ -189,11 +174,6 @@ void InputManager_DebounceMouse(void);
  * Debounce directional pad input
  */
 void InputManager_DebounceDpad(void);
-
-/**
- * Debounce keyboard input
- */
-void InputManager_DebounceKeyboard(void);
 
 /**
  * Check if any directional pad input is pressed

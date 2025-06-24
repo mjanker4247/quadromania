@@ -41,17 +41,6 @@ static SDL2InputState sdl2_input_state = {0};
  * CONSTANTS *
  *************/
 
-/* Key code mappings */
-#define SDL_KEY_UP         SDLK_UP
-#define SDL_KEY_DOWN       SDLK_DOWN
-#define SDL_KEY_LEFT       SDLK_LEFT
-#define SDL_KEY_RIGHT      SDLK_RIGHT
-#define SDL_KEY_CTRL       SDLK_LCTRL
-#define SDL_KEY_ALT        SDLK_LALT
-#define SDL_KEY_ESCAPE     SDLK_ESCAPE
-#define SDL_KEY_KP_PLUS    SDLK_KP_PLUS
-#define SDL_KEY_KP_MINUS   SDLK_KP_MINUS
-
 /*************
  * FUNCTIONS *
  *************/
@@ -164,21 +153,8 @@ bool SDL2Input_ConvertEvent(const SDL_Event* sdl_event, InputEvent* unified_even
 
     switch (sdl_event->type)
     {
-    case SDL_KEYDOWN:
-        unified_event->type = INPUT_EVENT_KEY_DOWN;
-        unified_event->data.key.key_code = SDL2Input_GetUnifiedKeyCode(sdl_event->key.keysym.sym);
-        unified_event->data.key.is_repeat = sdl_event->key.repeat;
-        return true;
-
-    case SDL_KEYUP:
-        unified_event->type = INPUT_EVENT_KEY_UP;
-        unified_event->data.key.key_code = SDL2Input_GetUnifiedKeyCode(sdl_event->key.keysym.sym);
-        unified_event->data.key.is_repeat = false;
-        return true;
-
     case SDL_MOUSEMOTION:
         unified_event->type = INPUT_EVENT_MOUSE_MOVE;
-        /* Convert screen coordinates to logical coordinates */
         if (sdl2_input_state.renderer)
         {
             SDL_RenderWindowToLogical(sdl2_input_state.renderer, sdl_event->motion.x, sdl_event->motion.y, 
@@ -186,7 +162,6 @@ bool SDL2Input_ConvertEvent(const SDL_Event* sdl_event, InputEvent* unified_even
         }
         else
         {
-            /* Fallback to direct coordinates if renderer not available */
             unified_event->data.mouse.x = sdl_event->motion.x;
             unified_event->data.mouse.y = sdl_event->motion.y;
         }
@@ -195,7 +170,6 @@ bool SDL2Input_ConvertEvent(const SDL_Event* sdl_event, InputEvent* unified_even
 
     case SDL_MOUSEBUTTONDOWN:
         unified_event->type = INPUT_EVENT_MOUSE_DOWN;
-        /* Convert screen coordinates to logical coordinates */
         if (sdl2_input_state.renderer)
         {
             SDL_RenderWindowToLogical(sdl2_input_state.renderer, sdl_event->button.x, sdl_event->button.y, 
@@ -203,7 +177,6 @@ bool SDL2Input_ConvertEvent(const SDL_Event* sdl_event, InputEvent* unified_even
         }
         else
         {
-            /* Fallback to direct coordinates if renderer not available */
             unified_event->data.mouse.x = sdl_event->button.x;
             unified_event->data.mouse.y = sdl_event->button.y;
         }
@@ -212,7 +185,6 @@ bool SDL2Input_ConvertEvent(const SDL_Event* sdl_event, InputEvent* unified_even
 
     case SDL_MOUSEBUTTONUP:
         unified_event->type = INPUT_EVENT_MOUSE_UP;
-        /* Convert screen coordinates to logical coordinates */
         if (sdl2_input_state.renderer)
         {
             SDL_RenderWindowToLogical(sdl2_input_state.renderer, sdl_event->button.x, sdl_event->button.y, 
@@ -220,7 +192,6 @@ bool SDL2Input_ConvertEvent(const SDL_Event* sdl_event, InputEvent* unified_even
         }
         else
         {
-            /* Fallback to direct coordinates if renderer not available */
             unified_event->data.mouse.x = sdl_event->button.x;
             unified_event->data.mouse.y = sdl_event->button.y;
         }
@@ -261,55 +232,12 @@ bool SDL2Input_ConvertEvent(const SDL_Event* sdl_event, InputEvent* unified_even
 }
 
 /**
- * Get SDL2 key code for unified key code
- */
-SDL_Keycode SDL2Input_GetSDLKeyCode(uint32_t unified_key_code)
-{
-    /* Simple mapping - can be enhanced with a lookup table */
-    switch (unified_key_code)
-    {
-    case 0x26: return SDL_KEY_UP;
-    case 0x28: return SDL_KEY_DOWN;
-    case 0x25: return SDL_KEY_LEFT;
-    case 0x27: return SDL_KEY_RIGHT;
-    case 0x11: return SDL_KEY_CTRL;
-    case 0x12: return SDL_KEY_ALT;
-    case 0x1B: return SDL_KEY_ESCAPE;
-    case 0x6B: return SDL_KEY_KP_PLUS;
-    case 0x6D: return SDL_KEY_KP_MINUS;
-    default: return (SDL_Keycode)unified_key_code;
-    }
-}
-
-/**
- * Get unified key code for SDL2 key code
- */
-uint32_t SDL2Input_GetUnifiedKeyCode(SDL_Keycode sdl_key_code)
-{
-    /* Simple mapping - can be enhanced with a lookup table */
-    switch (sdl_key_code)
-    {
-    case SDL_KEY_UP: return 0x26;
-    case SDL_KEY_DOWN: return 0x28;
-    case SDL_KEY_LEFT: return 0x25;
-    case SDL_KEY_RIGHT: return 0x27;
-    case SDL_KEY_CTRL: return 0x11;
-    case SDL_KEY_ALT: return 0x12;
-    case SDL_KEY_ESCAPE: return 0x1B;
-    case SDL_KEY_KP_PLUS: return 0x6B;
-    case SDL_KEY_KP_MINUS: return 0x6D;
-    default: return (uint32_t)sdl_key_code;
-    }
-}
-
-/**
  * Get SDL2 input capabilities
  */
 PlatformInputCapabilities SDL2Input_GetCapabilities(void)
 {
     PlatformInputCapabilities capabilities = {0};
 
-    capabilities.has_keyboard = true;
     capabilities.has_mouse = true;
     capabilities.has_joystick = (SDL_NumJoysticks() > 0);
     capabilities.has_touch = false; /* SDL2 touch support can be added */
@@ -346,11 +274,7 @@ bool SDL2Input_SupportsFeature(const char* feature)
         return false;
     }
 
-    if (strcmp(feature, "keyboard") == 0)
-    {
-        return true;
-    }
-    else if (strcmp(feature, "mouse") == 0)
+    if (strcmp(feature, "mouse") == 0)
     {
         return true;
     }
@@ -384,17 +308,11 @@ const char* SDL2Input_GetDeviceName(InputDeviceType device_type, int device_inde
             return sdl2_input_state.joysticks[device_index].name;
         }
         break;
-
-    case INPUT_DEVICE_KEYBOARD:
-        return "SDL2 Keyboard";
-
     case INPUT_DEVICE_MOUSE:
         return "SDL2 Mouse";
-
     default:
         break;
     }
-
     return NULL;
 }
 
@@ -412,9 +330,6 @@ int SDL2Input_GetDeviceCount(InputDeviceType device_type)
     {
     case INPUT_DEVICE_JOYSTICK:
         return sdl2_input_state.joystick_count;
-
-    case INPUT_DEVICE_KEYBOARD:
-        return 1;
 
     case INPUT_DEVICE_MOUSE:
         return 1;
@@ -471,7 +386,6 @@ bool SDL2Input_IsDeviceEnabled(InputDeviceType device_type, int device_index)
         }
         return false;
 
-    case INPUT_DEVICE_KEYBOARD:
     case INPUT_DEVICE_MOUSE:
         return true; /* Always enabled in SDL2 */
 

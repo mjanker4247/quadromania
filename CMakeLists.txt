@@ -78,8 +78,8 @@ set(INPUT_SOURCES
     src/input/events_compat.h
     src/input/input_manager.c
     src/input/input_manager.h
-    src/input/keyboard_handler.c
-    src/input/keyboard_handler.h
+    # src/input/keyboard_handler.c  # Keyboard support removed
+    # src/input/keyboard_handler.h  # Keyboard support removed
     src/input/mouse_handler.c
     src/input/mouse_handler.h
     src/input/joystick_handler.c

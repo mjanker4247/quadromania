@@ -27,7 +27,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "input/input_manager.h"
-#include "input/keyboard_handler.h"
 #include "input/mouse_handler.h"
 #include "input/joystick_handler.h"
 #include "input/platform_input.h"
@@ -45,10 +44,8 @@ static struct
     MouseState mouse_state;
     DpadState dpad_state;
     bool quit_requested;
-    bool esc_pressed;
     uint8_t debounce_timer_mouse;
     uint8_t debounce_timer_dpad;
-    uint8_t debounce_timer_keyboard;
     bool device_enabled[INPUT_DEVICE_COUNT];
     PlatformInputEvent event_buffer[32];
     int event_buffer_size;
@@ -91,20 +88,11 @@ bool InputManager_Init(const InputConfig* config)
     }
 
     /* Initialize input handlers */
-    KeyMapping key_mapping = KeyboardHandler_GetDefaultMapping();
-    if (!KeyboardHandler_Init(&key_mapping))
-    {
-        LOG_ERROR("Failed to initialize keyboard handler");
-        PlatformInput_Shutdown();
-        return false;
-    }
-
     MouseButtonConfig mouse_button_config = MouseHandler_GetDefaultButtonConfig();
     MouseSensitivityConfig mouse_sensitivity_config = MouseHandler_GetDefaultSensitivityConfig();
     if (!MouseHandler_Init(&mouse_button_config, &mouse_sensitivity_config))
     {
         LOG_ERROR("Failed to initialize mouse handler");
-        KeyboardHandler_Shutdown();
         PlatformInput_Shutdown();
         return false;
     }
@@ -120,7 +108,6 @@ bool InputManager_Init(const InputConfig* config)
     memcpy(&input_manager_state.config, config, sizeof(InputConfig));
     
     /* Initialize device states */
-    input_manager_state.device_enabled[INPUT_DEVICE_KEYBOARD] = config->enable_keyboard;
     input_manager_state.device_enabled[INPUT_DEVICE_MOUSE] = config->enable_mouse;
     input_manager_state.device_enabled[INPUT_DEVICE_JOYSTICK] = config->enable_joystick;
     input_manager_state.device_enabled[INPUT_DEVICE_TOUCH] = config->enable_touch;
@@ -128,7 +115,6 @@ bool InputManager_Init(const InputConfig* config)
     /* Initialize debounce timers */
     input_manager_state.debounce_timer_mouse = INPUT_DEBOUNCE_TIMESLICES;
     input_manager_state.debounce_timer_dpad = INPUT_DEBOUNCE_TIMESLICES;
-    input_manager_state.debounce_timer_keyboard = INPUT_DEBOUNCE_TIMESLICES;
 
     /* Initialize event buffer */
     input_manager_state.event_buffer_size = 32;
@@ -168,7 +154,6 @@ void InputManager_Shutdown(void)
 
     JoystickHandler_Shutdown();
     MouseHandler_Shutdown();
-    KeyboardHandler_Shutdown();
     PlatformInput_Shutdown();
     memset(&input_manager_state, 0, sizeof(input_manager_state));
     LOG_INFO("Input manager shutdown complete");
@@ -199,27 +184,16 @@ void InputManager_ProcessEvents(void)
     for (int i = 0; i < events_processed; i++)
     {
         InputEvent* event = &input_manager_state.event_buffer[i].unified_event;
-        
         DEBUG_PRINT("Processing event %d: type=%d", i, event->type);
-        
         /* Handle quit events */
         if (event->type == INPUT_EVENT_QUIT)
         {
             input_manager_state.quit_requested = true;
             continue;
         }
-
         /* Process events based on device type */
         switch (event->type)
         {
-        case INPUT_EVENT_KEY_DOWN:
-        case INPUT_EVENT_KEY_UP:
-            if (input_manager_state.device_enabled[INPUT_DEVICE_KEYBOARD])
-            {
-                KeyboardHandler_ProcessEvent(event, &input_manager_state.dpad_state);
-            }
-            break;
-
         case INPUT_EVENT_MOUSE_DOWN:
         case INPUT_EVENT_MOUSE_UP:
         case INPUT_EVENT_MOUSE_MOVE:
@@ -233,7 +207,6 @@ void InputManager_ProcessEvents(void)
                 DEBUG_PRINT("Mouse events disabled");
             }
             break;
-
         case INPUT_EVENT_JOYSTICK_AXIS:
         case INPUT_EVENT_JOYSTICK_BUTTON_DOWN:
         case INPUT_EVENT_JOYSTICK_BUTTON_UP:
@@ -242,34 +215,12 @@ void InputManager_ProcessEvents(void)
                 JoystickHandler_ProcessEvent(event, &input_manager_state.dpad_state);
             }
             break;
-
         default:
-            DEBUG_PRINT("Unhandled event type: %d", event->type);
             break;
         }
     }
-
-    /* Update debounce timers */
-    if (input_manager_state.debounce_timer_mouse > 0)
-        input_manager_state.debounce_timer_mouse--;
-
-    if (input_manager_state.debounce_timer_dpad > 0)
-        input_manager_state.debounce_timer_dpad--;
-
-    if (input_manager_state.debounce_timer_keyboard > 0)
-        input_manager_state.debounce_timer_keyboard--;
-
-    /* Update ESC state from keyboard handler */
-    const KeyboardState* keyboard_state = KeyboardHandler_GetState();
-    if (keyboard_state)
-    {
-        input_manager_state.esc_pressed = keyboard_state->escape;
-    }
 }
 
-/**
- * Get the current mouse state
- */
 const MouseState* InputManager_GetMouseState(void)
 {
     if (!input_manager_state.initialized)
@@ -279,9 +230,6 @@ const MouseState* InputManager_GetMouseState(void)
     return &input_manager_state.mouse_state;
 }
 
-/**
- * Get the current unified directional pad state
- */
 const DpadState* InputManager_GetDpadState(void)
 {
     if (!input_manager_state.initialized)
@@ -291,48 +239,28 @@ const DpadState* InputManager_GetDpadState(void)
     return &input_manager_state.dpad_state;
 }
 
-/**
- * Check if quit was requested
- */
 bool InputManager_IsQuitRequested(void)
 {
     return input_manager_state.quit_requested;
 }
 
-/**
- * Check if ESC key was pressed
- */
-bool InputManager_IsESCPressed(void)
-{
-    return input_manager_state.esc_pressed;
-}
-
-/**
- * Debounce mouse input
- */
 void InputManager_DebounceMouse(void)
 {
     if (!input_manager_state.initialized)
     {
         return;
     }
-
     input_manager_state.mouse_state.clicked = false;
     input_manager_state.mouse_state.button = 0;
     input_manager_state.debounce_timer_mouse = INPUT_DEBOUNCE_TIMESLICES;
-    MouseHandler_ResetState();
 }
 
-/**
- * Debounce directional pad input
- */
 void InputManager_DebounceDpad(void)
 {
     if (!input_manager_state.initialized)
     {
         return;
     }
-
     input_manager_state.debounce_timer_dpad = INPUT_DEBOUNCE_TIMESLICES;
     input_manager_state.dpad_state.up = false;
     input_manager_state.dpad_state.down = false;
@@ -341,82 +269,48 @@ void InputManager_DebounceDpad(void)
     input_manager_state.dpad_state.button = false;
 }
 
-/**
- * Debounce keyboard input
- */
-void InputManager_DebounceKeyboard(void)
-{
-    if (!input_manager_state.initialized)
-    {
-        return;
-    }
-
-    input_manager_state.debounce_timer_keyboard = INPUT_DEBOUNCE_TIMESLICES;
-    input_manager_state.esc_pressed = false;
-    KeyboardHandler_ResetState();
-}
-
-/**
- * Check if any directional pad input is pressed
- */
 bool InputManager_IsDpadPressed(void)
 {
     if (!input_manager_state.initialized)
     {
         return false;
     }
-
-    return (input_manager_state.dpad_state.up || 
-            input_manager_state.dpad_state.down || 
-            input_manager_state.dpad_state.left || 
-            input_manager_state.dpad_state.right || 
+    return (input_manager_state.dpad_state.up ||
+            input_manager_state.dpad_state.down ||
+            input_manager_state.dpad_state.left ||
+            input_manager_state.dpad_state.right ||
             input_manager_state.dpad_state.button);
 }
 
-/**
- * Get the next input event from the queue
- */
 bool InputManager_GetNextEvent(InputEvent* event)
 {
     if (!input_manager_state.initialized || !event)
     {
         return false;
     }
-
     if (input_manager_state.event_buffer_head == input_manager_state.event_buffer_tail)
     {
-        return false; /* Queue is empty */
+        return false;
     }
-
     *event = input_manager_state.event_buffer[input_manager_state.event_buffer_tail].unified_event;
     input_manager_state.event_buffer_tail = (input_manager_state.event_buffer_tail + 1) % input_manager_state.event_buffer_size;
-    
     return true;
 }
 
-/**
- * Enable or disable a specific input device
- */
 void InputManager_SetDeviceEnabled(InputDeviceType device_type, bool enabled)
 {
     if (!input_manager_state.initialized || device_type >= INPUT_DEVICE_COUNT)
     {
         return;
     }
-
     input_manager_state.device_enabled[device_type] = enabled;
-    LOG_INFO("Input device %d %s", device_type, enabled ? "enabled" : "disabled");
 }
 
-/**
- * Get whether a specific input device is enabled
- */
 bool InputManager_IsDeviceEnabled(InputDeviceType device_type)
 {
     if (!input_manager_state.initialized || device_type >= INPUT_DEVICE_COUNT)
     {
         return false;
     }
-
     return input_manager_state.device_enabled[device_type];
 } 

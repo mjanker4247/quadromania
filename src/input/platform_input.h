@@ -49,7 +49,6 @@ typedef struct
  */
 typedef struct
 {
-    bool has_keyboard;
     bool has_mouse;
     bool has_joystick;
     bool has_touch;
@@ -113,20 +112,6 @@ int PlatformInput_ProcessEvents(PlatformInputEvent* event_buffer, int buffer_siz
  * @return true if conversion was successful
  */
 bool PlatformInput_ConvertEvent(const void* platform_event, InputEvent* unified_event);
-
-/**
- * Get platform-specific key code for unified key code
- * @param unified_key_code Unified key code
- * @return Platform-specific key code
- */
-uint32_t PlatformInput_GetPlatformKeyCode(uint32_t unified_key_code);
-
-/**
- * Get unified key code for platform-specific key code
- * @param platform_key_code Platform-specific key code
- * @return Unified key code
- */
-uint32_t PlatformInput_GetUnifiedKeyCode(uint32_t platform_key_code);
 
 /**
  * Set platform-specific input configuration
