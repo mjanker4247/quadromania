@@ -285,7 +285,7 @@ JoystickHandler_SetButtonConfig(&button_config);
 
 ## File Structure
 
-```
+```text
 src/input/
 ├── events.h/c                    # Original event API (deprecated)
 ├── events_compat.h/c             # Compatibility layer
