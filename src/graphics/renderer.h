@@ -68,6 +68,10 @@ extern "C" {
 	Uint16 Graphics_GetScreenWidth(void);
 	Uint16 Graphics_GetScreenHeight(void);
 	Uint16 Graphics_GetFontHeight(void);
+	Uint16 Graphics_ScaleX(Uint16 logical_x);
+	Uint16 Graphics_ScaleY(Uint16 logical_y);
+	Uint16 Graphics_ScaleWidth(Uint16 logical_width);
+	Uint16 Graphics_ScaleHeight(Uint16 logical_height);
 	SDL_Surface* Graphics_LoadGraphicsResource(char*);
 	void Graphics_SetWindowIcon(void);
 

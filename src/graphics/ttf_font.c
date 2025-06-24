@@ -94,12 +94,27 @@ void TTF_Font_CleanUp(void)
 
 void TTF_Font_DrawText(SDL_Renderer *renderer, Uint16 x, Uint16 y, char *text)
 {
+    // Get window size for scaling
+    int window_width, window_height;
+    SDL_GetWindowSize(SDL_RenderGetWindow(renderer), &window_width, &window_height);
+    
+    // Calculate scale factor
+    float scale_x = (float)window_width / 640.0f;
+    float scale_y = (float)window_height / 480.0f;
+    float scale = (scale_x < scale_y) ? scale_x : scale_y; // Use the smaller scale to maintain aspect ratio
+    
     // First draw a semi-transparent dark background
     SDL_Rect bg;
     bg.x = x - 5;  // Add some padding
     bg.y = y - 2;
     bg.w = TTF_Font_GetTextWidth(text) + 10;  // Add padding on both sides
     bg.h = font_height + 4;  // Add padding top and bottom
+    
+    // Scale the background
+    bg.x = (int)(bg.x * scale_x);
+    bg.y = (int)(bg.y * scale_y);
+    bg.w = (int)(bg.w * scale_x);
+    bg.h = (int)(bg.h * scale_y);
     
     // Set blend mode for transparency
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
@@ -126,8 +141,13 @@ void TTF_Font_DrawText(SDL_Renderer *renderer, Uint16 x, Uint16 y, char *text)
         return;
     }
     
-    // Draw the text
-    SDL_Rect text_rect = {x, y, text_surface->w, text_surface->h};
+    // Draw the text with scaling
+    SDL_Rect text_rect = {
+        (int)(x * scale_x), 
+        (int)(y * scale_y), 
+        (int)(text_surface->w * scale_x), 
+        (int)(text_surface->h * scale_y)
+    };
     SDL_RenderCopy(renderer, text_texture, NULL, &text_rect);
     
     // Clean up

@@ -70,8 +70,8 @@ void Graphics_DrawBackground(Uint8 texture)
 	Uint8 i, j;
 	SDL_Rect src, dest;
 
-	const Uint8 x_blits = (SCREEN_WIDTH / texture_width);
-	const Uint8 y_blits = (SCREEN_HEIGHT / texture_height);
+	const Uint8 x_blits = (Graphics_GetScreenWidth() / texture_width);
+	const Uint8 y_blits = (Graphics_GetScreenHeight() / texture_height);
 
 	/* draw the textured background... */
 	for (j = 0; j < y_blits; j++)
@@ -81,10 +81,10 @@ void Graphics_DrawBackground(Uint8 texture)
 			src.y = 0;
 			src.w = texture_width;
 			src.h = texture_height;
-			dest.x = i * texture_width;
-			dest.y = j * texture_height;
-			dest.w = texture_width;  /* Set destination width */
-			dest.h = texture_height; /* Set destination height */
+			dest.x = Graphics_ScaleX(i * texture_width);
+			dest.y = Graphics_ScaleY(j * texture_height);
+			dest.w = Graphics_ScaleWidth(texture_width);
+			dest.h = Graphics_ScaleHeight(texture_height);
 			SDL_RenderCopy(renderer, textures, &src, &dest);
 		}
 }
@@ -100,10 +100,10 @@ void Graphics_DrawDot(Uint16 x, Uint16 y, Uint8 number)
 	src.y = 0;
 	src.w = dot_width;
 	src.h = dot_height;
-	dest.x = x;
-	dest.y = y;
-	dest.w = dot_width;  /* Set destination width */
-	dest.h = dot_height; /* Set destination height */
+	dest.x = Graphics_ScaleX(x);
+	dest.y = Graphics_ScaleY(y);
+	dest.w = Graphics_ScaleWidth(dot_width);
+	dest.h = Graphics_ScaleHeight(dot_height);
 	SDL_RenderCopy(renderer, dots, &src, &dest);
 }
 
@@ -118,10 +118,10 @@ void Graphics_DrawTitle()
 	src.y = 0;
 	src.w = title_width;
 	src.h = title_height;
-	dest.x = ((SCREEN_WIDTH / 2) - (title_width / 2));
-	dest.y = dot_height;
-	dest.w = title_width;
-	dest.h = title_height;
+	dest.x = Graphics_ScaleX((Graphics_GetScreenWidth() / 2) - (title_width / 2));
+	dest.y = Graphics_ScaleY(Graphics_GetDotHeight());
+	dest.w = Graphics_ScaleWidth(title_width);
+	dest.h = Graphics_ScaleHeight(title_height);
 	SDL_RenderCopy(renderer, title, &src, &dest);
 
 	// Draw the copyright image
@@ -129,10 +129,10 @@ void Graphics_DrawTitle()
 	src.y = 0;
 	src.w = copyright_width;
 	src.h = copyright_height;
-	dest.x = ((SCREEN_WIDTH / 2) - (copyright_width / 2));
-	dest.y = ((SCREEN_HEIGHT * 120) / 480);
-	dest.w = copyright_width;
-	dest.h = copyright_height;
+	dest.x = Graphics_ScaleX((Graphics_GetScreenWidth() / 2) - (copyright_width / 2));
+	dest.y = Graphics_ScaleY((Graphics_GetScreenHeight() * 120) / 480);
+	dest.w = Graphics_ScaleWidth(copyright_width);
+	dest.h = Graphics_ScaleHeight(copyright_height);
 	SDL_RenderCopy(renderer, copyright, &src, &dest);
 
 }
@@ -236,8 +236,8 @@ void Graphics_DrawOuterFrame()
 	src.h = frame_height;
 	dest.x = 0;
 	dest.y = 0;
-	dest.w = SCREEN_WIDTH;  /* Use logical screen width */
-	dest.h = SCREEN_HEIGHT; /* Use logical screen height */
+	dest.w = Graphics_ScaleWidth(Graphics_GetScreenWidth());
+	dest.h = Graphics_ScaleHeight(Graphics_GetScreenHeight());
 	SDL_RenderCopy(renderer, frame, &src, &dest);
 }
 
@@ -246,7 +246,7 @@ void Graphics_DrawOuterFrame()
  */
 void Graphics_DrawText(Uint16 x, Uint16 y, char *text)
 {
-	TTF_Font_DrawText(renderer, x, y, text);
+	TTF_Font_DrawText(renderer, Graphics_ScaleX(x), Graphics_ScaleY(y), text);
 }
 
 /**
@@ -433,7 +433,7 @@ bool Graphics_Init(bool set_fullscreen)
 	DEBUG_PRINT("Textures: %dx%d (each texture: %dx%d)", w, h, texture_width, texture_height);
 	
 	SDL_QueryTexture(title, NULL, NULL, &w, &h);
-	title_width = (Uint16)(w / NR_OF_TEXTURES);
+	title_width = (Uint16)w;
 	title_height = (Uint16)h;
 	DEBUG_PRINT("Title: %dx%d (each title: %dx%d)", w, h, texture_width, texture_height);
 
@@ -554,10 +554,8 @@ Uint16 Graphics_GetDotHeight()
  */
 Uint16 Graphics_GetScreenWidth()
 {
-	int w, h;
-	SDL_GetWindowSize(window, &w, &h);
-	/* Return the logical width (320) instead of the physical window width */
-	return w;
+	/* Return logical width - the game was designed for 640x480 */
+	return 640;
 }
 
 /**
@@ -565,10 +563,8 @@ Uint16 Graphics_GetScreenWidth()
  */
 Uint16 Graphics_GetScreenHeight()
 {
-	int w, h;
-	SDL_GetWindowSize(window, &w, &h);
-	/* Return the logical height (240) instead of the physical window height */
-	return h;
+	/* Return logical height - the game was designed for 640x480 */
+	return 480;
 }
 
 /**
@@ -577,6 +573,46 @@ Uint16 Graphics_GetScreenHeight()
 Uint16 Graphics_GetFontHeight()
 {
 	return font_height;
+}
+
+/**
+ * Convert logical X coordinate to actual screen X coordinate
+ */
+Uint16 Graphics_ScaleX(Uint16 logical_x)
+{
+	int window_width, window_height;
+	SDL_GetWindowSize(window, &window_width, &window_height);
+	return (logical_x * window_width) / 640;
+}
+
+/**
+ * Convert logical Y coordinate to actual screen Y coordinate
+ */
+Uint16 Graphics_ScaleY(Uint16 logical_y)
+{
+	int window_width, window_height;
+	SDL_GetWindowSize(window, &window_width, &window_height);
+	return (logical_y * window_height) / 480;
+}
+
+/**
+ * Convert logical width to actual screen width
+ */
+Uint16 Graphics_ScaleWidth(Uint16 logical_width)
+{
+	int window_width, window_height;
+	SDL_GetWindowSize(window, &window_width, &window_height);
+	return (logical_width * window_width) / 640;
+}
+
+/**
+ * Convert logical height to actual screen height
+ */
+Uint16 Graphics_ScaleHeight(Uint16 logical_height)
+{
+	int window_width, window_height;
+	SDL_GetWindowSize(window, &window_width, &window_height);
+	return (logical_height * window_height) / 480;
 }
 
 /**
