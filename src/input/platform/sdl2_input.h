@@ -43,25 +43,10 @@ typedef struct
 } SDL2InputEvent;
 
 /**
- * SDL2 joystick device information
- */
-typedef struct
-{
-    SDL_Joystick* joystick;
-    char name[256];
-    bool enabled;
-    int button_count;
-    int axis_count;
-    int hat_count;
-} SDL2JoystickDevice;
-
-/**
  * SDL2 input system state
  */
 typedef struct
 {
-    SDL2JoystickDevice* joysticks;
-    int joystick_count;
     bool initialized;
     PlatformInputConfig config;
     SDL_Renderer* renderer;  /* For coordinate conversion */
@@ -169,42 +154,5 @@ bool SDL2Input_SetDeviceEnabled(InputDeviceType device_type, int device_index, b
  * @return true if device is enabled
  */
 bool SDL2Input_IsDeviceEnabled(InputDeviceType device_type, int device_index);
-
-/**
- * Get SDL2 joystick device by index
- * @param index Joystick index
- * @return Pointer to joystick device or NULL if not found
- */
-SDL2JoystickDevice* SDL2Input_GetJoystickDevice(int index);
-
-/**
- * Initialize SDL2 joystick devices
- * @return true on success, false on failure
- */
-bool SDL2Input_InitJoysticks(void);
-
-/**
- * Open SDL2 joystick by index
- * @param index Joystick index
- * @return true on success, false on failure
- */
-bool SDL2Input_OpenJoystick(int index);
-
-/**
- * Shutdown SDL2 joystick devices
- */
-void SDL2Input_ShutdownJoysticks(void);
-
-/**
- * Handle SDL2 joystick addition event
- * @param device_index Device index of added joystick
- */
-void SDL2Input_HandleJoystickAdded(int device_index);
-
-/**
- * Handle SDL2 joystick removal event
- * @param device_index Device index of removed joystick
- */
-void SDL2Input_HandleJoystickRemoved(int device_index);
 
 #endif /* __SDL2_INPUT_H */ 

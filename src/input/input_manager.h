@@ -62,7 +62,6 @@ typedef struct
 typedef enum
 {
     INPUT_DEVICE_MOUSE,
-    INPUT_DEVICE_JOYSTICK,
     INPUT_DEVICE_TOUCH,
     INPUT_DEVICE_COUNT
 } InputDeviceType;
@@ -76,9 +75,6 @@ typedef enum
     INPUT_EVENT_MOUSE_MOVE,
     INPUT_EVENT_MOUSE_DOWN,
     INPUT_EVENT_MOUSE_UP,
-    INPUT_EVENT_JOYSTICK_AXIS,
-    INPUT_EVENT_JOYSTICK_BUTTON_DOWN,
-    INPUT_EVENT_JOYSTICK_BUTTON_UP,
     INPUT_EVENT_QUIT,
     INPUT_EVENT_COUNT
 } InputEventType;
@@ -96,15 +92,6 @@ typedef struct
             uint16_t x, y;
             uint8_t button;
         } mouse;
-        struct
-        {
-            uint8_t axis;
-            int16_t value;
-        } joystick_axis;
-        struct
-        {
-            uint8_t button;
-        } joystick_button;
     } data;
 } InputEvent;
 
@@ -114,7 +101,6 @@ typedef struct
 typedef struct
 {
     bool enable_mouse;
-    bool enable_joystick;
     bool enable_touch;
     uint8_t debounce_time;
 } InputConfig;

@@ -76,17 +76,6 @@ bool state_manager_process_transitions(game_state_context_t *context)
     /* Process input events */
     Event_ProcessInput();
     
-    /* Handle global events that can cause state transitions */
-    if (Event_IsESCPressed()) {
-        if (context->current_state == GAME_STATE_GAME || 
-            context->current_state == GAME_STATE_SHOW_HIGHSCORES) {
-            state_manager_transition_to(context, GAME_STATE_TITLE);
-        } else {
-            state_manager_transition_to(context, GAME_STATE_QUIT);
-        }
-        Event_DebounceKeys();
-    }
-    
     if (Event_QuitRequested()) {
         state_manager_transition_to(context, GAME_STATE_QUIT);
     }

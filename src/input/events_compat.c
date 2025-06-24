@@ -39,18 +39,9 @@ static struct
 {
     bool initialized;
     MOUSE mouse;
-    DPAD dpad;
-    DPAD key;
-    DPAD joystick;
     bool ESCpressed;
     bool QUITrequest;
     Uint8 debounce_tmr_mouse;
-    Uint8 debounce_tmr_keys;
-    Uint8 debounce_tmr_dpad;
-#if(HAVE_JOYSTICK != _NO_JOYSTICK)
-    Uint8 debounce_tmr_joystick;
-    SDL_Joystick *CurrentJoystick;
-#endif
 } compat_state = {0};
 
 /*************
@@ -76,7 +67,6 @@ void Event_Init(void)
     /* Initialize input manager with default configuration */
     InputConfig config = {
         .enable_mouse = true,
-        .enable_joystick = true,
         .enable_touch = false,
         .debounce_time = Event_Debounce_timeslices
     };
@@ -93,28 +83,9 @@ void Event_Init(void)
     compat_state.mouse.button = 0;
     compat_state.mouse.clicked = false;
     compat_state.debounce_tmr_mouse = Event_Debounce_timeslices;
-    compat_state.debounce_tmr_keys = Event_Debounce_timeslices;
-    compat_state.debounce_tmr_dpad = Event_Debounce_timeslices;
-
-    compat_state.key.up = false;
-    compat_state.key.down = false;
-    compat_state.key.left = false;
-    compat_state.key.right = false;
-    compat_state.key.button = false;
-
-    compat_state.joystick.up = false;
-    compat_state.joystick.down = false;
-    compat_state.joystick.left = false;
-    compat_state.joystick.right = false;
-    compat_state.joystick.button = false;
 
     compat_state.ESCpressed = false;
     compat_state.QUITrequest = false;
-
-#if(HAVE_JOYSTICK != _NO_JOYSTICK)
-    compat_state.debounce_tmr_joystick = 0;
-    compat_state.CurrentJoystick = NULL;
-#endif
 
     compat_state.initialized = true;
     LOG_INFO("Compatibility event system initialized successfully");
@@ -135,7 +106,6 @@ void Event_ProcessInput(void)
 
     /* Update compatibility state from new input manager */
     const MouseState* mouse_state = InputManager_GetMouseState();
-    const DpadState* dpad_state = InputManager_GetDpadState();
 
     if (mouse_state)
     {
@@ -163,29 +133,6 @@ void Event_ProcessInput(void)
         }
     }
 
-    if (dpad_state)
-    {
-        /* Update unified dpad state */
-        compat_state.dpad.up = dpad_state->up;
-        compat_state.dpad.down = dpad_state->down;
-        compat_state.dpad.left = dpad_state->left;
-        compat_state.dpad.right = dpad_state->right;
-        compat_state.dpad.button = dpad_state->button;
-
-        /* Update individual device states (for backward compatibility) */
-        compat_state.key.up = dpad_state->up;
-        compat_state.key.down = dpad_state->down;
-        compat_state.key.left = dpad_state->left;
-        compat_state.key.right = dpad_state->right;
-        compat_state.key.button = dpad_state->button;
-
-        compat_state.joystick.up = dpad_state->up;
-        compat_state.joystick.down = dpad_state->down;
-        compat_state.joystick.left = dpad_state->left;
-        compat_state.joystick.right = dpad_state->right;
-        compat_state.joystick.button = dpad_state->button;
-    }
-
     /* Update quit and ESC states */
     compat_state.QUITrequest = InputManager_IsQuitRequested();
 
@@ -193,16 +140,6 @@ void Event_ProcessInput(void)
     if (compat_state.debounce_tmr_mouse > 0)
         compat_state.debounce_tmr_mouse--;
 
-    if (compat_state.debounce_tmr_keys > 0)
-        compat_state.debounce_tmr_keys--;
-
-    if (compat_state.debounce_tmr_dpad > 0)
-        compat_state.debounce_tmr_dpad--;
-
-#if(HAVE_JOYSTICK != _NO_JOYSTICK)
-    if (compat_state.debounce_tmr_joystick > 0)
-        compat_state.debounce_tmr_joystick--;
-#endif
 }
 
 /**
@@ -254,75 +191,6 @@ bool Event_MouseClicked(void)
 }
 
 /**
- * Get directional pad up state
- */
-bool Event_GetDpadUp(void)
-{
-    return compat_state.dpad.up;
-}
-
-/**
- * Get directional pad down state
- */
-bool Event_GetDpadDown(void)
-{
-    return compat_state.dpad.down;
-}
-
-/**
- * Get directional pad left state
- */
-bool Event_GetDpadLeft(void)
-{
-    return compat_state.dpad.left;
-}
-
-/**
- * Get directional pad right state
- */
-bool Event_GetDpadRight(void)
-{
-    return compat_state.dpad.right;
-}
-
-/**
- * Get directional pad button state
- */
-bool Event_GetDpadButton(void)
-{
-    return compat_state.dpad.button;
-}
-
-/**
- * Check if any directional pad input is pressed
- */
-bool Event_IsDpadPressed(void)
-{
-    return (compat_state.dpad.up || compat_state.dpad.down || 
-            compat_state.dpad.left || compat_state.dpad.right || 
-            compat_state.dpad.button);
-}
-
-/**
- * Debounce directional pad input
- */
-void Event_DebounceDpad(void)
-{
-    if (!compat_state.initialized)
-    {
-        return;
-    }
-
-    InputManager_DebounceDpad();
-    compat_state.debounce_tmr_dpad = Event_Debounce_timeslices;
-    compat_state.dpad.up = false;
-    compat_state.dpad.down = false;
-    compat_state.dpad.left = false;
-    compat_state.dpad.right = false;
-    compat_state.dpad.button = false;
-}
-
-/**
  * Debounce mouse input
  */
 void Event_DebounceMouse(void)
@@ -337,45 +205,3 @@ void Event_DebounceMouse(void)
     compat_state.mouse.button = 0;
     compat_state.debounce_tmr_mouse = Event_Debounce_timeslices;
 }
-
-/**
- * Debounce keyboard input
- */
-void Event_DebounceKeys(void)
-{
-    if (!compat_state.initialized)
-    {
-        return;
-    }
-
-    compat_state.debounce_tmr_keys = Event_Debounce_timeslices;
-    compat_state.ESCpressed = false;
-    compat_state.key.up = false;
-    compat_state.key.down = false;
-    compat_state.key.left = false;
-    compat_state.key.right = false;
-    compat_state.key.button = false;
-}
-
-#if(HAVE_JOYSTICK != _NO_JOYSTICK)
-/**
- * Initialize joystick support
- */
-void Joystick_Init(void)
-{
-    if (!compat_state.initialized)
-    {
-        return;
-    }
-
-    compat_state.joystick.up = false;
-    compat_state.joystick.down = false;
-    compat_state.joystick.left = false;
-    compat_state.joystick.right = false;
-    compat_state.joystick.button = false;
-    compat_state.debounce_tmr_joystick = 0;
-    compat_state.CurrentJoystick = NULL;
-
-    LOG_INFO("Compatibility joystick support initialized");
-}
-#endif 

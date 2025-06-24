@@ -28,7 +28,6 @@
 #include <string.h>
 #include "input/input_manager.h"
 #include "input/mouse_handler.h"
-#include "input/joystick_handler.h"
 #include "input/platform_input.h"
 #include "utils/logger.h"
 
@@ -42,10 +41,8 @@ static struct
     bool initialized;
     InputConfig config;
     MouseState mouse_state;
-    DpadState dpad_state;
     bool quit_requested;
     uint8_t debounce_timer_mouse;
-    uint8_t debounce_timer_dpad;
     bool device_enabled[INPUT_DEVICE_COUNT];
     PlatformInputEvent event_buffer[32];
     int event_buffer_size;
@@ -97,24 +94,15 @@ bool InputManager_Init(const InputConfig* config)
         return false;
     }
 
-    JoystickAxisConfig joystick_axis_config = JoystickHandler_GetDefaultAxisConfig(JOYSTICK_PLATFORM_DEFAULT);
-    JoystickButtonConfig joystick_button_config = JoystickHandler_GetDefaultButtonConfig(JOYSTICK_PLATFORM_DEFAULT);
-    if (!JoystickHandler_Init(JOYSTICK_PLATFORM_DEFAULT, &joystick_axis_config, &joystick_button_config))
-    {
-        DEBUG_PRINT("Failed to initialize joystick handler (continuing without joystick support)");
-    }
-
     /* Initialize input manager state */
     memcpy(&input_manager_state.config, config, sizeof(InputConfig));
     
     /* Initialize device states */
     input_manager_state.device_enabled[INPUT_DEVICE_MOUSE] = config->enable_mouse;
-    input_manager_state.device_enabled[INPUT_DEVICE_JOYSTICK] = config->enable_joystick;
     input_manager_state.device_enabled[INPUT_DEVICE_TOUCH] = config->enable_touch;
 
     /* Initialize debounce timers */
     input_manager_state.debounce_timer_mouse = INPUT_DEBOUNCE_TIMESLICES;
-    input_manager_state.debounce_timer_dpad = INPUT_DEBOUNCE_TIMESLICES;
 
     /* Initialize event buffer */
     input_manager_state.event_buffer_size = 32;
@@ -152,7 +140,6 @@ void InputManager_Shutdown(void)
         return;
     }
 
-    JoystickHandler_Shutdown();
     MouseHandler_Shutdown();
     PlatformInput_Shutdown();
     memset(&input_manager_state, 0, sizeof(input_manager_state));
@@ -185,12 +172,14 @@ void InputManager_ProcessEvents(void)
     {
         InputEvent* event = &input_manager_state.event_buffer[i].unified_event;
         DEBUG_PRINT("Processing event %d: type=%d", i, event->type);
+        
         /* Handle quit events */
         if (event->type == INPUT_EVENT_QUIT)
         {
             input_manager_state.quit_requested = true;
             continue;
         }
+
         /* Process events based on device type */
         switch (event->type)
         {
@@ -207,14 +196,7 @@ void InputManager_ProcessEvents(void)
                 DEBUG_PRINT("Mouse events disabled");
             }
             break;
-        case INPUT_EVENT_JOYSTICK_AXIS:
-        case INPUT_EVENT_JOYSTICK_BUTTON_DOWN:
-        case INPUT_EVENT_JOYSTICK_BUTTON_UP:
-            if (input_manager_state.device_enabled[INPUT_DEVICE_JOYSTICK])
-            {
-                JoystickHandler_ProcessEvent(event, &input_manager_state.dpad_state);
-            }
-            break;
+
         default:
             break;
         }
@@ -228,15 +210,6 @@ const MouseState* InputManager_GetMouseState(void)
         return NULL;
     }
     return &input_manager_state.mouse_state;
-}
-
-const DpadState* InputManager_GetDpadState(void)
-{
-    if (!input_manager_state.initialized)
-    {
-        return NULL;
-    }
-    return &input_manager_state.dpad_state;
 }
 
 bool InputManager_IsQuitRequested(void)
@@ -253,33 +226,6 @@ void InputManager_DebounceMouse(void)
     input_manager_state.mouse_state.clicked = false;
     input_manager_state.mouse_state.button = 0;
     input_manager_state.debounce_timer_mouse = INPUT_DEBOUNCE_TIMESLICES;
-}
-
-void InputManager_DebounceDpad(void)
-{
-    if (!input_manager_state.initialized)
-    {
-        return;
-    }
-    input_manager_state.debounce_timer_dpad = INPUT_DEBOUNCE_TIMESLICES;
-    input_manager_state.dpad_state.up = false;
-    input_manager_state.dpad_state.down = false;
-    input_manager_state.dpad_state.left = false;
-    input_manager_state.dpad_state.right = false;
-    input_manager_state.dpad_state.button = false;
-}
-
-bool InputManager_IsDpadPressed(void)
-{
-    if (!input_manager_state.initialized)
-    {
-        return false;
-    }
-    return (input_manager_state.dpad_state.up ||
-            input_manager_state.dpad_state.down ||
-            input_manager_state.dpad_state.left ||
-            input_manager_state.dpad_state.right ||
-            input_manager_state.dpad_state.button);
 }
 
 bool InputManager_GetNextEvent(InputEvent* event)

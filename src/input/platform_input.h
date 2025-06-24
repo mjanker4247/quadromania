@@ -50,11 +50,9 @@ typedef struct
 typedef struct
 {
     bool has_mouse;
-    bool has_joystick;
     bool has_touch;
     bool has_accelerometer;
     bool has_gyroscope;
-    int max_joysticks;
     int max_touch_points;
 } PlatformInputCapabilities;
 
