@@ -121,6 +121,7 @@ void Graphics_DrawTitle()
 {
 	SDL_Rect src, dest;
 
+	/* Draw the title image */
 	src.x = 0;
 	src.y = 0;
 	src.w = title_width;
@@ -131,17 +132,16 @@ void Graphics_DrawTitle()
 	dest.h = Graphics_ScaleHeight(title_height);
 	SDL_RenderCopy(renderer, title, &src, &dest);
 
-	// Draw the copyright image
+	/* Draw the copyright image below the title */
 	src.x = 0;
 	src.y = 0;
 	src.w = copyright_width;
 	src.h = copyright_height;
 	dest.x = Graphics_ScaleX((Graphics_GetScreenWidth() / 2) - (copyright_width / 2));
-	dest.y = Graphics_ScaleY((Graphics_GetScreenHeight() * 120) / 480);
+	dest.y = Graphics_ScaleY(Graphics_GetDotHeight() + title_height); /* Position below title with spacing */
 	dest.w = Graphics_ScaleWidth(copyright_width);
 	dest.h = Graphics_ScaleHeight(copyright_height);
 	SDL_RenderCopy(renderer, copyright, &src, &dest);
-
 }
 
 /**
@@ -443,6 +443,12 @@ bool Graphics_Init(bool set_fullscreen)
 	title_width = (Uint16)w;
 	title_height = (Uint16)h;
 	DEBUG_PRINT("Title: %dx%d", w, h);
+
+	/* Set copyright dimensions */
+	SDL_QueryTexture(copyright, NULL, NULL, &w, &h);
+	copyright_width = (Uint16)w;
+	copyright_height = (Uint16)h;
+	DEBUG_PRINT("Copyright: %dx%d", w, h);
 
 	SDL_QueryTexture(font, NULL, NULL, &w, &h);
 	font_height = (Uint16)h;
