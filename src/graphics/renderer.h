@@ -29,11 +29,11 @@
 extern "C" {
 #endif
 
-#include <SDL2/SDL.h>
-#include "datatypes.h"
-#include "version.h"
-#include "sysconfig.h"
-#include "boolean.h"
+#include <SDL.h>
+#include <stdbool.h>
+#include "common/datatypes.h"
+#include "common/version.h"
+#include "common/sysconfig.h"
 
 	/************
 	 * DEFINES  *
@@ -62,7 +62,7 @@ extern "C" {
 	void Graphics_DrawWinMessage(void);
 	void Graphics_DrawGameoverMessage(void);
 	void Graphics_ListHighscores(Uint16 nr_of_table);
-	BOOLEAN Graphics_Init(BOOLEAN);
+	bool Graphics_Init(bool);
 	void Graphics_UpdateScreen(void);
 	void Graphics_CleanUp(void);
 	Uint16 Graphics_GetDotWidth(void);

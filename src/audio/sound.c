@@ -23,23 +23,22 @@
  *
  */
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "sysconfig.h"
-#include "sound.h"
-#include "datatypes.h"
-#include "boolean.h"
-#include "debug.h"
+#include "common/sysconfig.h"
+#include "audio/sound.h"
+#include "common/datatypes.h"
+#include "utils/logger.h"
 
 #if(HAVE_AUDIO == 1)
-#include <SDL2/SDL_mixer.h>
+#include <SDL_mixer.h>
 #endif
 
 /* data structures... */
-BOOLEAN sound_initialized = FALSE;
+bool sound_initialized = false;
 /* the current mixer volume */
 Uint8 sound_volume;
 
@@ -99,7 +98,7 @@ void Sound_Init()
 		if (music != NULL)
 			Mix_PlayMusic(music, -1);
 
-		sound_initialized = TRUE;
+		sound_initialized = true;
 	}
 
 	atexit(Sound_Exit);
@@ -120,14 +119,14 @@ void Sound_Exit()
 
 	Mix_CloseAudio();
 #endif
-	sound_initialized = FALSE;
+	sound_initialized = false;
 	return;
 }
 
 /* play a sound by symbolic name */
 void Sound_PlayEffect(SoundEffect snd)
 {
-	if (sound_initialized == TRUE)
+	if (sound_initialized == true)
 	{
 #if(HAVE_AUDIO == 1)
 		switch (snd)

@@ -24,13 +24,13 @@
  */
 
 /* for data types... */
-#include "datatypes.h"
+#include "common/datatypes.h"
 
-#include "random.h"
-#include "graphics.h"
-#include "quadromania.h"
-#include "boolean.h"
-#include "version.h"
+#include "utils/random.h"
+#include "graphics/renderer.h"
+#include "core/game.h"
+#include "common/boolean.h"
+#include "common/version.h"
 
 /*************
  * CONSTANTS *
@@ -124,9 +124,9 @@ void Quadromania_DrawPlayfield()
 }
 
 /* this function tells you wether you have won or not... */
-BOOLEAN Quadromania_IsGameWon()
+bool Quadromania_IsGameWon()
 {
-	BOOLEAN ok = TRUE;
+	bool ok = true;
 	Uint8 i, j;
 
 	for (i = 0; i < 18; i++)
@@ -135,12 +135,12 @@ BOOLEAN Quadromania_IsGameWon()
 		{
 			if (playfield[i][j] != Quadromania_Basecolor)
 			{
-				ok = FALSE;
+				ok = false;
 				break;
 			}
 		}
 		/* break out of the loops if not won.... */
-		if (ok == FALSE)
+		if (ok == false)
 			break;
 	}
 
@@ -148,15 +148,15 @@ BOOLEAN Quadromania_IsGameWon()
 }
 
 /* this function tells if the player hit the turn limit */
-BOOLEAN Quadromania_IsTurnLimithit()
+bool Quadromania_IsTurnLimithit()
 {
-    return((BOOLEAN)(turns>limit));
+    return((bool)(turns>limit));
 }
 
 /* Return percentage of solutions (turns to limit ratio)*100 */
 Uint32 Quadromania_GetPercentOfSolution()
 {
-	if(Quadromania_IsTurnLimithit()==TRUE)
+	if(Quadromania_IsTurnLimithit()==true)
 	{
 		return(0);
 	}

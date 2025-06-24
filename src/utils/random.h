@@ -2,8 +2,8 @@
  * Quadromania
  * (c) 2002/2003/2009/2010 by Matthias Arndt <marndt@asmsoftware.de> / ASM Software
  *
- * File: quadromania.h - header file for the game logic module
- * last Modified: 06.03.2010 : 11:28
+ * File: random.h - header files for the random number generator
+ * last Modified: 09.02.2010 : 17:38
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,21 +22,15 @@
  * THIS SOFTWARE IS SUPPLIED AS IT IS WITHOUT ANY WARRANTY!
  *
  */
+#ifndef __RANDOM_H
+	#define __RANDOM_H
 
-#ifndef __QUADROMANIA_H
-	#define __QUADROMANIA_H
-	#include "boolean.h"
+	#include "common/datatypes.h"
 
 	/**************
 	 * PROTOTYPES *
 	 **************/
 
-	void Quadromania_ClearPlayfield(void);
-	void Quadromania_InitPlayfield(Uint16, Uint8);
-	void Quadromania_Rotate(Uint32, Uint32);
-	void Quadromania_DrawPlayfield(void);
-	BOOLEAN Quadromania_IsGameWon(void);
-	BOOLEAN Quadromania_IsTurnLimithit(void);
-	Uint32 Quadromania_GetPercentOfSolution(void);
-	Uint16 Quadromania_GetRotationsPerLevel(Uint8);
+	void Random_InitSeed(void);
+	Uint32 Random_GetRandom(void);
 #endif

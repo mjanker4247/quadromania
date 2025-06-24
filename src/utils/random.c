@@ -23,9 +23,9 @@
  *
  */
 
-#include "datatypes.h"
+#include "common/datatypes.h"
 #include <time.h>
-#include "random.h"
+#include "utils/random.h"
 /* This is a simple custom pseudorandom number generator. It's not a very
  good one, but it's sufficient for our purposes. Never trust the rand()
  included with the C library. Its quality varies between implementations,

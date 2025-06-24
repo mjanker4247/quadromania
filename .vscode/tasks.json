@@ -4,16 +4,27 @@
         {
             "label": "clean",
             "type": "shell",
-            "command": "rm -rf ${workspaceFolder}/build ${workspaceFolder}/bin",
+            "command": "rm -rf ${workspaceFolder}/build",
             "presentation": {
                 "reveal": "always",
                 "panel": "shared"
             }
         },
         {
+            "label": "configure",
+            "type": "shell",
+            "command": "cmake --preset=default",
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
             "label": "build",
             "type": "shell",
-            "command": "cd ${workspaceFolder} && rm -rf build && mkdir build && cd build && cmake .. && make",
+            "command": "cmake --build --preset=default",
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -22,7 +33,8 @@
                 "reveal": "always",
                 "panel": "shared"
             },
-            "problemMatcher": "$gcc"
+            "problemMatcher": "$gcc",
+            "dependsOn": "configure"
         },
         {
             "label": "package",
@@ -49,12 +61,12 @@
         {
             "label": "run",
             "type": "shell",
-            "command": "${workspaceFolder}/bin/quadromania",
+            "command": "${workspaceFolder}/build/quadromania",
             "group": {
                 "kind": "test",
                 "isDefault": false
             },
-            "dependsOn": "build and package"
+            "dependsOn": "build"
         }
     ]
 } 

@@ -2,8 +2,8 @@
  * Quadromania
  * (c) 2002/2003/2009/2010 by Matthias Arndt <marndt@asmsoftware.de> / ASM Software
  *
- * File: gui.h - header file for the GUI handling
- * last Modified: 06.03.2010 : 11:32
+ * File: quadromania.h - header file for the game logic module
+ * last Modified: 06.03.2010 : 11:28
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,41 +23,23 @@
  *
  */
 
-#ifndef __GUI_H
-#define __GUI_H
+#ifndef __QUADROMANIA_H
+	#define __QUADROMANIA_H
 
-	#include "datatypes.h"
-
-	/************
-	 * DEFINES  *
-	 ************/
-
-	#define MAX_NR_OF_MENU_ENTRIES 10
-
-	/***************
-	 * DATA TYPES  *
-	 ***************/
-
-	typedef enum GUI_MenuEntries {
-		MENU_UNDEFINED = 0,
-		MENU_START_GAME = 1,
-		MENU_CHANGE_NR_OF_COLORS = 2,
-		MENU_CHANGE_NR_OF_ROTATIONS = 3,
-		MENU_INSTRUCTIONS = 4,
-		MENU_HIGHSCORES = 5,
-		MENU_QUIT = 6
-	} tGUI_MenuEntries;
-
+#include "common/datatypes.h"
+#include "common/boolean.h"
+#include "core/game.h"
 
 	/**************
 	 * PROTOTYPES *
 	 **************/
-	void GUI_DrawMainmenu(Uint8, Uint8);
 
-	Uint16 GUI_GetMenuColumnLeft(void);
-	Uint16 GUI_GetMenuColumnRight(void);
-
-	void GUI_InitMenuCoordinates(void);
-	tGUI_MenuEntries GUI_GetClickedMenuEntry(void);
-
-#endif /* __GUI_H */
+	void Quadromania_ClearPlayfield(void);
+	void Quadromania_InitPlayfield(Uint16, Uint8);
+	void Quadromania_Rotate(Uint32, Uint32);
+	void Quadromania_DrawPlayfield(void);
+	bool Quadromania_IsGameWon(void);
+	bool Quadromania_IsTurnLimithit(void);
+	Uint32 Quadromania_GetPercentOfSolution(void);
+	Uint16 Quadromania_GetRotationsPerLevel(Uint8);
+#endif

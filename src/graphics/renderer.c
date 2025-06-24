@@ -22,9 +22,9 @@
  * THIS SOFTWARE IS SUPPLIED AS IT IS WITHOUT ANY WARRANTY!
  *
  */
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_ttf.h>
+#include <SDL.h>
+#include <SDL_image.h>
+#include <SDL_ttf.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,11 +34,12 @@
 #endif
 #include <unistd.h>  // for readlink
 
-#include "graphics.h"
-#include "SFont.h"
-#include "highscore.h"
-#include "debug.h"
-#include "ttf_font.h"
+#include "graphics/renderer.h"
+#include "graphics/fonts.h"
+#include "data/highscore.h"
+#include "common/sysconfig.h"
+#include "utils/logger.h"
+#include "graphics/ttf_font.h"
 
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
@@ -310,9 +311,9 @@ void Graphics_DrawGameoverMessage()
 /**
  * This function initializes the graphics subsystem.
  * A fullscreen mode maybe requested.
- * @return TRUE if initialization was successfull
+ * @return true if initialization was successfull
  */
-BOOLEAN Graphics_Init(BOOLEAN set_fullscreen)
+bool Graphics_Init(bool set_fullscreen)
 {
 
 	/* initialize SDL...  */
@@ -320,13 +321,13 @@ BOOLEAN Graphics_Init(BOOLEAN set_fullscreen)
 	{
 		fprintf(stderr, "%s\n\nUnable to initialize SDL: %s\n", VERSION,
 				SDL_GetError());
-		return (FALSE);
+		return (false);
 	}
 	
 	/* initialize SDL_ttf */
 	if (TTF_Init() < 0) {
 		fprintf(stderr, "Unable to initialize SDL_ttf: %s\n", TTF_GetError());
-		return (FALSE);
+		return (false);
 	}
 	
 	/* make sure to shutdown SDL at program end... */
@@ -346,7 +347,7 @@ BOOLEAN Graphics_Init(BOOLEAN set_fullscreen)
 		
 	if (!window) {
 		fprintf(stderr, "Window creation failed: %s\n", SDL_GetError());
-		return FALSE;
+		return false;
 	}
 
 	/* Get the actual window size (may be different on high DPI displays) */
@@ -358,7 +359,7 @@ BOOLEAN Graphics_Init(BOOLEAN set_fullscreen)
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 	if (!renderer) {
 		fprintf(stderr, "Renderer creation failed: %s\n", SDL_GetError());
-		return FALSE;
+		return false;
 	}
 
 	/* Set logical size to match the original game's resolution */
@@ -497,7 +498,7 @@ BOOLEAN Graphics_Init(BOOLEAN set_fullscreen)
         game_font = TTF_OpenFont(font_path, 16);
         if (game_font == NULL) {
             fprintf(stderr, "Failed to load any font: %s\n", TTF_GetError());
-            return (FALSE);
+            return (false);
         }
         DEBUG_PRINT("Loaded fallback font from data directory");
     }
@@ -507,7 +508,7 @@ BOOLEAN Graphics_Init(BOOLEAN set_fullscreen)
 
 	atexit(Graphics_CleanUp);
 
-	return(TRUE);
+	return(true);
 }
 
 /**

@@ -25,12 +25,13 @@
 
 #include <stdio.h>
 
-#include "datatypes.h"
-#include "gui.h"
-#include "graphics.h"
-#include "event.h"
-#include "quadromania.h"
-#include "debug.h"
+#include "common/datatypes.h"
+#include "graphics/ui.h"
+#include "graphics/renderer.h"
+#include "input/events.h"
+#include "core/game.h"
+#include "common/sysconfig.h"
+#include "utils/logger.h"
 
 /*******************************
  * data structures for the GUI *

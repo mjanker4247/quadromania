@@ -1,5 +1,18 @@
 {
     "files.associations": {
-        "ttf_font.h": "c"
+        "ttf_font.h": "c",
+        "datatypes.h": "c"
+    },
+    "cmake.configureOnOpen": true,
+    "cmake.configureSettings": {
+        "CMAKE_TOOLCHAIN_FILE": "/Users/marcojanker/vcpkg/scripts/buildsystems/vcpkg.cmake"
+    },
+    "cmake.buildDirectory": "${workspaceFolder}/build",
+    "cmake.generator": "Ninja",
+    "cmake.defaultVariants": {
+        "buildType": {
+            "default": "debug",
+            "description": "The build type."
+        }
     }
 }

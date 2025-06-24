@@ -24,18 +24,23 @@
  */
 
 /* for data types... */
-#include "datatypes.h"
-#include "highscore.h"
-#include "boolean.h"
-#include "sysconfig.h"
-#include "debug.h"
+#include "common/datatypes.h"
+#include "data/highscore.h"
+#include "common/sysconfig.h"
+#include "utils/logger.h"
 
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
+#include <libgen.h>
+
+#ifdef __APPLE__
+#include <mach-o/dyld.h>
+#endif
 
 HighscoreFile hiscores;
 
-BOOLEAN hiscore_entry = FALSE;
+bool hiscore_entry = false;
 char buffer[]="YYYY-MM-DD hh:mm";
 char filename_buffer[512];
 
@@ -47,6 +52,31 @@ HighscoreEntry empty =
 
 /* module internal function prototypes */
 char* Highscore_GetFilename(void);
+
+/* Helper: get executable directory */
+static char* get_executable_dir(void) {
+    static char exec_path[1024];
+    static char *exec_dir = NULL;
+    
+    if (exec_dir == NULL) {
+#ifdef __APPLE__
+        uint32_t size = sizeof(exec_path);
+        if (_NSGetExecutablePath(exec_path, &size) == 0) {
+            exec_dir = dirname(exec_path);
+        } else {
+            exec_dir = ".";
+        }
+#else
+        ssize_t count = readlink("/proc/self/exe", exec_path, sizeof(exec_path));
+        if (count != -1) {
+            exec_dir = dirname(exec_path);
+        } else {
+            exec_dir = ".";
+        }
+#endif
+    }
+    return exec_dir;
+}
 
 /* loads the highscore table from disk and verifies it */
 void Highscore_LoadTable(void)
@@ -90,7 +120,7 @@ void Highscore_SaveTable(void)
 {
 	FILE *fp;
 
-	if(hiscore_entry == TRUE)
+	if(hiscore_entry == true)
 	{
 		/* write highscore data structure to disk */
 		fp = fopen(Highscore_GetFilename(),"wb");
@@ -100,7 +130,7 @@ void Highscore_SaveTable(void)
 
 		DEBUG_PRINT("Highscore saved to disk");
 		/* only save scores if we really had an entry */
-		hiscore_entry = FALSE;
+		hiscore_entry = false;
 	}
 	else
 	{
@@ -161,7 +191,7 @@ void Highscore_EnterScore(Uint16 table, Uint32 score, char *name, Uint16 positio
 		strncpy(hiscores.Entry[table][position].name, name, HIGHSCORE_MAX_LEN_OF_NAME);
 	}
 
-	hiscore_entry = TRUE;
+	hiscore_entry = true;
 
 	return;
 }
@@ -196,15 +226,11 @@ char* Highscore_GetNameFromTimestamp()
 	return(buffer);
 }
 
-/* construct filename with $HOME in use or not */
+/* construct filename with executable directory */
 char* Highscore_GetFilename()
 {
-#if(USE_HOMEDIR == 1)
-	sprintf(filename_buffer,"%s/%s",getenv("HOME"),HIGHSCORE_FILENAME);
-#else
-	sprintf(filename_buffer,"./%s",HIGHSCORE_FILENAME);
-#endif
+    sprintf(filename_buffer,"%s/%s", get_executable_dir(), HIGHSCORE_FILENAME);
 
-	DEBUG_PRINT("Highscore file: %s", filename_buffer);
-	return(filename_buffer);
+    DEBUG_PRINT("Highscore file: %s", filename_buffer);
+    return(filename_buffer);
 }

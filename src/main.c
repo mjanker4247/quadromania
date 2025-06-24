@@ -26,37 +26,258 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
+#include <stdbool.h>
+#include <unistd.h>
+#include <libgen.h>
 
-#include "datatypes.h"
-#include "random.h"
-#include "graphics.h"
-#include "sound.h"
-#include "quadromania.h"
-#include "highscore.h"
-#include "boolean.h"
-#include "SFont.h"
-#include "debug.h"
+#ifdef __APPLE__
+#include <mach-o/dyld.h>
+#endif
+
+#include "common/datatypes.h"
+#include "utils/random.h"
+#include "graphics/renderer.h"
+#include "audio/sound.h"
+#include "core/game.h"
+#include "data/highscore.h"
+#include "graphics/fonts.h"
+#include "utils/logger.h"
 
 #include "main.h"
-#include "event.h"
-#include "gui.h"
+#include "input/events.h"
+#include "graphics/ui.h"
+
+/* Helper: trim whitespace */
+static char *trim(char *str) {
+	char *end;
+	while (isspace((unsigned char)*str)) str++;
+	if (*str == 0) return str;
+	end = str + strlen(str) - 1;
+	while (end > str && isspace((unsigned char)*end)) end--;
+	end[1] = '\0';
+	return str;
+}
+
+/* Helper: get executable directory */
+static char* get_executable_dir(void) {
+	static char exec_path[1024];
+	static char *exec_dir = NULL;
+	
+	if (exec_dir == NULL) {
+#ifdef __APPLE__
+		uint32_t size = sizeof(exec_path);
+		if (_NSGetExecutablePath(exec_path, &size) == 0) {
+			exec_dir = dirname(exec_path);
+		} else {
+			exec_dir = ".";
+		}
+#else
+		ssize_t count = readlink("/proc/self/exe", exec_path, sizeof(exec_path));
+		if (count != -1) {
+			exec_dir = dirname(exec_path);
+		} else {
+			exec_dir = ".";
+		}
+#endif
+	}
+	return exec_dir;
+}
+
+/* Helper: create or update config file with missing options */
+static void create_or_update_config_file(const char *filename) {
+	FILE *f = fopen(filename, "r");
+	bool options_present[8] = {false}; // Track which options are present
+	char line[256];
+	char *option_names[] = {"fullscreen", "debug", "log_file", "log_level", 
+						   "log_max_size", "log_max_files", "log_to_stderr", "log_overwrite"};
+	char *option_defaults[] = {"false", "false", "quadromania.log", "info", 
+							  "1024", "1", "false", "true"};
+	
+	// Read existing config and check which options are present
+	if (f) {
+		while (fgets(line, sizeof(line), f)) {
+			char *eq = strchr(line, '=');
+			if (eq) {
+				*eq = 0;
+				char *key = trim(line);
+				for (int i = 0; i < 8; i++) {
+					if (strcasecmp(key, option_names[i]) == 0) {
+						options_present[i] = true;
+						break;
+					}
+				}
+			}
+		}
+		fclose(f);
+	}
+	
+	// Open file in append mode to add missing options
+	f = fopen(filename, "a");
+	if (!f) return;
+	
+	// Add header if file was empty
+	if (!options_present[0] && !options_present[1] && !options_present[2]) {
+		fprintf(f, "# Quadromania Configuration File\n");
+		fprintf(f, "# Lines starting with # are comments\n\n");
+	}
+	
+	// Add missing options
+	bool added_any = false;
+	for (int i = 0; i < 8; i++) {
+		if (!options_present[i]) {
+			if (i == 0) fprintf(f, "# Display settings\n");
+			else if (i == 2) fprintf(f, "\n# Debug settings\n");
+			fprintf(f, "%s=%s\n", option_names[i], option_defaults[i]);
+			added_any = true;
+		}
+	}
+	
+	fclose(f);
+	
+	if (added_any) {
+		fprintf(stderr, "Updated config file: %s (added missing options)\n", filename);
+	} else if (!options_present[0]) {
+		fprintf(stderr, "Created new config file: %s\n", filename);
+	}
+}
+
+/* Helper: parse config file */
+static void parse_config_file(const char *filename,
+							 bool *fullscreen,
+							 bool *debug,
+							 char **log_filename,
+							 int *log_level,
+							 size_t *max_file_size,
+							 int *max_files,
+							 bool *log_to_file,
+							 bool *log_to_stderr,
+							 bool *log_overwrite) {
+	FILE *f = fopen(filename, "r");
+	if (!f) return;
+	char line[256];
+	while (fgets(line, sizeof(line), f)) {
+		char *eq, *key, *val;
+		if (line[0] == '#' || line[0] == ';' || line[0] == '\n') continue;
+		eq = strchr(line, '=');
+		if (!eq) continue;
+		*eq = 0;
+		key = trim(line);
+		val = trim(eq + 1);
+		if (strcasecmp(key, "fullscreen") == 0) {
+			*fullscreen = (strcasecmp(val, "true") == 0 || strcmp(val, "1") == 0);
+		} else if (strcasecmp(key, "debug") == 0) {
+			*debug = (strcasecmp(val, "true") == 0 || strcmp(val, "1") == 0);
+		} else if (strcasecmp(key, "log_file") == 0) {
+			*log_filename = strdup(val);
+			*log_to_file = true;
+		} else if (strcasecmp(key, "log_level") == 0) {
+			if (strcasecmp(val, "error") == 0) *log_level = LOG_LEVEL_ERROR;
+			else if (strcasecmp(val, "warn") == 0) *log_level = LOG_LEVEL_WARN;
+			else if (strcasecmp(val, "info") == 0) *log_level = LOG_LEVEL_INFO;
+			else if (strcasecmp(val, "debug") == 0) *log_level = LOG_LEVEL_DEBUG;
+			else if (strcasecmp(val, "trace") == 0) *log_level = LOG_LEVEL_TRACE;
+		} else if (strcasecmp(key, "log_max_size") == 0) {
+			*max_file_size = (size_t)atol(val);
+		} else if (strcasecmp(key, "log_max_files") == 0) {
+			*max_files = atoi(val);
+		} else if (strcasecmp(key, "log_to_stderr") == 0) {
+			*log_to_stderr = (strcasecmp(val, "true") == 0 || strcmp(val, "1") == 0);
+		} else if (strcasecmp(key, "log_overwrite") == 0) {
+			*log_overwrite = (strcasecmp(val, "true") == 0 || strcmp(val, "1") == 0);
+		}
+	}
+	fclose(f);
+}
 
 /* the main function - program execution starts here... */
 int main(int argc, char *argv[])
 {
-	BOOLEAN fullscreen = FALSE;
-	BOOLEAN debug = FALSE;
+	bool fullscreen = false;
+	bool debug = false;
+	char *log_filename = NULL;
+	int log_level = LOG_LEVEL_DEBUG;
+	size_t max_file_size = 0;
+	int max_files = 5;
+	bool log_to_file = false;
+	bool log_to_stderr = true;
+	bool log_overwrite = false;
+	char *config_file = NULL;
+
+	/* First pass: look for --config option */
+	for (int i = 1; i < argc - 1; i++) {
+		if (strcmp(argv[i], "--config") == 0) {
+			config_file = argv[i + 1];
+			break;
+		}
+	}
+	if (!config_file) {
+		/* Use default config file in executable directory */
+		char default_config_path[1024];
+		snprintf(default_config_path, sizeof(default_config_path), "%s/quadromania.cfg", get_executable_dir());
+		
+		/* Always create or update the config file to ensure all options are present */
+		create_or_update_config_file(default_config_path);
+		config_file = strdup(default_config_path);
+	}
+	if (config_file) {
+		parse_config_file(config_file, &fullscreen, &debug, &log_filename, &log_level, &max_file_size, &max_files, &log_to_file, &log_to_stderr, &log_overwrite);
+	}
 
 	/* parse command line arguments... */
 	while (argc > 1)
 	{
 		if (strcmp(argv[1], "-f") == 0 || strcmp(argv[1], "--fullscreen") == 0)
 		{
-			fullscreen = TRUE;
+			fullscreen = true;
 		}
 		else if (strcmp(argv[1], "-d") == 0 || strcmp(argv[1], "--debug") == 0)
 		{
-			debug = TRUE;
+			debug = true;
+		}
+		else if (strcmp(argv[1], "--log-file") == 0 && argc > 2)
+		{
+			if (log_filename) free(log_filename);
+			log_filename = strdup(argv[2]);
+			log_to_file = true;
+			argc--;
+			argv++;
+		}
+		else if (strcmp(argv[1], "--log-level") == 0 && argc > 2)
+		{
+			if (strcmp(argv[2], "error") == 0) log_level = LOG_LEVEL_ERROR;
+			else if (strcmp(argv[2], "warn") == 0) log_level = LOG_LEVEL_WARN;
+			else if (strcmp(argv[2], "info") == 0) log_level = LOG_LEVEL_INFO;
+			else if (strcmp(argv[2], "debug") == 0) log_level = LOG_LEVEL_DEBUG;
+			else if (strcmp(argv[2], "trace") == 0) log_level = LOG_LEVEL_TRACE;
+			argc--;
+			argv++;
+		}
+		else if (strcmp(argv[1], "--log-max-size") == 0 && argc > 2)
+		{
+			max_file_size = (size_t)atol(argv[2]);
+			argc--;
+			argv++;
+		}
+		else if (strcmp(argv[1], "--log-max-files") == 0 && argc > 2)
+		{
+			max_files = atoi(argv[2]);
+			argc--;
+			argv++;
+		}
+		else if (strcmp(argv[1], "--no-stderr") == 0)
+		{
+			log_to_stderr = false;
+		}
+		else if (strcmp(argv[1], "--log-overwrite") == 0)
+		{
+			log_overwrite = true;
+		}
+		else if (strcmp(argv[1], "--config") == 0 && argc > 2)
+		{
+			/* already handled above */
+			argc--;
+			argv++;
 		}
 		else if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0)
 		{
@@ -66,17 +287,37 @@ int main(int argc, char *argv[])
 			fprintf(stderr, "This program is free software under the GNU General Public License\n\n");
 			fprintf(stderr, "Usage: %s [options]\n", argv[0]);
 			fprintf(stderr, "Options:\n");
-			fprintf(stderr, "  -f, --fullscreen    Run in fullscreen mode\n");
-			fprintf(stderr, "  -d, --debug         Enable debug output\n");
-			fprintf(stderr, "  -h, --help          Show this help message\n");
+			fprintf(stderr, "  --config <file>          Load parameters from config file\n");
+			fprintf(stderr, "  -f, --fullscreen         Run in fullscreen mode\n");
+			fprintf(stderr, "  -d, --debug              Enable debug output (to stderr)\n");
+			fprintf(stderr, "      --log-file <file>    Log debug output to file\n");
+			fprintf(stderr, "      --log-level <level>  Set log level (error, warn, info, debug, trace)\n");
+			fprintf(stderr, "      --log-max-size <n>   Max log file size in bytes before rotation\n");
+			fprintf(stderr, "      --log-max-files <n>  Number of rotated log files to keep\n");
+			fprintf(stderr, "      --no-stderr          Do not log to stderr\n");
+			fprintf(stderr, "      --log-overwrite      Overwrite log file at startup\n");
+			fprintf(stderr, "  -h, --help               Show this help message\n");
+			fprintf(stderr, "\nConfig file format (key=value, one per line):\n");
+			fprintf(stderr, "  fullscreen=true|false\n  debug=true|false\n  log_file=quadromania.log\n  log_level=info|debug|warn|error|trace\n  log_max_size=1000000\n  log_max_files=3\n  log_to_stderr=true|false\n  log_overwrite=true|false\n");
 			return 0;
 		}
 		argc--;
 		argv++;
 	}
 
-	/* Initialize debug system */
-	DEBUG_INIT(debug);
+	/* Initialize logger system */
+	if (log_to_file || log_level != LOG_LEVEL_DEBUG || max_file_size > 0 || !log_to_stderr) {
+		/* If log_filename is relative, make it absolute by prepending executable directory */
+		if (log_filename && log_filename[0] != '/' && log_filename[0] != '\\') {
+			char full_log_path[1024];
+			snprintf(full_log_path, sizeof(full_log_path), "%s/%s", get_executable_dir(), log_filename);
+			free(log_filename);
+			log_filename = strdup(full_log_path);
+		}
+		logger_init(debug, log_to_file, log_to_stderr, log_level, log_filename, max_file_size, max_files, log_overwrite);
+	} else {
+		DEBUG_INIT(debug);
+	}
 
 	/* initialize game engine... */
 	if (InitGameEngine(fullscreen))
@@ -98,7 +339,7 @@ int main(int argc, char *argv[])
  * The game engine and its subcomponents are initialized from this function.
  * @returns whether the initialization was successfull
  */
-BOOLEAN InitGameEngine(BOOLEAN fullscreen)
+bool InitGameEngine(bool fullscreen)
 {
 	/* initialize random number generator... */
 	Random_InitSeed();
@@ -112,11 +353,11 @@ BOOLEAN InitGameEngine(BOOLEAN fullscreen)
 		/* initialize event handler */
 		Event_Init();
 		Quadromania_ClearPlayfield();
-		return (TRUE);
+		return (true);
 	}
 	else
 	{
-		return(FALSE);
+		return(false);
 	}
 }
 
@@ -145,18 +386,18 @@ void MainHandler()
 		menu = MENU_UNDEFINED; /* safe guard menu selection */
 		/* Event reading and parsing.... */
 		Event_ProcessInput();
-		if (Event_GetDpadUp() == TRUE)
+		if (Event_GetDpadUp() == true)
 		{
 			fprintf(stderr,"n\n");
 			Event_DebounceDpad();
-			while(Event_IsDpadPressed() == TRUE);
+			while(Event_IsDpadPressed() == true);
 		}
-		if (Event_GetDpadButton() == TRUE)
+		if (Event_GetDpadButton() == true)
 		{
 			fprintf(stderr,"DPAD BUTTON\n");
 			Event_DebounceDpad();
 		}
-		if (Event_IsESCPressed() == TRUE)
+		if (Event_IsESCPressed() == true)
 		{
 			if ((status == GAME) || (status == SHOW_HIGHSCORES))
 			{
@@ -169,7 +410,7 @@ void MainHandler()
 			}
 			Event_DebounceKeys();
 		}
-		if (Event_QuitRequested() == TRUE)
+		if (Event_QuitRequested() == true)
 		{
 			status = QUIT;
 		}
@@ -189,7 +430,7 @@ void MainHandler()
 			}
 
 			/* check for clicks in the menu */
-			if (Event_MouseClicked() == TRUE)
+			if (Event_MouseClicked() == true)
 			{
 				if (Event_GetMouseButton() == 1)
 				{
@@ -254,7 +495,7 @@ void MainHandler()
 				Graphics_DrawInstructions();
 
 			}
-			if (Event_MouseClicked() == TRUE)
+			if (Event_MouseClicked() == true)
 			{
 				if ((Event_GetMouseButton() == 1) && (Event_GetMouseY()
 						> (SCREEN_HEIGHT - Graphics_GetFontHeight())))
@@ -270,7 +511,7 @@ void MainHandler()
 				oldstatus = status;
 
 			/* mousebutton clicked?*/
-			if (Event_MouseClicked() == TRUE)
+			if (Event_MouseClicked() == true)
 			{
 				if (Event_GetMouseButton() == 1)
 				{
@@ -320,7 +561,7 @@ void MainHandler()
 				Sound_PlayEffect(SOUND_WIN);
 			}
 
-			if (Event_MouseClicked() == TRUE)
+			if (Event_MouseClicked() == true)
 			{
 				Event_DebounceMouse();
 				status = HIGHSCORE_ENTRY;
@@ -335,7 +576,7 @@ void MainHandler()
 				Sound_PlayEffect(SOUND_LOOSE);
 			}
 
-			if (Event_MouseClicked() == TRUE)
+			if (Event_MouseClicked() == true)
 			{
 				Event_DebounceMouse();
 				status = SHOW_HIGHSCORES; /* no highscore entry in case of all turns are used up */
@@ -361,7 +602,7 @@ void MainHandler()
 				Graphics_ListHighscores(level-1);
 			}
 
-			if (Event_MouseClicked() == TRUE)
+			if (Event_MouseClicked() == true)
 			{
 				Event_DebounceMouse();
 				status = TITLE;

@@ -26,10 +26,10 @@
 #ifndef __MAIN_H
 	#define __MAIN_H
 
-    #include "version.h"
-	#include "sysconfig.h"
-	#include "datatypes.h"
-	#include "boolean.h"
+    #include "common/version.h"
+	#include "common/sysconfig.h"
+	#include "common/datatypes.h"
+	
 
 	/**************************
 	 * DATA TYPE DECLARATIONS *
@@ -43,7 +43,7 @@
 	 * PROTOTYPES *
 	 **************/
 
-	BOOLEAN InitGameEngine(BOOLEAN activate_fullscreen);
+	bool InitGameEngine(bool activate_fullscreen);
 	void MainHandler(void);
 
 #endif

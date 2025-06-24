@@ -2,8 +2,8 @@
  * Quadromania
  * (c) 2002/2003/2009/2010 by Matthias Arndt <marndt@asmsoftware.de> / ASM Software
  *
- * File: boolean.h - symbolic constants for boolean values
- * last Modified: 09.02.2010 : 17:36
+ * File: datatypes.h - header file for defining platform independent data types
+ * last Modified: 18.11.2010 : 19:05
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,14 +22,26 @@
  * THIS SOFTWARE IS SUPPLIED AS IT IS WITHOUT ANY WARRANTY!
  *
  */
-#ifndef _BOOLEAN_H_
-#define _BOOLEAN_H_
 
-#include "datatypes.h"
+#ifndef _DATATYPES_H_
+#define _DATATYPES_H_
 
-#define FALSE 0
-#define TRUE 1
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-typedef Uint8 BOOLEAN;
+#include "common/sysconfig.h"
+#include <SDL.h>
 
-#endif /* _BOOLEAN_H_ */
+#if(HAVE_SDL_DATATYPES == 0)
+	typedef unsigned char Uint8;
+	typedef signed char Sint8;
+	typedef unsigned short Uint16;
+	typedef signed short Sint16;
+#endif
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* __DATATYPES_H */

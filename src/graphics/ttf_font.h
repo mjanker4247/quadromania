@@ -5,14 +5,14 @@
 extern "C" {
 #endif
 
-#include "sysconfig.h"
-#include "datatypes.h"
-#include "boolean.h"
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
+#include "common/sysconfig.h"
+#include "common/datatypes.h"
+#include <SDL.h>
+#include <SDL_ttf.h>
+#include <stdbool.h>
 
 // Initialize TTF font system
-Uint8 TTF_Font_Init(void);
+bool TTF_Font_Init(void);
 
 // Clean up TTF font system
 void TTF_Font_CleanUp(void);

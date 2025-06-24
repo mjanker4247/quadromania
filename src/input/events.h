@@ -25,8 +25,10 @@
 
 #ifndef __EVENT_H
 #define __EVENT_H
-	#include "datatypes.h"
-    #include "boolean.h"
+#include "common/datatypes.h"
+#include "common/sysconfig.h"
+#include <stdbool.h>
+
 
 	/*************
 	 * CONSTANTS *
@@ -71,7 +73,7 @@
 	{
 		Uint16 x, y; /** mouse coordinates in pixels */
 		Uint8 button; /** mouse button number */
-		BOOLEAN clicked; /** mouse clicked? */
+		bool clicked; /** mouse clicked? */
 	} MOUSE;
 
 	/**
@@ -80,11 +82,11 @@
 	 */
 	typedef struct
 	{
-		BOOLEAN up;
-		BOOLEAN down;
-		BOOLEAN left;
-		BOOLEAN right;
-		BOOLEAN button;
+		bool up;
+		bool down;
+		bool left;
+		bool right;
+		bool button;
 	} DPAD;
 
 	/**************
@@ -92,18 +94,18 @@
 	 **************/
 	void Event_Init(void);
 	void Event_ProcessInput(void);
-	BOOLEAN Event_QuitRequested(void);
-	BOOLEAN Event_IsESCPressed(void);
+	bool Event_QuitRequested(void);
+	bool Event_IsESCPressed(void);
 	Uint16 Event_GetMouseX(void);
 	Uint16 Event_GetMouseY(void);
 	Uint8 Event_GetMouseButton(void);
-	BOOLEAN Event_MouseClicked(void);
-	BOOLEAN Event_GetDpadUp(void);
-	BOOLEAN Event_GetDpadDown(void);
-	BOOLEAN Event_GetDpadLeft(void);
-	BOOLEAN Event_GetDpadRight(void);
-	BOOLEAN Event_GetDpadButton(void);
-	BOOLEAN Event_IsDpadPressed(void);
+	bool Event_MouseClicked(void);
+	bool Event_GetDpadUp(void);
+	bool Event_GetDpadDown(void);
+	bool Event_GetDpadLeft(void);
+	bool Event_GetDpadRight(void);
+	bool Event_GetDpadButton(void);
+	bool Event_IsDpadPressed(void);
 	void Event_DebounceDpad(void);
 	void Event_DebounceMouse(void);
 	void Event_DebounceKeys(void);

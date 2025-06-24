@@ -1,21 +1,22 @@
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
+#include <SDL.h>
+#include <SDL_ttf.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include <libgen.h>  // for dirname()
 #ifdef __APPLE__
 #include <mach-o/dyld.h>  // for _NSGetExecutablePath
 #endif
 #include <unistd.h>  // for readlink
 
-#include "ttf_font.h"
-#include "debug.h"
+#include "graphics/ttf_font.h"
+#include "utils/logger.h"
 
 static TTF_Font *game_font = NULL;
 static Uint16 font_height = 0;
 
-BOOLEAN TTF_Font_Init(void)
+bool TTF_Font_Init(void)
 {
     // Try loading system fonts in order of preference
     const char *font_names[] = {
@@ -72,7 +73,7 @@ BOOLEAN TTF_Font_Init(void)
         game_font = TTF_OpenFont(font_path, 16);
         if (game_font == NULL) {
             fprintf(stderr, "Failed to load any font: %s\n", TTF_GetError());
-            return (FALSE);
+            return (false);
         }
         DEBUG_PRINT("Loaded fallback font from data directory");
     }
@@ -80,7 +81,7 @@ BOOLEAN TTF_Font_Init(void)
     font_height = TTF_FontHeight(game_font);
     DEBUG_PRINT("Font loaded successfully, height: %d", font_height);
 
-    return TRUE;
+    return true;
 }
 
 void TTF_Font_CleanUp(void)

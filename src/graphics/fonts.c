@@ -1,10 +1,10 @@
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "SFont.h"
-#include "graphics.h"
-#include "debug.h"
+#include "graphics/fonts.h"
+#include "graphics/renderer.h"
+#include "utils/logger.h"
 
 static Uint32 GetPixel(SDL_Surface *, Sint32, Sint32);
 static SFont_FontInfo InternalFont;

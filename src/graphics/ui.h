@@ -2,8 +2,8 @@
  * Quadromania
  * (c) 2002/2003/2009/2010 by Matthias Arndt <marndt@asmsoftware.de> / ASM Software
  *
- * File: random.h - header files for the random number generator
- * last Modified: 09.02.2010 : 17:38
+ * File: gui.h - header file for the GUI handling
+ * last Modified: 06.03.2010 : 11:32
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,15 +22,43 @@
  * THIS SOFTWARE IS SUPPLIED AS IT IS WITHOUT ANY WARRANTY!
  *
  */
-#ifndef __RANDOM_H
-	#define __RANDOM_H
 
-	#include "datatypes.h"
+#ifndef __GUI_H
+#define __GUI_H
+
+	#include "common/datatypes.h"
+	#include "common/sysconfig.h"
+
+	/************
+	 * DEFINES  *
+	 ************/
+
+	#define MAX_NR_OF_MENU_ENTRIES 10
+
+	/***************
+	 * DATA TYPES  *
+	 ***************/
+
+	typedef enum GUI_MenuEntries {
+		MENU_UNDEFINED = 0,
+		MENU_START_GAME = 1,
+		MENU_CHANGE_NR_OF_COLORS = 2,
+		MENU_CHANGE_NR_OF_ROTATIONS = 3,
+		MENU_INSTRUCTIONS = 4,
+		MENU_HIGHSCORES = 5,
+		MENU_QUIT = 6
+	} tGUI_MenuEntries;
+
 
 	/**************
 	 * PROTOTYPES *
 	 **************/
+	void GUI_DrawMainmenu(Uint8, Uint8);
 
-	void Random_InitSeed(void);
-	Uint32 Random_GetRandom(void);
-#endif
+	Uint16 GUI_GetMenuColumnLeft(void);
+	Uint16 GUI_GetMenuColumnRight(void);
+
+	void GUI_InitMenuCoordinates(void);
+	tGUI_MenuEntries GUI_GetClickedMenuEntry(void);
+
+#endif /* __GUI_H */

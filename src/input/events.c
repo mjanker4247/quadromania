@@ -23,17 +23,16 @@
  *
  */
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "datatypes.h"
-#include "event.h"
-#include "boolean.h"
-#include "sysconfig.h"
-#include "debug.h"
+#include "common/datatypes.h"
+#include "input/events.h"
+#include "common/sysconfig.h"
+#include "utils/logger.h"
 
-#include "sound.h"
+#include "audio/sound.h"
 
 /* data structures... */
 MOUSE mouse;
@@ -43,8 +42,8 @@ DPAD dpad;
 DPAD key;
 /* directional joystick data - raw values not to be used directly */
 DPAD joystick;
-BOOLEAN ESCpressed          = FALSE;
-BOOLEAN QUITrequest         = FALSE;
+bool ESCpressed          = false;
+bool QUITrequest         = false;
 Uint8 debounce_tmr_mouse    = 0;
 Uint8 debounce_tmr_keys     = 0;
 Uint8 debounce_tmr_dpad     = 0;
@@ -72,16 +71,16 @@ void Event_Init()
 	mouse.x            = 0;
 	mouse.y            = 0;
 	mouse.button       = 0;
-	mouse.clicked      = FALSE;
+	mouse.clicked      = false;
 	debounce_tmr_mouse = Event_Debounce_timeslices;
 	debounce_tmr_keys  = Event_Debounce_timeslices;
 	debounce_tmr_dpad  = Event_Debounce_timeslices;
 
-	key.up             = FALSE;
-	key.down           = FALSE;
-	key.left           = FALSE;
-	key.right          = FALSE;
-	key.button         = FALSE;
+	key.up             = false;
+	key.down           = false;
+	key.left           = false;
+	key.right          = false;
+	key.button         = false;
 
 #if(HAVE_JOYSTICK != _NO_JOYSTICK)
 	Joystick_Init();
@@ -102,7 +101,7 @@ void Event_ProcessInput()
 		{
 		/* mouse handling... */
 		case SDL_MOUSEBUTTONUP:
-			mouse.clicked = FALSE;
+			mouse.clicked = false;
 			break;
 		case SDL_MOUSEBUTTONDOWN:
 			/* collect the mouse data and mouse click location */
@@ -111,7 +110,7 @@ void Event_ProcessInput()
 			mouse.button = event.button.button;
 			if(debounce_tmr_mouse == 0)
 			{
-				mouse.clicked = TRUE;
+				mouse.clicked = true;
 			}
 			/* fprintf(stderr,"click %d at %d,%d\n",mouse.button,mouse.x,mouse.y); */
 			break;
@@ -123,30 +122,30 @@ void Event_ProcessInput()
 				{
 				case SDLK_UP:
 					/* up arrow */
-					key.up = FALSE;
+					key.up = false;
 					break;
 				case SDLK_DOWN:
 					/* down arrow */
-					key.down = FALSE;
+					key.down = false;
 					break;
 				case SDLK_LEFT:
 					/* left arrow */
-					key.left = FALSE;
+					key.left = false;
 					break;
 				case SDLK_RIGHT:
 					/* right arrow */
-					key.right = FALSE;
+					key.right = false;
 					break;
 				case SDLK_LCTRL:
 				case SDLK_RCTRL:
 				case SDLK_LALT:
 				case SDLK_RALT:
 					/* any Control or ALT */
-					key.button = FALSE;
+					key.button = false;
 					break;
 				case SDLK_ESCAPE:
 					/* ESC pressed? */
-					ESCpressed = TRUE;
+					ESCpressed = true;
 					break;
 				case SDLK_KP_PLUS:
 #if(defined __DINGUX)
@@ -172,26 +171,26 @@ void Event_ProcessInput()
 			{
 			case SDLK_UP:
 				/* up arrow */
-				key.up = TRUE;
+				key.up = true;
 				break;
 			case SDLK_DOWN:
 				/* down arrow */
-				key.down = TRUE;
+				key.down = true;
 				break;
 			case SDLK_LEFT:
 				/* left arrow */
-				key.left = TRUE;
+				key.left = true;
 				break;
 			case SDLK_RIGHT:
 				/* right arrow */
-				key.right = TRUE;
+				key.right = true;
 				break;
 			case SDLK_LCTRL:
 			case SDLK_RCTRL:
 			case SDLK_LALT:
 			case SDLK_RALT:
 				/* any Control or ALT */
-				key.button = TRUE;
+				key.button = true;
 				break;
 			default:
 				break;
@@ -201,14 +200,14 @@ void Event_ProcessInput()
 			/* x Axis */
 			if(event.jaxis.axis == 0)
 			{
-				joystick.left  = (BOOLEAN) (event.jaxis.value < -16000);
-				joystick.right = (BOOLEAN) (event.jaxis.value >  16000);
+				joystick.left  = (bool) (event.jaxis.value < -16000);
+				joystick.right = (bool) (event.jaxis.value >  16000);
 			}
 			/* y Axis */
 			if(event.jaxis.axis == 1)
 			{
-				joystick.up    = (BOOLEAN) (event.jaxis.value < -16000);
-				joystick.down  = (BOOLEAN) (event.jaxis.value >  16000);
+				joystick.up    = (bool) (event.jaxis.value < -16000);
+				joystick.down  = (bool) (event.jaxis.value >  16000);
 			}
 			break;
 		case SDL_JOYBUTTONDOWN:
@@ -216,37 +215,37 @@ void Event_ProcessInput()
 			{
 #if(HAVE_JOYSTICK == _GP2X_JOYSTICK)
 			case JOYSTICK_BUTTON_ESC:
-				ESCpressed = TRUE;
+				ESCpressed = true;
 				DEBUG_PRINT("Joystick ESC pressed");
 				break;
 			case GP2X_BUTTON_UP:
 				/* up arrow */
-				key.up = TRUE;
+				key.up = true;
 				break;
 			case GP2X_BUTTON_DOWN:
 				/* down arrow */
-				key.down = TRUE;
+				key.down = true;
 				break;
 			case GP2X_BUTTON_LEFT:
 				/* left arrow */
-				key.left = TRUE;
+				key.left = true;
 				break;
 			case GP2X_BUTTON_RIGHT:
 				/* right arrow */
-				key.right = TRUE;
+				key.right = true;
 				break;
 			case GP2X_BUTTON_A:
 			case GP2X_BUTTON_B:
 			case GP2X_BUTTON_X:
 			case GP2X_BUTTON_Y:
 				/* any fire button */
-				key.button = TRUE;
+				key.button = true;
 				break;
 #elif(HAVE_JOYSTICK == _DEFAULT_JOYSTICK)
 			case 0:
 			case 1:
 				/* firebutton A or B?*/
-				joystick.button = TRUE;
+				joystick.button = true;
 				break;
 #endif
 			default:
@@ -259,26 +258,26 @@ void Event_ProcessInput()
 #if(HAVE_JOYSTICK ==_GP2X_JOYSTICK)
 			case GP2X_BUTTON_UP:
 				/* up arrow */
-				key.up = FALSE;
+				key.up = false;
 				break;
 			case GP2X_BUTTON_DOWN:
 				/* down arrow */
-				key.down = FALSE;
+				key.down = false;
 				break;
 			case GP2X_BUTTON_LEFT:
 				/* left arrow */
-				key.left = FALSE;
+				key.left = false;
 				break;
 			case GP2X_BUTTON_RIGHT:
 				/* right arrow */
-				key.right = FALSE;
+				key.right = false;
 				break;
 			case GP2X_BUTTON_A:
 			case GP2X_BUTTON_B:
 			case GP2X_BUTTON_X:
 			case GP2X_BUTTON_Y:
 				/* any fire button */
-				key.button = FALSE;
+				key.button = false;
 				break;
 			case GP2X_BUTTON_VOLUP:
 				Sound_IncreaseVolume();
@@ -290,7 +289,7 @@ void Event_ProcessInput()
 			case 0:
 			case 1:
 				/* firebutton A or B?*/
-				joystick.button = FALSE;
+				joystick.button = false;
 				break;
 #endif
 			default:
@@ -300,7 +299,7 @@ void Event_ProcessInput()
 	   #endif
 			/* SDL_QUIT event (window close) */
 		case SDL_QUIT:
-			QUITrequest = TRUE;
+			QUITrequest = true;
 			break;
 		default:
 			/* default is an unhandled event... */
@@ -315,11 +314,11 @@ void Event_ProcessInput()
 	}
 	else
 	{
-		dpad.up      = ((joystick.up == TRUE)||(key.up == TRUE));
-		dpad.down    = ((joystick.down == TRUE)||(key.down == TRUE));
-		dpad.left    = ((joystick.left == TRUE)||(key.left == TRUE));
-		dpad.right   = ((joystick.right == TRUE)||(key.right == TRUE));
-		dpad.button  = ((joystick.button == TRUE)||(key.button == TRUE));
+		dpad.up      = ((joystick.up == true)||(key.up == true));
+		dpad.down    = ((joystick.down == true)||(key.down == true));
+		dpad.left    = ((joystick.left == true)||(key.left == true));
+		dpad.right   = ((joystick.right == true)||(key.right == true));
+		dpad.button  = ((joystick.button == true)||(key.button == true));
 	}
 
 	/* debounce input devices */
@@ -335,17 +334,17 @@ void Event_ProcessInput()
 }
 
 /**
- *  @return TRUE if a program shutdown has been requested
+ *  @return true if a program shutdown has been requested
  */
-BOOLEAN Event_QuitRequested()
+bool Event_QuitRequested()
 {
 	return(QUITrequest);
 }
 
 /**
- *  @return TRUE if has ESC been pressed
+ *  @return true if has ESC been pressed
  */
-BOOLEAN Event_IsESCPressed()
+bool Event_IsESCPressed()
 {
 	return(ESCpressed);
 }
@@ -377,7 +376,7 @@ Uint8 Event_GetMouseButton()
 /**
  * @return if the mouse button has been clicked
  */
-BOOLEAN Event_MouseClicked()
+bool Event_MouseClicked()
 {
 	return(mouse.clicked);
 }
@@ -387,58 +386,58 @@ BOOLEAN Event_MouseClicked()
  */
 void Event_DebounceMouse()
 {
-	mouse.clicked=FALSE;
+	mouse.clicked=false;
 	mouse.button=0;
 	debounce_tmr_mouse = Event_Debounce_timeslices;
 }
 
 /**
- *  @return TRUE if directional pad direction up pressed?
+ *  @return true if directional pad direction up pressed?
  */
-BOOLEAN Event_GetDpadUp()
+bool Event_GetDpadUp()
 {
 	return(dpad.up);
 }
 
 /**
- *  @return TRUE if directional pad direction down pressed?
+ *  @return true if directional pad direction down pressed?
  */
-BOOLEAN Event_GetDpadDown()
+bool Event_GetDpadDown()
 {
 	return(dpad.down);
 }
 
 /**
- *  @return TRUE if directional pad direction left pressed?
+ *  @return true if directional pad direction left pressed?
  */
-BOOLEAN Event_GetDpadLeft()
+bool Event_GetDpadLeft()
 {
 	return(dpad.left);
 }
 
 /**
- *  @return TRUE if directional pad direction right pressed?
+ *  @return true if directional pad direction right pressed?
  */
-BOOLEAN Event_GetDpadRight()
+bool Event_GetDpadRight()
 {
 	return(dpad.right);
 }
 
 /**
- *  @return TRUE if directional pad firebutton is pressed?
+ *  @return true if directional pad firebutton is pressed?
  */
-BOOLEAN Event_GetDpadButton()
+bool Event_GetDpadButton()
 {
 	return(dpad.button);
 }
 
 /**
  * This functiondetermines if any directions or firebuttons on the directional pad are pressed
- * @return TRUE if any direction or firebutton on the pad is pressed
+ * @return true if any direction or firebutton on the pad is pressed
  */
-BOOLEAN Event_IsDpadPressed()
+bool Event_IsDpadPressed()
 {
-	return((dpad.up == TRUE)||(dpad.down == TRUE)||(dpad.left == TRUE)||(dpad.right == TRUE)||(dpad.button == TRUE));
+	return((dpad.up == true)||(dpad.down == true)||(dpad.left == true)||(dpad.right == true)||(dpad.button == true));
 }
 
 /**
@@ -447,11 +446,11 @@ BOOLEAN Event_IsDpadPressed()
 void Event_DebounceDpad()
 {
 	debounce_tmr_dpad = Event_Debounce_timeslices;
-	dpad.up     = FALSE;
-	dpad.down   = FALSE;
-	dpad.left   = FALSE;
-	dpad.right  = FALSE;
-	dpad.button = FALSE;
+	dpad.up     = false;
+	dpad.down   = false;
+	dpad.left   = false;
+	dpad.right  = false;
+	dpad.button = false;
 }
 
 /**
@@ -460,12 +459,12 @@ void Event_DebounceDpad()
 void Event_DebounceKeys()
 {
 	debounce_tmr_keys = Event_Debounce_timeslices;
-	ESCpressed = FALSE;
-	key.up = FALSE;
-	key.down = FALSE;
-	key.left = FALSE;
-	key.right = FALSE;
-	key.button = FALSE;
+	ESCpressed = false;
+	key.up = false;
+	key.down = false;
+	key.left = false;
+	key.right = false;
+	key.button = false;
 }
 
 #if(HAVE_JOYSTICK != _NO_JOYSTICK)
@@ -475,11 +474,11 @@ void Event_DebounceKeys()
 void Joystick_Init()
 {
 #if(HAVE_JOYSTICK != _NO_JOYSTICK)
-	joystick.up = FALSE;
-	joystick.down = FALSE;
-	joystick.left = FALSE;
-	joystick.right = FALSE;
-	joystick.button = FALSE;
+	joystick.up = false;
+	joystick.down = false;
+	joystick.left = false;
+	joystick.right = false;
+	joystick.button = false;
 	debounce_tmr_joystick = 0;
 #endif
 	return;

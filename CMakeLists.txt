@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.10)
 
 set(CMAKE_C_STANDARD 11)
 
@@ -14,70 +14,126 @@ endif()
 
 Project ( Quadromania )
 
-# Find SDL2
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
-pkg_check_modules(SDL2_IMAGE REQUIRED IMPORTED_TARGET SDL2_image)
-pkg_check_modules(SDL2_MIXER REQUIRED IMPORTED_TARGET SDL2_mixer)
-pkg_check_modules(SDL2_TTF REQUIRED IMPORTED_TARGET SDL2_ttf)
+# Find SDL2 and related libraries using vcpkg
+find_package(SDL2 CONFIG REQUIRED)
+find_package(SDL2_image CONFIG REQUIRED)
+find_package(SDL2_mixer CONFIG REQUIRED)
+find_package(SDL2_ttf CONFIG REQUIRED)
 
-message(STATUS "SDL2_INCLUDE_DIRS: ${SDL2_INCLUDE_DIRS}")
-message(STATUS "SDL2_LIBRARIES: ${SDL2_LIBRARIES}")
-message(STATUS "SDL2_IMAGE_INCLUDE_DIRS: ${SDL2_IMAGE_INCLUDE_DIRS}")
-message(STATUS "SDL2_IMAGE_LIBRARIES: ${SDL2_IMAGE_LIBRARIES}")
-message(STATUS "SDL2_MIXER_INCLUDE_DIRS: ${SDL2_MIXER_INCLUDE_DIRS}")
-message(STATUS "SDL2_MIXER_LIBRARIES: ${SDL2_MIXER_LIBRARIES}")
+message(STATUS "SDL2 found: ${SDL2_FOUND}")
+message(STATUS "SDL2_image found: ${SDL2_image_FOUND}")
+message(STATUS "SDL2_mixer found: ${SDL2_mixer_FOUND}")
+message(STATUS "SDL2_ttf found: ${SDL2_ttf_FOUND}")
 
-set (SOURCES
-   src/boolean.h
-   src/datatypes.h
-   src/event.c
-   src/event.h
-   src/graphics.c
-   src/graphics.h
-   src/gui.c
-   src/gui.h
-   src/highscore.c
-   src/highscore.h
-   src/main.c
-   src/main.h
-   src/quadromania.c
-   src/quadromania.h
-   src/random.c
-   src/random.h
-   src/SFont.c
-   src/SFont.h
-   src/sound.c
-   src/sound.h
-   src/sysconfig.h
-   src/version.h
-   src/debug.c
-   src/ttf_font.c
+# Debug: Print available targets
+get_target_property(SDL2_TARGETS SDL2::SDL2 TYPE)
+message(STATUS "SDL2 target type: ${SDL2_TARGETS}")
+
+# Core game engine sources
+set(CORE_SOURCES
+    src/core/game.c
+    src/core/game.h
 )
 
-# Set library search paths explicitly
-link_directories(${SDL2_LIBRARY_DIRS} ${SDL2_IMAGE_LIBRARY_DIRS} ${SDL2_MIXER_LIBRARY_DIRS} ${SDL2_TTF_LIBRARY_DIRS})
-
-include_directories (
-   src/
-   ${SDL2_INCLUDE_DIRS}
-   ${SDL2_IMAGE_INCLUDE_DIRS}
-   ${SDL2_MIXER_INCLUDE_DIRS}
-   ${SDL2_TTF_INCLUDE_DIRS}
+# Graphics subsystem sources
+set(GRAPHICS_SOURCES
+    src/graphics/renderer.c
+    src/graphics/renderer.h
+    src/graphics/fonts.c
+    src/graphics/fonts.h
+    src/graphics/ttf_font.c
+    src/graphics/ttf_font.h
+    src/graphics/ui.c
+    src/graphics/ui.h
 )
 
-add_executable(quadromania
-   ${SOURCES}
-   ChangeLog
-   README
+# Input subsystem sources
+set(INPUT_SOURCES
+    src/input/events.c
+    src/input/events.h
 )
 
+# Audio subsystem sources
+set(AUDIO_SOURCES
+    src/audio/sound.c
+    src/audio/sound.h
+)
+
+# Data management sources
+set(DATA_SOURCES
+    src/data/highscore.c
+    src/data/highscore.h
+)
+
+# Utility sources
+set(UTILS_SOURCES
+    src/utils/logger.c
+    src/utils/logger.h
+    src/utils/random.c
+    src/utils/random.h
+)
+
+# Platform abstraction sources
+set(PLATFORM_SOURCES
+    # Will be added later when platform-specific code is extracted
+)
+
+# Common headers
+set(COMMON_HEADERS
+    src/common/datatypes.h
+    src/common/boolean.h
+    src/common/version.h
+    src/common/sysconfig.h
+)
+
+# Main application
+set(MAIN_SOURCES
+    src/main.c
+    src/main.h
+)
+
+# Combine all sources
+set(ALL_SOURCES
+    ${CORE_SOURCES}
+    ${GRAPHICS_SOURCES}
+    ${INPUT_SOURCES}
+    ${AUDIO_SOURCES}
+    ${DATA_SOURCES}
+    ${UTILS_SOURCES}
+    ${PLATFORM_SOURCES}
+    ${COMMON_HEADERS}
+    ${MAIN_SOURCES}
+)
+
+add_executable(quadromania ${ALL_SOURCES})
+
+# Add include directories for modular structure
+target_include_directories(quadromania PRIVATE
+    ${CMAKE_SOURCE_DIR}/src
+)
+
+# Organize source files in IDE
+source_group("Core" FILES ${CORE_SOURCES})
+source_group("Graphics" FILES ${GRAPHICS_SOURCES})
+source_group("Input" FILES ${INPUT_SOURCES})
+source_group("Audio" FILES ${AUDIO_SOURCES})
+source_group("Data" FILES ${DATA_SOURCES})
+source_group("Utils" FILES ${UTILS_SOURCES})
+source_group("Platform" FILES ${PLATFORM_SOURCES})
+source_group("Common" FILES ${COMMON_HEADERS})
+source_group("Main" FILES ${MAIN_SOURCES})
+
+# Link libraries using vcpkg targets with fallback to static targets
 target_link_libraries(quadromania PRIVATE
-    PkgConfig::SDL2
-    PkgConfig::SDL2_IMAGE
-    PkgConfig::SDL2_MIXER
-    PkgConfig::SDL2_TTF
+    $<IF:$<TARGET_EXISTS:SDL2::SDL2>,SDL2::SDL2,SDL2::SDL2-static>
+    $<IF:$<TARGET_EXISTS:SDL2_image::SDL2_image>,SDL2_image::SDL2_image,SDL2_image::SDL2_image-static>
+    $<IF:$<TARGET_EXISTS:SDL2_mixer::SDL2_mixer>,SDL2_mixer::SDL2_mixer,SDL2_mixer::SDL2_mixer-static>
+    $<IF:$<TARGET_EXISTS:SDL2_ttf::SDL2_ttf>,SDL2_ttf::SDL2_ttf,SDL2_ttf::SDL2_ttf-static>
 )
 
 # Copy data directory to build directory
 file(COPY ${CMAKE_SOURCE_DIR}/data DESTINATION ${CMAKE_BINARY_DIR})
+
+# Print build information
+message(STATUS "Build configuration:")
+message(STATUS "  - Build type: ${CMAKE_BUILD_TYPE}")
