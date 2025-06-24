@@ -54,34 +54,34 @@ void GUI_DrawMainmenu( Uint8 nr_of_dots, Uint8 selected_level)
 		GUI_InitMenuCoordinates();
 	}
 
-	// Graphics_DrawBackground(2);
-	// Graphics_DrawOuterFrame();
+	Graphics_DrawBackground(9);
+	Graphics_DrawOuterFrame();
 	Graphics_DrawTitle();
 
-	// Graphics_DrawText(menu_column, GUI_MenuPosition[MENU_START_GAME],
-	// 		"Start the game");
-	// Graphics_DrawText(menu_column,
-	// 		GUI_MenuPosition[MENU_CHANGE_NR_OF_COLORS], "Select colors");
+	Graphics_DrawText(menu_column, GUI_MenuPosition[MENU_START_GAME],
+			"Start the game");
+	Graphics_DrawText(menu_column,
+			GUI_MenuPosition[MENU_CHANGE_NR_OF_COLORS], "Select colors");
 
-	// for (i = 0; i < nr_of_dots; ++i)
-	// 	Graphics_DrawDot(((Graphics_GetScreenWidth() * 450) / 640) + i
-	// 			* Graphics_GetDotWidth(),
-	// 			GUI_MenuPosition[MENU_CHANGE_NR_OF_COLORS], i);
+	for (i = 0; i < nr_of_dots; ++i)
+		Graphics_DrawDot(((Graphics_GetScreenWidth() * 450) / 640) + i
+				* Graphics_GetDotWidth(),
+				GUI_MenuPosition[MENU_CHANGE_NR_OF_COLORS], i);
 
-	// Graphics_DrawText(menu_column,
-	// 		GUI_MenuPosition[MENU_CHANGE_NR_OF_ROTATIONS],
-	// 		"Select initial turns");
-	// sprintf(nstr, "%d", Quadromania_GetRotationsPerLevel(selected_level));
-	// Graphics_DrawText( ((Graphics_GetScreenWidth() * 480) / 640),
-	// 		GUI_MenuPosition[MENU_CHANGE_NR_OF_ROTATIONS], nstr);
+	Graphics_DrawText(menu_column,
+			GUI_MenuPosition[MENU_CHANGE_NR_OF_ROTATIONS],
+			"Select initial turns");
+	sprintf(nstr, "%d", Quadromania_GetRotationsPerLevel(selected_level));
+	Graphics_DrawText( ((Graphics_GetScreenWidth() * 480) / 640),
+			GUI_MenuPosition[MENU_CHANGE_NR_OF_ROTATIONS], nstr);
 
-	// Graphics_DrawText(menu_column, GUI_MenuPosition[MENU_HIGHSCORES],
-	// 			"Highscores");
+	Graphics_DrawText(menu_column, GUI_MenuPosition[MENU_HIGHSCORES],
+				"Highscores");
 
-	// Graphics_DrawText(menu_column, GUI_MenuPosition[MENU_INSTRUCTIONS],
-	// 		"Instructions");
+	Graphics_DrawText(menu_column, GUI_MenuPosition[MENU_INSTRUCTIONS],
+			"Instructions");
 
-	// Graphics_DrawText(menu_column, GUI_MenuPosition[MENU_QUIT], "Quit");
+	Graphics_DrawText(menu_column, GUI_MenuPosition[MENU_QUIT], "Quit");
 
 	Graphics_UpdateScreen();
 	return;
@@ -90,7 +90,7 @@ void GUI_DrawMainmenu( Uint8 nr_of_dots, Uint8 selected_level)
 /* get the left x coordinate of menu points */
 Uint16 GUI_GetMenuColumnLeft()
 {
-	return ((Graphics_GetScreenWidth() * 48) / 320);
+	return ((Graphics_GetScreenWidth() * 48) / 640);
 }
 
 /* get the right x coordinate of menu points */

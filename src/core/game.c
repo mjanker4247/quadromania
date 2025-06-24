@@ -117,9 +117,9 @@ void Quadromania_DrawPlayfield()
 	sprintf(txt,"Used turns: %d",turns);
 	Graphics_DrawText(0,0,txt);
 	sprintf(txt,"Limit: %d",limit);
-	Graphics_DrawText(((SCREEN_WIDTH *2) / 3),0,txt);
+	Graphics_DrawText(((Graphics_GetScreenWidth() *2) / 3),0,txt);
 	sprintf(txt,"%s",VERSION);
-	Graphics_DrawText(0, (SCREEN_HEIGHT - Graphics_GetFontHeight()), txt);
+	Graphics_DrawText(0, (Graphics_GetScreenHeight() - Graphics_GetFontHeight()), txt);
 }
 
 /* this function tells you wether you have won or not... */

@@ -334,14 +334,14 @@ bool Graphics_Init(bool set_fullscreen)
 	atexit(TTF_Quit);
 
 	/* Create window */
-	Uint32 window_flags = SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI;
+	Uint32 window_flags = SDL_WINDOW_SHOWN;
 	if (set_fullscreen) {
 		window_flags |= SDL_WINDOW_FULLSCREEN;
 	}
 	
 	window = SDL_CreateWindow(VERSION,
 		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-		(640), (480),
+		640, 480,
 		window_flags);
 		
 	if (!window) {
@@ -349,7 +349,7 @@ bool Graphics_Init(bool set_fullscreen)
 		return false;
 	}
 
-	/* Get the actual window size (may be different on high DPI displays) */
+	/* Get the actual window size */
 	int window_width, window_height;
 	SDL_GetWindowSize(window, &window_width, &window_height);
 	DEBUG_PRINT("Window created with dimensions: %dx%d", window_width, window_height);
@@ -361,9 +361,9 @@ bool Graphics_Init(bool set_fullscreen)
 		return false;
 	}
 
-	/* Set logical size to match the original game's resolution */
-	/* SDL_RenderSetLogicalSize(renderer, 320, 240); */
-	/* DEBUG_PRINT("Renderer logical size set to: 320x240"); */
+	/* Set logical size to match the window size for consistent positioning */
+	SDL_RenderSetLogicalSize(renderer, 640, 480);
+	DEBUG_PRINT("Renderer logical size set to: 640x480");
 
 	/* Set window icon */
 	SDL_Surface *icon_surface = Graphics_LoadGraphicsResource("*ICON*");
@@ -435,7 +435,7 @@ bool Graphics_Init(bool set_fullscreen)
 	SDL_QueryTexture(title, NULL, NULL, &w, &h);
 	title_width = (Uint16)w;
 	title_height = (Uint16)h;
-	DEBUG_PRINT("Title: %dx%d (each title: %dx%d)", w, h, texture_width, texture_height);
+	DEBUG_PRINT("Title: %dx%d", w, h);
 
 	SDL_QueryTexture(font, NULL, NULL, &w, &h);
 	font_height = (Uint16)h;
@@ -580,9 +580,8 @@ Uint16 Graphics_GetFontHeight()
  */
 Uint16 Graphics_ScaleX(Uint16 logical_x)
 {
-	int window_width, window_height;
-	SDL_GetWindowSize(window, &window_width, &window_height);
-	return (logical_x * window_width) / 640;
+	/* With logical size set, SDL handles scaling automatically */
+	return logical_x;
 }
 
 /**
@@ -590,9 +589,8 @@ Uint16 Graphics_ScaleX(Uint16 logical_x)
  */
 Uint16 Graphics_ScaleY(Uint16 logical_y)
 {
-	int window_width, window_height;
-	SDL_GetWindowSize(window, &window_width, &window_height);
-	return (logical_y * window_height) / 480;
+	/* With logical size set, SDL handles scaling automatically */
+	return logical_y;
 }
 
 /**
@@ -600,9 +598,8 @@ Uint16 Graphics_ScaleY(Uint16 logical_y)
  */
 Uint16 Graphics_ScaleWidth(Uint16 logical_width)
 {
-	int window_width, window_height;
-	SDL_GetWindowSize(window, &window_width, &window_height);
-	return (logical_width * window_width) / 640;
+	/* With logical size set, SDL handles scaling automatically */
+	return logical_width;
 }
 
 /**
@@ -610,9 +607,8 @@ Uint16 Graphics_ScaleWidth(Uint16 logical_width)
  */
 Uint16 Graphics_ScaleHeight(Uint16 logical_height)
 {
-	int window_width, window_height;
-	SDL_GetWindowSize(window, &window_width, &window_height);
-	return (logical_height * window_height) / 480;
+	/* With logical size set, SDL handles scaling automatically */
+	return logical_height;
 }
 
 /**
