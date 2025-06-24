@@ -100,6 +100,8 @@ set(DATA_SOURCES
     src/data/highscore.h
     src/data/config.c
     src/data/config.h
+    src/data/resources.c
+    src/data/resources.h
 )
 
 # Utility sources
