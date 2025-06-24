@@ -112,7 +112,7 @@ If you prefer to use system-installed dependencies:
 
 After building with local dependencies, your project structure will look like:
 
-```
+```text
 quadromania-master/
 ├── deps/
 │   ├── build/          # Build artifacts
