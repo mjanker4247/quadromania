@@ -192,13 +192,36 @@ void MainHandler(game_state_context_t *context)
 	
 	LOG_INFO("Starting main game loop");
 	
+	/* Optimization: Adaptive frame timing */
+	const Uint32 target_frame_time = 16; /* ~60 FPS */
+	Uint32 last_frame_time = SDL_GetTicks();
+	Uint32 frame_count = 0;
+	Uint32 fps_start_time = SDL_GetTicks();
+	
 	/* Main game loop */
 	while (state_manager_process_transitions(context)) {
+		Uint32 frame_start = SDL_GetTicks();
+		
 		state_manager_update(context);
 		state_manager_render(context);
 		
-		/* Small delay to prevent excessive CPU usage */
-		SDL_Delay(16); /* ~60 FPS */
+		/* Optimization: Adaptive frame timing */
+		Uint32 frame_time = SDL_GetTicks() - frame_start;
+		if (frame_time < target_frame_time) {
+			SDL_Delay(target_frame_time - frame_time);
+		}
+		
+		/* Optimization: FPS monitoring (every 60 frames) */
+		frame_count++;
+		if (frame_count % 60 == 0) {
+			Uint32 current_time = SDL_GetTicks();
+			Uint32 elapsed = current_time - fps_start_time;
+			if (elapsed > 0) {
+				float fps = 60000.0f / elapsed; /* 60 frames / elapsed time */
+				LOG_DEBUG("Current FPS: %.1f", fps);
+				fps_start_time = current_time;
+			}
+		}
 	}
 	
 	LOG_INFO("Main game loop ended");

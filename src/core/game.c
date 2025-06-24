@@ -48,6 +48,18 @@ static Uint8 playfield[18][13];
 static Uint8 rotations, backgroundart;
 static Uint16 turns, limit;
 
+/* Optimization: Track dirty regions for partial updates */
+static struct {
+    bool is_dirty;
+    Uint8 min_x, max_x, min_y, max_y;
+} dirty_region = {false, 0, 0, 0, 0};
+
+/* Optimization: Cache for rendered dots to avoid redundant draws */
+static struct {
+    Uint8 last_values[18][13];
+    bool initialized;
+} render_cache = {0};
+
 
 /*************
  * FUNCTIONS *
@@ -60,6 +72,16 @@ void Quadromania_ClearPlayfield()
 	for (i = 0; i < 18; i++)
 		for (j = 0; j < 13; j++)
 			playfield[i][j] = Quadromania_Basecolor;
+	
+	/* Optimization: Mark entire playfield as dirty */
+	dirty_region.is_dirty = true;
+	dirty_region.min_x = 0;
+	dirty_region.max_x = 17;
+	dirty_region.min_y = 0;
+	dirty_region.max_y = 12;
+	
+	/* Clear render cache */
+	memset(&render_cache, 0, sizeof(render_cache));
 }
 
 /* this function initializes the playfield and rotates squares around
@@ -89,6 +111,27 @@ void Quadromania_InitPlayfield(Uint16 initialrotations, Uint8 maxrotations)
 void Quadromania_Rotate(Uint32 x, Uint32 y)
 {
 	Uint8 i, j;
+	
+	/* Optimization: Track dirty region for this rotation */
+	if (!dirty_region.is_dirty) {
+		dirty_region.is_dirty = true;
+		dirty_region.min_x = (x > 1) ? x - 2 : 0;
+		dirty_region.max_x = (x < 16) ? x + 1 : 17;
+		dirty_region.min_y = (y > 1) ? y - 2 : 0;
+		dirty_region.max_y = (y < 11) ? y + 1 : 12;
+	} else {
+		/* Expand dirty region to include this rotation */
+		Uint8 new_min_x = (x > 1) ? x - 2 : 0;
+		Uint8 new_max_x = (x < 16) ? x + 1 : 17;
+		Uint8 new_min_y = (y > 1) ? y - 2 : 0;
+		Uint8 new_max_y = (y < 11) ? y + 1 : 12;
+		
+		if (new_min_x < dirty_region.min_x) dirty_region.min_x = new_min_x;
+		if (new_max_x > dirty_region.max_x) dirty_region.max_x = new_max_x;
+		if (new_min_y < dirty_region.min_y) dirty_region.min_y = new_min_y;
+		if (new_max_y > dirty_region.max_y) dirty_region.max_y = new_max_y;
+	}
+	
 	for (i = x - 1; i < (x + 2); ++i)
 		for (j = y - 1; j < (y + 2); ++j)
 		{
@@ -109,9 +152,25 @@ void Quadromania_DrawPlayfield()
 	Graphics_DrawBackground(backgroundart);
 	Graphics_DrawOuterFrame();
 
-	for (i = 0; i < 18; i++)
-		for (j = 0; j < 13; j++)
-			Graphics_DrawDot(i * Graphics_GetDotWidth() + Graphics_GetDotWidth(), j * Graphics_GetDotHeight() + Graphics_GetDotHeight(), playfield[i][j]);
+	/* Optimization: Only redraw dirty regions */
+	if (dirty_region.is_dirty) {
+		for (i = dirty_region.min_x; i <= dirty_region.max_x; i++) {
+			for (j = dirty_region.min_y; j <= dirty_region.max_y; j++) {
+				/* Only redraw if value changed or cache not initialized */
+				if (!render_cache.initialized || 
+				    render_cache.last_values[i][j] != playfield[i][j]) {
+					Graphics_DrawDot(i * Graphics_GetDotWidth() + Graphics_GetDotWidth(), 
+					                j * Graphics_GetDotHeight() + Graphics_GetDotHeight(), 
+					                playfield[i][j]);
+					render_cache.last_values[i][j] = playfield[i][j];
+				}
+			}
+		}
+		
+		/* Clear dirty flag */
+		dirty_region.is_dirty = false;
+		render_cache.initialized = true;
+	}
 
 	/* draw status line */
 	sprintf(txt,"Used turns: %d",turns);

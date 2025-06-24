@@ -46,6 +46,14 @@ Uint8 debounce_tmr_mouse    = 0;
 Uint8 debounce_tmr_keys     = 0;
 Uint8 debounce_tmr_dpad     = 0;
 
+/* Optimization: Input buffering and reduced polling */
+static struct {
+    SDL_Event events[32];
+    int event_count;
+    Uint32 last_poll_time;
+    Uint32 poll_interval;
+} input_buffer = {0};
+
 #if(HAVE_JOYSTICK != _NO_JOYSTICK)
 Uint8 debounce_tmr_joystick = 0;
 SDL_Joystick *CurrentJoystick;
@@ -80,6 +88,11 @@ void Event_Init()
 	key.right          = false;
 	key.button         = false;
 
+	/* Optimization: Initialize input buffer */
+	input_buffer.event_count = 0;
+	input_buffer.last_poll_time = 0;
+	input_buffer.poll_interval = 8; /* Poll every 8ms instead of every frame */
+
 #if(HAVE_JOYSTICK != _NO_JOYSTICK)
 	Joystick_Init();
 #endif
@@ -91,11 +104,25 @@ void Event_Init()
  */
 void Event_ProcessInput()
 {
-	SDL_Event event; /* SDL event for keyboard, mouse and focus actions... */
-
-	if (SDL_PollEvent(&event))
-	{
-		switch (event.type)
+	/* Optimization: Only poll events at specified intervals */
+	Uint32 current_time = SDL_GetTicks();
+	if (current_time - input_buffer.last_poll_time < input_buffer.poll_interval) {
+		return;
+	}
+	input_buffer.last_poll_time = current_time;
+	
+	/* Optimization: Batch process multiple events */
+	input_buffer.event_count = 0;
+	while (SDL_PollEvent(&input_buffer.events[input_buffer.event_count]) && 
+	       input_buffer.event_count < 31) {
+		input_buffer.event_count++;
+	}
+	
+	/* Process all buffered events */
+	for (int i = 0; i < input_buffer.event_count; i++) {
+		SDL_Event *event = &input_buffer.events[i];
+		
+		switch (event->type)
 		{
 		/* mouse handling... */
 		case SDL_MOUSEBUTTONUP:
@@ -103,9 +130,9 @@ void Event_ProcessInput()
 			break;
 		case SDL_MOUSEBUTTONDOWN:
 			/* collect the mouse data and mouse click location */
-			mouse.x = event.button.x;
-			mouse.y = event.button.y;
-			mouse.button = event.button.button;
+			mouse.x = event->button.x;
+			mouse.y = event->button.y;
+			mouse.button = event->button.button;
 			if(debounce_tmr_mouse == 0)
 			{
 				mouse.clicked = true;
@@ -116,7 +143,7 @@ void Event_ProcessInput()
 		case SDL_KEYUP:
 			if(debounce_tmr_keys == 0)
 			{
-				switch (event.key.keysym.sym)
+				switch (event->key.keysym.sym)
 				{
 				case SDLK_UP:
 					/* up arrow */
@@ -165,7 +192,7 @@ void Event_ProcessInput()
 			}
 			break;
 		case SDL_KEYDOWN:
-			switch (event.key.keysym.sym)
+			switch (event->key.keysym.sym)
 			{
 			case SDLK_UP:
 				/* up arrow */
@@ -196,20 +223,20 @@ void Event_ProcessInput()
 	   #if(HAVE_JOYSTICK != _NO_JOYSTICK)
 		case SDL_JOYAXISMOTION:
 			/* x Axis */
-			if(event.jaxis.axis == 0)
+			if(event->jaxis.axis == 0)
 			{
-				joystick.left  = (bool) (event.jaxis.value < -16000);
-				joystick.right = (bool) (event.jaxis.value >  16000);
+				joystick.left  = (bool) (event->jaxis.value < -16000);
+				joystick.right = (bool) (event->jaxis.value >  16000);
 			}
 			/* y Axis */
-			if(event.jaxis.axis == 1)
+			if(event->jaxis.axis == 1)
 			{
-				joystick.up    = (bool) (event.jaxis.value < -16000);
-				joystick.down  = (bool) (event.jaxis.value >  16000);
+				joystick.up    = (bool) (event->jaxis.value < -16000);
+				joystick.down  = (bool) (event->jaxis.value >  16000);
 			}
 			break;
 		case SDL_JOYBUTTONDOWN:
-			switch(event.jbutton.button)
+			switch(event->jbutton.button)
 			{
 #if(HAVE_JOYSTICK == _GP2X_JOYSTICK)
 			case JOYSTICK_BUTTON_ESC:
@@ -251,7 +278,7 @@ void Event_ProcessInput()
 			}
 			break;
 		case SDL_JOYBUTTONUP:
-			switch(event.jbutton.button)
+			switch(event->jbutton.button)
 			{
 #if(HAVE_JOYSTICK ==_GP2X_JOYSTICK)
 			case GP2X_BUTTON_UP:
