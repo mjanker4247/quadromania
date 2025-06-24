@@ -176,10 +176,17 @@ void InputManager_ProcessEvents(void)
         input_manager_state.event_buffer_size
     );
 
+    if (events_processed > 0)
+    {
+        DEBUG_PRINT("Processing %d input events", events_processed);
+    }
+
     /* Process each event */
     for (int i = 0; i < events_processed; i++)
     {
         InputEvent* event = &input_manager_state.event_buffer[i].unified_event;
+        
+        DEBUG_PRINT("Processing event %d: type=%d", i, event->type);
         
         /* Handle quit events */
         if (event->type == INPUT_EVENT_QUIT)
@@ -204,7 +211,12 @@ void InputManager_ProcessEvents(void)
         case INPUT_EVENT_MOUSE_MOVE:
             if (input_manager_state.device_enabled[INPUT_DEVICE_MOUSE])
             {
+                DEBUG_PRINT("Processing mouse event: type=%d", event->type);
                 MouseHandler_ProcessEvent(event, &input_manager_state.mouse_state);
+            }
+            else
+            {
+                DEBUG_PRINT("Mouse events disabled");
             }
             break;
 
@@ -218,6 +230,7 @@ void InputManager_ProcessEvents(void)
             break;
 
         default:
+            DEBUG_PRINT("Unhandled event type: %d", event->type);
             break;
         }
     }

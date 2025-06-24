@@ -161,6 +161,9 @@ bool InitGameEngine(bool fullscreen)
 	if(Graphics_Init(fullscreen))
 	{
 		LOG_INFO("Graphics system initialized successfully");
+		/* Show mouse cursor and disable relative mouse mode */
+		SDL_ShowCursor(SDL_ENABLE);
+		SDL_SetRelativeMouseMode(SDL_FALSE);
 		/* initialize event handler */
 		Event_Init();
 		LOG_DEBUG("Event handler initialized");

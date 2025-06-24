@@ -140,10 +140,28 @@ void Event_ProcessInput(void)
 
     if (mouse_state)
     {
+        /* Store previous state for change detection */
+        uint16_t prev_x = compat_state.mouse.x;
+        uint16_t prev_y = compat_state.mouse.y;
+        uint8_t prev_button = compat_state.mouse.button;
+        bool prev_clicked = compat_state.mouse.clicked;
+        
         compat_state.mouse.x = mouse_state->x;
         compat_state.mouse.y = mouse_state->y;
         compat_state.mouse.button = mouse_state->button;
         compat_state.mouse.clicked = mouse_state->clicked;
+        
+        /* Debug logging for mouse events */
+        if (compat_state.mouse.clicked != prev_clicked || 
+            compat_state.mouse.button != prev_button ||
+            compat_state.mouse.x != prev_x || 
+            compat_state.mouse.y != prev_y)
+        {
+            DEBUG_PRINT("Mouse state changed: x=%d, y=%d, button=%d, clicked=%s", 
+                       compat_state.mouse.x, compat_state.mouse.y, 
+                       compat_state.mouse.button, 
+                       compat_state.mouse.clicked ? "true" : "false");
+        }
     }
 
     if (dpad_state)

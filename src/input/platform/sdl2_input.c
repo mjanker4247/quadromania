@@ -131,7 +131,8 @@ int SDL2Input_ProcessEvents(PlatformInputEvent* event_buffer, int buffer_size)
         if (SDL2Input_ConvertEvent(&sdl_event, &event_buffer[events_processed].unified_event))
         {
             event_buffer[events_processed].platform_event_type = sdl_event.type;
-            event_buffer[events_processed].platform_event_data = &sdl_event;
+            /* Don't store pointer to local variable - just store the event type */
+            event_buffer[events_processed].platform_event_data = NULL;
             events_processed++;
         }
     }

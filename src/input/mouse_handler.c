@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <SDL2/SDL.h>
 #include "input/mouse_handler.h"
 #include "utils/logger.h"
 
@@ -135,6 +136,9 @@ bool MouseHandler_ProcessEvent(const InputEvent* event, MouseState* mouse_state)
     uint16_t y = event->data.mouse.y;
     float adjusted_x, adjusted_y;
 
+    DEBUG_PRINT("Processing mouse event: type=%d, x=%d, y=%d, button=%d", 
+               event->type, x, y, button);
+
     switch (event->type)
     {
     case INPUT_EVENT_MOUSE_MOVE:
@@ -155,37 +159,61 @@ bool MouseHandler_ProcessEvent(const InputEvent* event, MouseState* mouse_state)
         mouse_state->y = mouse_handler_state.state.y;
         
         handled = true;
+        DEBUG_PRINT("Mouse move processed: x=%d, y=%d", mouse_state->x, mouse_state->y);
         break;
 
     case INPUT_EVENT_MOUSE_DOWN:
         if (button < 8)
         {
-            mouse_handler_state.button_states[button] = true;
-            mouse_handler_state.state.button = button;
+            /* Map SDL2 button numbers to expected button numbers */
+            uint8_t mapped_button = button;
+            if (button == SDL_BUTTON_LEFT) {
+                mapped_button = 1;  /* Left button */
+            } else if (button == SDL_BUTTON_RIGHT) {
+                mapped_button = 3;  /* Right button */
+            } else if (button == SDL_BUTTON_MIDDLE) {
+                mapped_button = 2;  /* Middle button */
+            }
+            
+            mouse_handler_state.button_states[mapped_button] = true;
+            mouse_handler_state.state.button = mapped_button;
             mouse_handler_state.state.clicked = true;
             mouse_handler_state.state.x = x;
             mouse_handler_state.state.y = y;
             
             /* Update the provided mouse state */
-            mouse_state->button = button;
+            mouse_state->button = mapped_button;
             mouse_state->clicked = true;
             mouse_state->x = x;
             mouse_state->y = y;
             
             handled = true;
+            DEBUG_PRINT("Mouse down processed: SDL_button=%d, mapped_button=%d, x=%d, y=%d", 
+                       button, mapped_button, x, y);
         }
         break;
 
     case INPUT_EVENT_MOUSE_UP:
         if (button < 8)
         {
-            mouse_handler_state.button_states[button] = false;
+            /* Map SDL2 button numbers to expected button numbers */
+            uint8_t mapped_button = button;
+            if (button == SDL_BUTTON_LEFT) {
+                mapped_button = 1;  /* Left button */
+            } else if (button == SDL_BUTTON_RIGHT) {
+                mapped_button = 3;  /* Right button */
+            } else if (button == SDL_BUTTON_MIDDLE) {
+                mapped_button = 2;  /* Middle button */
+            }
+            
+            mouse_handler_state.button_states[mapped_button] = false;
             mouse_handler_state.state.clicked = false;
             
             /* Update the provided mouse state */
             mouse_state->clicked = false;
             
             handled = true;
+            DEBUG_PRINT("Mouse up processed: SDL_button=%d, mapped_button=%d", button, mapped_button);
         }
         break;
 
