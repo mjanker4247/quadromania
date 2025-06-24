@@ -134,6 +134,9 @@ int main(int argc, char *argv[])
 	}
 
 	config_free(config);
+	
+	/* Cleanup threaded audio system */
+	Sound_ShutdownThreaded();
 	LOG_INFO("Quadromania shutting down");
 	return (0);
 }
@@ -155,8 +158,14 @@ bool InitGameEngine(bool fullscreen)
 	LOG_DEBUG("Highscore table loaded");
 	
 	/* initialize sound system */
-	Sound_Init();
-	LOG_DEBUG("Sound system initialized");
+	if (!Sound_InitThreaded()) {
+		LOG_ERROR("Failed to initialize threaded audio system");
+		return false;
+	}
+	LOG_DEBUG("Threaded audio system initialized");
+	
+	/* Test the threaded audio system */
+	Sound_TestThreadedSystem();
 	
 	/* initialize graphics module... */
 	if(Graphics_Init(fullscreen))
@@ -198,6 +207,9 @@ void MainHandler(game_state_context_t *context)
 	Uint32 frame_count = 0;
 	Uint32 fps_start_time = SDL_GetTicks();
 	
+	/* Audio statistics monitoring */
+	Uint32 audio_stats_time = SDL_GetTicks();
+	
 	/* Main game loop */
 	while (state_manager_process_transitions(context)) {
 		Uint32 frame_start = SDL_GetTicks();
@@ -220,6 +232,19 @@ void MainHandler(game_state_context_t *context)
 				float fps = 60000.0f / elapsed; /* 60 frames / elapsed time */
 				LOG_DEBUG("Current FPS: %.1f", fps);
 				fps_start_time = current_time;
+			}
+		}
+		
+		/* Audio statistics monitoring (every 300 frames ~5 seconds) */
+		if (frame_count % 300 == 0) {
+			Uint32 current_time = SDL_GetTicks();
+			if (current_time - audio_stats_time > 5000) { /* 5 seconds */
+				int queue_size, processed_commands;
+				float avg_latency;
+				Sound_GetAudioStats(&queue_size, &processed_commands, &avg_latency);
+				LOG_DEBUG("Audio stats - Queue: %d, Processed: %d, Avg Latency: %.1fms", 
+				         queue_size, processed_commands, avg_latency);
+				audio_stats_time = current_time;
 			}
 		}
 	}

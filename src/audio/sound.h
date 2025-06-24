@@ -27,6 +27,7 @@
 #define __SOUND_H
 
 #include <SDL2/SDL.h>
+#include <stdbool.h>
 
 	/**************************
 	 * DATA TYPE DECLARATIONS *
@@ -39,6 +40,43 @@
 		SOUND_LOOSE = 4
 	} SoundEffect;
 
+	/* Audio command types for thread-safe communication */
+	typedef enum
+	{
+		AUDIO_CMD_PLAY_EFFECT,
+		AUDIO_CMD_SET_VOLUME,
+		AUDIO_CMD_INCREASE_VOLUME,
+		AUDIO_CMD_DECREASE_VOLUME,
+		AUDIO_CMD_STOP_MUSIC,
+		AUDIO_CMD_PLAY_MUSIC,
+		AUDIO_CMD_SHUTDOWN
+	} AudioCommandType;
+
+	/* Audio command structure for thread communication */
+	typedef struct
+	{
+		AudioCommandType type;
+		union {
+			SoundEffect effect;
+			Uint8 volume;
+			bool play_music;
+		} data;
+	} AudioCommand;
+
+	/* Audio thread state */
+	typedef struct
+	{
+		bool initialized;
+		bool running;
+		SDL_Thread *thread;
+		SDL_mutex *command_mutex;
+		SDL_cond *command_cond;
+		AudioCommand command_queue[32];
+		int queue_head;
+		int queue_tail;
+		int queue_size;
+	} AudioThreadState;
+
 	/**************
 	 * PROTOTYPES *
 	 **************/
@@ -48,5 +86,19 @@
 	void Sound_SetVolume(Uint8 volume);
 	void Sound_IncreaseVolume(void);
 	void Sound_DecreaseVolume(void);
+	
+	/* Thread-safe audio functions */
+	bool Sound_InitThreaded(void);
+	void Sound_ShutdownThreaded(void);
+	int Sound_AudioThread(void *data);
+	bool Sound_QueueCommand(AudioCommand *cmd);
+	
+	/* Audio thread management and statistics */
+	bool Sound_IsThreaded(void);
+	int Sound_GetQueueSize(void);
+	void Sound_GetAudioStats(int *queue_size, int *processed_commands, float *avg_latency);
+	
+	/* Test function */
+	void Sound_TestThreadedSystem(void);
 
 #endif /* __SOUND_H */
