@@ -48,17 +48,11 @@ static Uint8 playfield[18][13];
 static Uint8 rotations, backgroundart;
 static Uint16 turns, limit;
 
-/* Optimization: Track dirty regions for partial updates */
+/* Optimization: Simple state tracking for turn-based rendering */
 static struct {
-    bool is_dirty;
-    Uint8 min_x, max_x, min_y, max_y;
-} dirty_region = {false, 0, 0, 0, 0};
-
-/* Optimization: Cache for rendered dots to avoid redundant draws */
-static struct {
-    Uint8 last_values[18][13];
-    bool initialized;
-} render_cache = {0};
+    bool needs_redraw;
+    Uint8 last_playfield[18][13];
+} render_state = {true, {0}};
 
 
 /*************
@@ -73,15 +67,8 @@ void Quadromania_ClearPlayfield()
 		for (j = 0; j < 13; j++)
 			playfield[i][j] = Quadromania_Basecolor;
 	
-	/* Optimization: Mark entire playfield as dirty */
-	dirty_region.is_dirty = true;
-	dirty_region.min_x = 0;
-	dirty_region.max_x = 17;
-	dirty_region.min_y = 0;
-	dirty_region.max_y = 12;
-	
-	/* Clear render cache */
-	memset(&render_cache, 0, sizeof(render_cache));
+	/* Mark for redraw in turn-based game */
+	render_state.needs_redraw = true;
 }
 
 /* this function initializes the playfield and rotates squares around
@@ -112,25 +99,8 @@ void Quadromania_Rotate(Uint32 x, Uint32 y)
 {
 	Uint8 i, j;
 	
-	/* Optimization: Track dirty region for this rotation */
-	if (!dirty_region.is_dirty) {
-		dirty_region.is_dirty = true;
-		dirty_region.min_x = (x > 1) ? x - 2 : 0;
-		dirty_region.max_x = (x < 16) ? x + 1 : 17;
-		dirty_region.min_y = (y > 1) ? y - 2 : 0;
-		dirty_region.max_y = (y < 11) ? y + 1 : 12;
-	} else {
-		/* Expand dirty region to include this rotation */
-		Uint8 new_min_x = (x > 1) ? x - 2 : 0;
-		Uint8 new_max_x = (x < 16) ? x + 1 : 17;
-		Uint8 new_min_y = (y > 1) ? y - 2 : 0;
-		Uint8 new_max_y = (y < 11) ? y + 1 : 12;
-		
-		if (new_min_x < dirty_region.min_x) dirty_region.min_x = new_min_x;
-		if (new_max_x > dirty_region.max_x) dirty_region.max_x = new_max_x;
-		if (new_min_y < dirty_region.min_y) dirty_region.min_y = new_min_y;
-		if (new_max_y > dirty_region.max_y) dirty_region.max_y = new_max_y;
-	}
+	/* For turn-based games, we only need to mark that something changed */
+	render_state.needs_redraw = true;
 	
 	for (i = x - 1; i < (x + 2); ++i)
 		for (j = y - 1; j < (y + 2); ++j)
@@ -149,27 +119,28 @@ void Quadromania_DrawPlayfield()
 	Uint16 i, j;
 	char txt[512];
 
+	/* For turn-based games, only redraw if something changed */
+	if (!render_state.needs_redraw) {
+		/* Just update the status text which changes every turn */
+		sprintf(txt,"Used turns: %d",turns);
+		Graphics_DrawText(0,0,txt);
+		sprintf(txt,"Limit: %d",limit);
+		Graphics_DrawText(((Graphics_GetScreenWidth() *2) / 3),0,txt);
+		sprintf(txt,"%s",VERSION);
+		Graphics_DrawText(0, (Graphics_GetScreenHeight() - Graphics_GetFontHeight()), txt);
+		return;
+	}
+
 	Graphics_DrawBackground(backgroundart);
 	Graphics_DrawOuterFrame();
 
-	/* Optimization: Only redraw dirty regions */
-	if (dirty_region.is_dirty) {
-		for (i = dirty_region.min_x; i <= dirty_region.max_x; i++) {
-			for (j = dirty_region.min_y; j <= dirty_region.max_y; j++) {
-				/* Only redraw if value changed or cache not initialized */
-				if (!render_cache.initialized || 
-				    render_cache.last_values[i][j] != playfield[i][j]) {
-					Graphics_DrawDot(i * Graphics_GetDotWidth() + Graphics_GetDotWidth(), 
-					                j * Graphics_GetDotHeight() + Graphics_GetDotHeight(), 
-					                playfield[i][j]);
-					render_cache.last_values[i][j] = playfield[i][j];
-				}
-			}
+	/* Draw the entire playfield */
+	for (i = 0; i < 18; i++) {
+		for (j = 0; j < 13; j++) {
+			Graphics_DrawDot(i * Graphics_GetDotWidth() + Graphics_GetDotWidth(), 
+			                j * Graphics_GetDotHeight() + Graphics_GetDotHeight(), 
+			                playfield[i][j]);
 		}
-		
-		/* Clear dirty flag */
-		dirty_region.is_dirty = false;
-		render_cache.initialized = true;
 	}
 
 	/* draw status line */
@@ -179,6 +150,9 @@ void Quadromania_DrawPlayfield()
 	Graphics_DrawText(((Graphics_GetScreenWidth() *2) / 3),0,txt);
 	sprintf(txt,"%s",VERSION);
 	Graphics_DrawText(0, (Graphics_GetScreenHeight() - Graphics_GetFontHeight()), txt);
+	
+	/* Mark as drawn */
+	render_state.needs_redraw = false;
 }
 
 /* this function tells you wether you have won or not... */
@@ -228,5 +202,16 @@ Uint32 Quadromania_GetPercentOfSolution()
 Uint16 Quadromania_GetRotationsPerLevel(Uint8 level)
 {
 	return (Quadromania_BaseOfRotations + level * Quadromania_ModifierPerLevel);
+}
+
+/* Turn-based game optimizations */
+void Quadromania_ForceRedraw(void)
+{
+	render_state.needs_redraw = true;
+}
+
+bool Quadromania_NeedsRedraw(void)
+{
+	return render_state.needs_redraw;
 }
 

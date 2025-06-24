@@ -34,11 +34,15 @@
 	 **************/
 
 	void Quadromania_ClearPlayfield(void);
-	void Quadromania_InitPlayfield(Uint16, Uint8);
-	void Quadromania_Rotate(Uint32, Uint32);
+	void Quadromania_InitPlayfield(Uint16 initialrotations, Uint8 maxrotations);
+	void Quadromania_Rotate(Uint32 x, Uint32 y);
 	void Quadromania_DrawPlayfield(void);
 	bool Quadromania_IsGameWon(void);
 	bool Quadromania_IsTurnLimithit(void);
 	Uint32 Quadromania_GetPercentOfSolution(void);
-	Uint16 Quadromania_GetRotationsPerLevel(Uint8);
+	Uint16 Quadromania_GetRotationsPerLevel(Uint8 level);
+
+	/* Turn-based game optimizations */
+	void Quadromania_ForceRedraw(void);
+	bool Quadromania_NeedsRedraw(void);
 #endif

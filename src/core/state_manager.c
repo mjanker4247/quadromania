@@ -125,8 +125,12 @@ void state_manager_render(game_state_context_t *context)
 {
     if (!context) return;
     
-    /* State-specific rendering is handled in the update functions */
-    /* This function can be used for common rendering tasks if needed */
+    /* For turn-based games, only render when state changes or explicitly requested */
+    if (context->state_changed) {
+        /* State-specific rendering is handled in the update functions */
+        /* This function can be used for common rendering tasks if needed */
+        context->state_changed = false;
+    }
 }
 
 void state_manager_handle_title(game_state_context_t *context)
@@ -233,8 +237,12 @@ void state_manager_handle_game(game_state_context_t *context)
             if (xraster > 0 && xraster < 17 && yraster > 0 && yraster < 12) {
                 /* Rotate the correct 3x3 part */
                 Quadromania_Rotate(xraster, yraster);
-                Quadromania_DrawPlayfield();
-                Graphics_UpdateScreen();
+                
+                /* For turn-based games, only redraw if something changed */
+                if (Quadromania_NeedsRedraw()) {
+                    Quadromania_DrawPlayfield();
+                    Graphics_UpdateScreen();
+                }
                 
                 /* Update score */
                 context->score = Quadromania_GetPercentOfSolution();

@@ -193,6 +193,7 @@ bool InitGameEngine(bool fullscreen)
 
 /**
  * The main handling function implements the game loop using the state manager.
+ * This is optimized for main games where high FPS is not required.
  * @param context Pointer to the game state context
  */
 void MainHandler(game_state_context_t *context)
@@ -201,53 +202,25 @@ void MainHandler(game_state_context_t *context)
 	
 	LOG_INFO("Starting main game loop");
 	
-	/* Optimization: Adaptive frame timing */
-	const Uint32 target_frame_time = 16; /* ~60 FPS */
-	Uint32 last_frame_time = SDL_GetTicks();
-	Uint32 frame_count = 0;
-	Uint32 fps_start_time = SDL_GetTicks();
-	
-	/* Audio statistics monitoring */
-	Uint32 audio_stats_time = SDL_GetTicks();
-	
-	/* Main game loop */
+	/* main game loop - only process when there are events or state changes */
 	while (state_manager_process_transitions(context)) {
-		Uint32 frame_start = SDL_GetTicks();
+		/* Process input events */
+		Event_ProcessInput();
 		
+		/* Update game state */
 		state_manager_update(context);
+		
+		/* Render only when needed (state changes or input) */
 		state_manager_render(context);
 		
-		/* Optimization: Adaptive frame timing */
-		Uint32 frame_time = SDL_GetTicks() - frame_start;
-		if (frame_time < target_frame_time) {
-			SDL_Delay(target_frame_time - frame_time);
-		}
+		/* For turn-based games, we can use a longer delay to save CPU */
+		SDL_Delay(50); /* 20 FPS is more than sufficient for a turn-based game */
 		
-		/* Optimization: FPS monitoring (every 60 frames) */
-		frame_count++;
-		if (frame_count % 60 == 0) {
-			Uint32 current_time = SDL_GetTicks();
-			Uint32 elapsed = current_time - fps_start_time;
-			if (elapsed > 0) {
-				float fps = 60000.0f / elapsed; /* 60 frames / elapsed time */
-				LOG_DEBUG("Current FPS: %.1f", fps);
-				fps_start_time = current_time;
-			}
-		}
-		
-		/* Audio statistics monitoring (every 300 frames ~5 seconds) */
-		if (frame_count % 300 == 0) {
-			Uint32 current_time = SDL_GetTicks();
-			if (current_time - audio_stats_time > 5000) { /* 5 seconds */
-				int queue_size, processed_commands;
-				float avg_latency;
-				Sound_GetAudioStats(&queue_size, &processed_commands, &avg_latency);
-				LOG_DEBUG("Audio stats - Queue: %d, Processed: %d, Avg Latency: %.1fms", 
-				         queue_size, processed_commands, avg_latency);
-				audio_stats_time = current_time;
-			}
+		/* Check for quit request */
+		if (Event_QuitRequested()) {
+			break;
 		}
 	}
 	
-	LOG_INFO("Main game loop ended");
+	LOG_INFO("Game loop ended");
 }

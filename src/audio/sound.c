@@ -49,12 +49,10 @@ Mix_Music *music = NULL;
 /* Threaded audio system state */
 static AudioThreadState audio_thread = {0};
 
-/* Audio statistics for monitoring */
+/* Audio statistics for monitoring - simplified for turn-based games */
 static struct {
 	int total_commands_processed;
 	int commands_dropped;
-	Uint32 total_latency;
-	Uint32 last_command_time;
 } audio_stats = {0};
 
 /*************
@@ -187,13 +185,6 @@ int Sound_AudioThread(void *data)
 			audio_thread.queue_head = (audio_thread.queue_head + 1) % 32;
 			audio_thread.queue_size--;
 			has_command = true;
-			
-			/* Track command processing time */
-			Uint32 current_time = SDL_GetTicks();
-			if (audio_stats.last_command_time > 0) {
-				audio_stats.total_latency += current_time - audio_stats.last_command_time;
-			}
-			audio_stats.last_command_time = current_time;
 		}
 		SDL_UnlockMutex(audio_thread.command_mutex);
 		
@@ -454,7 +445,7 @@ int Sound_GetQueueSize(void)
 }
 
 /**
- * Get audio system statistics
+ * Get audio system statistics - simplified for turn-based games
  */
 void Sound_GetAudioStats(int *queue_size, int *processed_commands, float *avg_latency)
 {
@@ -465,8 +456,7 @@ void Sound_GetAudioStats(int *queue_size, int *processed_commands, float *avg_la
 		*processed_commands = audio_stats.total_commands_processed;
 	}
 	if (avg_latency) {
-		*avg_latency = (audio_stats.total_commands_processed > 0) ? 
-			(float)audio_stats.total_latency / audio_stats.total_commands_processed : 0.0f;
+		*avg_latency = 0.0f; /* Not tracking latency for turn-based games */
 	}
 }
 
