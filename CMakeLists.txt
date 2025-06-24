@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 
 set(CMAKE_C_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Set default build type if not specified
 if(NOT CMAKE_BUILD_TYPE)
@@ -108,7 +110,7 @@ set(DATA_SOURCES
 set(UTILS_SOURCES
     src/utils/logger.c
     src/utils/logger.h
-    src/utils/random.c
+    src/utils/random.cpp
     src/utils/random.h
 )
 

@@ -2,7 +2,7 @@
  * Quadromania
  * (c) 2002/2003/2009/2010 by Matthias Arndt <marndt@asmsoftware.de> / ASM Software
  *
- * File: random.h - header files for the random number generator
+ * File: random.cpp - implements a modern random number generator using C++ standard library
  * last Modified: 2024-12-19
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,33 +22,31 @@
  * THIS SOFTWARE IS SUPPLIED AS IT IS WITHOUT ANY WARRANTY!
  *
  */
-#ifndef __RANDOM_H
-#define __RANDOM_H
 
-#include <stdint.h>
+#include <random>
+#include <chrono>
+#include "utils/random.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/**************
- * PROTOTYPES *
- **************/
+// Global random number generator using Mersenne Twister
+static std::mt19937 rng;
+static std::uniform_int_distribution<uint32_t> dist(0, UINT32_MAX);
 
 /**
- * Initialize the random number generator with a seed based on current time.
+ * This function initializes the random number generator with a seed based on current time.
  * Uses high-resolution clock for better entropy.
  */
-void Random_InitSeed(void);
+extern "C" void Random_InitSeed()
+{
+    auto now = std::chrono::steady_clock::now();
+    auto seed = now.time_since_epoch().count();
+    rng.seed(static_cast<unsigned int>(seed));
+}
 
 /**
- * Get a high-quality pseudo random number using Mersenne Twister.
+ * This function provides a high-quality pseudo random number using Mersenne Twister.
  * Returns a 32-bit unsigned integer in the range [0, UINT32_MAX].
  */
-uint32_t Random_GetRandom(void);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* __RANDOM_H */
+extern "C" uint32_t Random_GetRandom()
+{
+    return dist(rng);
+} 
