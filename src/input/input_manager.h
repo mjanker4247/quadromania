@@ -140,12 +140,6 @@ void InputManager_ProcessEvents(void);
 const MouseState* InputManager_GetMouseState(void);
 
 /**
- * Get the current unified directional pad state
- * @return Pointer to current dpad state
- */
-const DpadState* InputManager_GetDpadState(void);
-
-/**
  * Check if quit was requested
  * @return true if quit was requested
  */
@@ -155,17 +149,6 @@ bool InputManager_IsQuitRequested(void);
  * Debounce mouse input
  */
 void InputManager_DebounceMouse(void);
-
-/**
- * Debounce directional pad input
- */
-void InputManager_DebounceDpad(void);
-
-/**
- * Check if any directional pad input is pressed
- * @return true if any dpad input is active
- */
-bool InputManager_IsDpadPressed(void);
 
 /**
  * Get the next input event from the queue

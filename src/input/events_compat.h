@@ -83,65 +83,9 @@ Uint8 Event_GetMouseButton(void);
 bool Event_MouseClicked(void);
 
 /**
- * Get directional pad up state
- * This replaces the old Event_GetDpadUp() function
- */
-bool Event_GetDpadUp(void);
-
-/**
- * Get directional pad down state
- * This replaces the old Event_GetDpadDown() function
- */
-bool Event_GetDpadDown(void);
-
-/**
- * Get directional pad left state
- * This replaces the old Event_GetDpadLeft() function
- */
-bool Event_GetDpadLeft(void);
-
-/**
- * Get directional pad right state
- * This replaces the old Event_GetDpadRight() function
- */
-bool Event_GetDpadRight(void);
-
-/**
- * Get directional pad button state
- * This replaces the old Event_GetDpadButton() function
- */
-bool Event_GetDpadButton(void);
-
-/**
- * Check if any directional pad input is pressed
- * This replaces the old Event_IsDpadPressed() function
- */
-bool Event_IsDpadPressed(void);
-
-/**
- * Debounce directional pad input
- * This replaces the old Event_DebounceDpad() function
- */
-void Event_DebounceDpad(void);
-
-/**
  * Debounce mouse input
  * This replaces the old Event_DebounceMouse() function
  */
 void Event_DebounceMouse(void);
-
-/**
- * Debounce keyboard input
- * This replaces the old Event_DebounceKeys() function
- */
-void Event_DebounceKeys(void);
-
-#if(HAVE_JOYSTICK != _NO_JOYSTICK)
-/**
- * Initialize joystick support
- * This replaces the old Joystick_Init() function
- */
-void Joystick_Init(void);
-#endif
 
 #endif /* __EVENTS_COMPAT_H */ 
