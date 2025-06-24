@@ -60,8 +60,10 @@ void GUI_DrawMainmenu( Uint8 nr_of_dots, Uint8 selected_level)
 
 	Graphics_DrawText(menu_column, GUI_MenuPosition[MENU_START_GAME],
 			"Start the game");
+	DEBUG_PRINT("Drew 'Start the game' at x=%d, y=%d", menu_column, GUI_MenuPosition[MENU_START_GAME]);
 	Graphics_DrawText(menu_column,
 			GUI_MenuPosition[MENU_CHANGE_NR_OF_COLORS], "Select colors");
+	DEBUG_PRINT("Drew 'Select colors' at x=%d, y=%d", menu_column, GUI_MenuPosition[MENU_CHANGE_NR_OF_COLORS]);
 
 	for (i = 0; i < nr_of_dots; ++i)
 		Graphics_DrawDot(((Graphics_GetScreenWidth() * 450) / 640) + i
@@ -71,7 +73,7 @@ void GUI_DrawMainmenu( Uint8 nr_of_dots, Uint8 selected_level)
 	Graphics_DrawText(menu_column,
 			GUI_MenuPosition[MENU_CHANGE_NR_OF_ROTATIONS],
 			"Select initial turns");
-	sprintf(nstr, "%d", Quadromania_GetRotationsPerLevel(selected_level));
+	DEBUG_PRINT("%d", Quadromania_GetRotationsPerLevel(selected_level));
 	Graphics_DrawText( ((Graphics_GetScreenWidth() * 480) / 640),
 			GUI_MenuPosition[MENU_CHANGE_NR_OF_ROTATIONS], nstr);
 
@@ -102,8 +104,8 @@ Uint16 GUI_GetMenuColumnRight()
 /* initialize position list of menu entries */
 void GUI_InitMenuCoordinates()
 {
-	const Uint16 start_pos = (Graphics_GetScreenHeight() / 2) - 20;  // Start closer to middle
-	const Uint16 offset_per_line = Graphics_GetFontHeight() + 5;  // Reduce spacing
+	const Uint16 start_pos = 200;  // Start at a more reasonable position
+	const Uint16 offset_per_line = Graphics_GetFontHeight() + 10;  // More spacing between items
 
 	DEBUG_PRINT("Screen dimensions: %dx%d", Graphics_GetScreenWidth(), Graphics_GetScreenHeight());
 	DEBUG_PRINT("Font height: %d", Graphics_GetFontHeight());
@@ -130,48 +132,65 @@ tGUI_MenuEntries GUI_GetClickedMenuEntry()
 {
 	const Uint16 font_height = Graphics_GetFontHeight();
 	const Uint16 mouse_y = Event_GetMouseY();
+	const Uint16 mouse_x = Event_GetMouseX();
 
-	if ((Event_GetMouseX() > GUI_GetMenuColumnLeft()) && (Event_GetMouseX() < GUI_GetMenuColumnRight()))
+	DEBUG_PRINT("Mouse click at: %d,%d", mouse_x, mouse_y);
+	DEBUG_PRINT("Menu column range: %d to %d", GUI_GetMenuColumnLeft(), GUI_GetMenuColumnRight());
+
+	if ((mouse_x > GUI_GetMenuColumnLeft()) && (mouse_x < GUI_GetMenuColumnRight()))
 	{
+		DEBUG_PRINT("Mouse X is within menu column range");
+		DEBUG_PRINT("Font height: %d", font_height);
+		
 		if ((mouse_y > GUI_MenuPosition[MENU_START_GAME]) && (mouse_y
 				< GUI_MenuPosition[MENU_START_GAME] + font_height))
 		{
+			DEBUG_PRINT("Clicked on MENU_START_GAME (y range: %d-%d)", 
+				GUI_MenuPosition[MENU_START_GAME], 
+				GUI_MenuPosition[MENU_START_GAME] + font_height);
 			return MENU_START_GAME;
 		}
 		else if ((mouse_y > GUI_MenuPosition[MENU_CHANGE_NR_OF_COLORS])
 				&& (mouse_y < GUI_MenuPosition[MENU_CHANGE_NR_OF_COLORS]
 						+ font_height))
 		{
+			DEBUG_PRINT("Clicked on MENU_CHANGE_NR_OF_COLORS");
 			return MENU_CHANGE_NR_OF_COLORS;
 		}
 		else if ((mouse_y > GUI_MenuPosition[MENU_CHANGE_NR_OF_ROTATIONS])
 				&& (mouse_y < GUI_MenuPosition[MENU_CHANGE_NR_OF_ROTATIONS]
 						+ font_height))
 		{
+			DEBUG_PRINT("Clicked on MENU_CHANGE_NR_OF_ROTATIONS");
 			return MENU_CHANGE_NR_OF_ROTATIONS;
 		}
 		else if ((mouse_y > GUI_MenuPosition[MENU_HIGHSCORES]) && (mouse_y
 						< GUI_MenuPosition[MENU_HIGHSCORES] + font_height))
 		{
+			DEBUG_PRINT("Clicked on MENU_HIGHSCORES");
 			return MENU_HIGHSCORES;
 		}
 		else if ((mouse_y > GUI_MenuPosition[MENU_INSTRUCTIONS]) && (mouse_y
 				< GUI_MenuPosition[MENU_INSTRUCTIONS] + font_height))
 		{
+			DEBUG_PRINT("Clicked on MENU_INSTRUCTIONS");
 			return MENU_INSTRUCTIONS;
 		}
 		else if ((mouse_y > GUI_MenuPosition[MENU_QUIT]) && (mouse_y
 				< GUI_MenuPosition[MENU_QUIT] + font_height))
 		{
+			DEBUG_PRINT("Clicked on MENU_QUIT");
 			return MENU_QUIT;
 		}
 		else
 		{
+			DEBUG_PRINT("Mouse Y not within any menu item range");
 			return MENU_UNDEFINED;
 		}
 	}
 	else
 	{
+		DEBUG_PRINT("Mouse X is outside menu column range");
 		return MENU_UNDEFINED;
 	}
 }

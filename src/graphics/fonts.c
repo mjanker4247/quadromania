@@ -4,6 +4,7 @@
 
 #include "graphics/fonts.h"
 #include "graphics/renderer.h"
+#include "graphics/ttf_font.h"
 #include "utils/logger.h"
 
 static Uint32 GetPixel(SDL_Surface *, Sint32, Sint32);
@@ -212,6 +213,13 @@ void XCenteredString(SDL_Renderer *renderer, Uint16 y, char *Text)
 {
 	Uint16 x = (Graphics_GetScreenWidth() - TextWidth(Text)) / 2;
 	PutString(renderer, x, y, Text);
+}
+
+void XCenteredStringTTF(SDL_Renderer *renderer, Uint16 y, char *Text)
+{
+	Uint16 text_width = TTF_Font_GetTextWidth(Text);
+	Uint16 x = (Graphics_GetScreenWidth() - text_width) / 2;
+	TTF_Font_DrawText(renderer, x, y, Text);
 }
 
 void SFont_Input(SDL_Renderer *renderer, int x, int y, int Width, char *text)

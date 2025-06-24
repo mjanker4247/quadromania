@@ -72,6 +72,7 @@ extern "C" {
 	Uint16 Graphics_ScaleY(Uint16 logical_y);
 	Uint16 Graphics_ScaleWidth(Uint16 logical_width);
 	Uint16 Graphics_ScaleHeight(Uint16 logical_height);
+	void Graphics_WindowToLogical(int window_x, int window_y, int *logical_x, int *logical_y);
 	SDL_Surface* Graphics_LoadGraphicsResource(char*);
 	void Graphics_SetWindowIcon(void);
 

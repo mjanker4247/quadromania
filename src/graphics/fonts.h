@@ -43,6 +43,7 @@ int TextWidth2(SFont_FontInfo *Font, char *text);
 // Blits a string to with center alignment to a surface with the font at position y
 void XCenteredString(SDL_Renderer *renderer, Uint16 y, char *Text);
 void XCenteredString2(SDL_Renderer *renderer, SFont_FontInfo *Font, int y, char *text);
+void XCenteredStringTTF(SDL_Renderer *renderer, Uint16 y, char *Text);
 
 // Input text at the given position with a maximum width
 void SFont_Input(SDL_Renderer *renderer, int x, int y, int Width, char *text);

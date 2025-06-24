@@ -100,7 +100,7 @@ void TTF_Font_DrawText(SDL_Renderer *renderer, Uint16 x, Uint16 y, char *text)
     bg.x = x - 5;  // Add some padding
     bg.y = y - 2;
     bg.w = TTF_Font_GetTextWidth(text) + 10;  // Add padding on both sides
-    bg.h = font_height + 4;  // Add padding top and bottom
+    bg.h = font_height + 10;  // Add padding top and bottom
     
     // Set blend mode for transparency
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);

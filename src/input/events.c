@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "input/events.h"
+#include "graphics/renderer.h"
 #include "utils/logger.h"
 
 #include "audio/sound.h"
@@ -107,9 +108,11 @@ void Event_ProcessInput()
 			mouse.x = event.button.x;
 			mouse.y = event.button.y;
 			mouse.button = event.button.button;
+			DEBUG_PRINT("SDL mouse down: raw x=%d, y=%d, button=%d", mouse.x, mouse.y, mouse.button);
 			if(debounce_tmr_mouse == 0)
 			{
 				mouse.clicked = true;
+				DEBUG_PRINT("Mouse clicked set to true");
 			}
 			break;
 			/* keyboard handling... */
@@ -311,19 +314,27 @@ bool Event_IsESCPressed()
 }
 
 /**
- * @return X position of mouse click
+ * @return X position of mouse click (converted to logical coordinates)
  */
 Uint16 Event_GetMouseX()
 {
-	return(mouse.x);
+	/* Convert raw screen coordinates to logical coordinates (640x480) */
+	int logical_x, logical_y;
+	Graphics_WindowToLogical(mouse.x, mouse.y, &logical_x, &logical_y);
+	DEBUG_PRINT("Mouse X conversion: raw=%d -> logical=%d", mouse.x, logical_x);
+	return (Uint16)logical_x;
 }
 
 /**
- * @return Y position of mouse click
+ * @return Y position of mouse click (converted to logical coordinates)
  */
 Uint16 Event_GetMouseY()
 {
-	return(mouse.y);
+	/* Convert raw screen coordinates to logical coordinates (640x480) */
+	int logical_x, logical_y;
+	Graphics_WindowToLogical(mouse.x, mouse.y, &logical_x, &logical_y);
+	DEBUG_PRINT("Mouse Y conversion: raw=%d -> logical=%d", mouse.y, logical_y);
+	return (Uint16)logical_y;
 }
 
 /**

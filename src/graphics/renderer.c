@@ -44,7 +44,6 @@ static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 static SDL_Texture *textures = NULL, *frame = NULL, *dots = NULL, *font = NULL, 
                    *title = NULL, *copyright = NULL;
-static TTF_Font *game_font = NULL;
 
 /* Optimization: Texture cache to avoid reloading */
 static struct {
@@ -64,9 +63,7 @@ static Uint16 frame_width, frame_height,
  */
 static Uint16 TTF_TextWidth(char *text)
 {
-	int w, h;
-	TTF_SizeText(game_font, text, &w, &h);
-	return (Uint16)w;
+	return TTF_Font_GetTextWidth(text);
 }
 
 /**
@@ -169,7 +166,7 @@ void Graphics_DrawInstructions()
 	dest.w = src.w;
 	dest.h = src.h;
 	SDL_RenderCopy(renderer, title, &src, &dest);
-	XCenteredString(renderer, instruction_y, "Instructions");
+	XCenteredStringTTF(renderer, instruction_y, "Instructions");
 	/* draw instructions */
 	src.x = 0;
 	src.y = 0;
@@ -212,7 +209,7 @@ void Graphics_ListHighscores(Uint16 nr_of_table)
 	dest.h = src.h;
 	SDL_RenderCopy(renderer, title, &src, &dest);
 	sprintf(txt,"High scores for Level %d",nr_of_table+1);
-	XCenteredString(renderer, highscore_y, txt);
+	XCenteredStringTTF(renderer, highscore_y, txt);
 
 	for(i = 0; i < HIGHSCORE_NR_OF_ENTRIES_PER_TABLE; i++)
 	{
@@ -279,7 +276,7 @@ void Graphics_DrawWinMessage()
 	SDL_SetRenderDrawColor(renderer, 0, 0, 200, 255);
 	SDL_RenderFillRect(renderer, &dest);
 
-	XCenteredString(renderer,dest.y + factor,
+	XCenteredStringTTF(renderer,dest.y + factor,
 			"Congratulations! You've won!");
 	Graphics_UpdateScreen();
 	return;
@@ -308,7 +305,7 @@ void Graphics_DrawGameoverMessage()
 	SDL_SetRenderDrawColor(renderer, 200, 0, 0, 255);
 	SDL_RenderFillRect(renderer, &dest);
 
-	XCenteredString(renderer, dest.y + factor,
+	XCenteredStringTTF(renderer, dest.y + factor,
 			"GAME OVER! You hit the turn limit!");
 	SDL_RenderPresent(renderer);
 	return;
@@ -454,69 +451,12 @@ bool Graphics_Init(bool set_fullscreen)
 	font_height = (Uint16)h;
 	DEBUG_PRINT("Font texture: %dx%d (height: %d)", w, h, font_height);
 
-	/* Load TTF font */
-	char font_path[1024];
-	char exec_path[1024];
-	char *exec_dir;
-	char *source_dir;
-
-#ifdef __APPLE__
-    uint32_t size = sizeof(exec_path);
-    if (_NSGetExecutablePath(exec_path, &size) == 0) {
-        exec_dir = dirname(exec_path);
-        source_dir = dirname(exec_dir);
-    } else {
-        source_dir = ".";
-    }
-#else
-    ssize_t count = readlink("/proc/self/exe", exec_path, sizeof(exec_path));
-    if (count != -1) {
-        exec_dir = dirname(exec_path);
-        source_dir = dirname(exec_dir);
-    } else {
-        source_dir = ".";
-    }
-#endif
-
-    // Try loading system fonts in order of preference
-    const char *font_names[] = {
-        // macOS system fonts
-        "/System/Library/Fonts/Helvetica.ttc",
-        "/System/Library/Fonts/STHeiti Light.ttc",
-        "/System/Library/Fonts/STHeiti Medium.ttc",
-        // Linux system fonts
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-        "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
-        "/usr/share/fonts/truetype/droid/DroidSansFallback.ttf",
-        // Windows system fonts (if running under Wine)
-        "C:\\Windows\\Fonts\\arial.ttf",
-        "C:\\Windows\\Fonts\\msyh.ttc",
-        "C:\\Windows\\Fonts\\simhei.ttf",
-        NULL
-    };
-
-    game_font = NULL;
-    for (int i = 0; font_names[i] != NULL; i++) {
-        game_font = TTF_OpenFont(font_names[i], 16);  // Adjust size as needed
-        if (game_font != NULL) {
-            DEBUG_PRINT("Successfully loaded system font: %s", font_names[i]);
-            break;
-        }
-    }
-
-    if (game_font == NULL) {
-        // If no system fonts were found, try loading from the data directory as fallback
-        snprintf(font_path, sizeof(font_path), "%s/data/fonts/DejaVuSans.ttf", source_dir);
-        game_font = TTF_OpenFont(font_path, 16);
-        if (game_font == NULL) {
-            fprintf(stderr, "Failed to load any font: %s\n", TTF_GetError());
-            return (false);
-        }
-        DEBUG_PRINT("Loaded fallback font from data directory");
-    }
-
-    font_height = TTF_FontHeight(game_font);
-    DEBUG_PRINT("Font loaded successfully, height: %d", font_height);
+	/* Initialize TTF font system */
+	if (!TTF_Font_Init()) {
+		fprintf(stderr, "Failed to initialize TTF font system\n");
+		return false;
+	}
+	DEBUG_PRINT("TTF font system initialized successfully");
 
 	atexit(Graphics_CleanUp);
 
@@ -537,10 +477,9 @@ void Graphics_CleanUp()
 		}
 	}
 	
-	if (game_font) {
-		TTF_CloseFont(game_font);
-		game_font = NULL;
-	}
+	/* Clean up TTF font system */
+	TTF_Font_CleanUp();
+	
 	SDL_DestroyTexture(textures);
 	SDL_DestroyTexture(frame);
 	SDL_DestroyTexture(dots);
@@ -600,7 +539,7 @@ Uint16 Graphics_GetScreenHeight()
  */
 Uint16 Graphics_GetFontHeight()
 {
-	return font_height;
+	return TTF_Font_GetHeight();
 }
 
 /**
@@ -637,6 +576,14 @@ Uint16 Graphics_ScaleHeight(Uint16 logical_height)
 {
 	/* With logical size set, SDL handles scaling automatically */
 	return logical_height;
+}
+
+/**
+ * Convert window coordinates to logical coordinates
+ */
+void Graphics_WindowToLogical(int window_x, int window_y, int *logical_x, int *logical_y)
+{
+	SDL_RenderWindowToLogical(renderer, window_x, window_y, logical_x, logical_y);
 }
 
 /**

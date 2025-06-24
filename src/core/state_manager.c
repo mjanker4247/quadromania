@@ -146,8 +146,11 @@ void state_manager_handle_title(game_state_context_t *context)
     
     /* Check for menu clicks */
     if (Event_MouseClicked()) {
+        DEBUG_PRINT("Mouse clicked detected in title state");
         if (Event_GetMouseButton() == 1) {
+            DEBUG_PRINT("Left mouse button detected");
             tGUI_MenuEntries menu = GUI_GetClickedMenuEntry();
+            DEBUG_PRINT("Menu entry detected: %d", menu);
             
             switch (menu) {
                 case MENU_START_GAME:
