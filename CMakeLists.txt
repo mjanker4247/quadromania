@@ -70,8 +70,22 @@ set(GRAPHICS_SOURCES
 
 # Input subsystem sources
 set(INPUT_SOURCES
-    src/input/events.c
+    # src/input/events.c  # Excluded to avoid duplicate symbols with events_compat.c
     src/input/events.h
+    src/input/events_compat.c
+    src/input/events_compat.h
+    src/input/input_manager.c
+    src/input/input_manager.h
+    src/input/keyboard_handler.c
+    src/input/keyboard_handler.h
+    src/input/mouse_handler.c
+    src/input/mouse_handler.h
+    src/input/joystick_handler.c
+    src/input/joystick_handler.h
+    src/input/platform_input.c
+    src/input/platform_input.h
+    src/input/platform/sdl2_input.c
+    src/input/platform/sdl2_input.h
 )
 
 # Audio subsystem sources

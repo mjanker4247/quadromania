@@ -109,5 +109,6 @@ Temporary Items
 # End of https://www.toptal.com/developers/gitignore/api/macos,visualstudiocode,c++,cmake
 
 build/
+build-*
 bin/
 .DS_Store
