@@ -27,7 +27,8 @@
 	#define __MAIN_H
 
     #include "common/version.h"
-	#include <SDL.h>
+	#include <SDL2/SDL.h>
+	#include "core/state_manager.h"
 	
 
 	/**************************
@@ -43,6 +44,6 @@
 	 **************/
 
 	bool InitGameEngine(bool activate_fullscreen);
-	void MainHandler(void);
+	void MainHandler(game_state_context_t *context);
 
 #endif

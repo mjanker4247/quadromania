@@ -2,6 +2,14 @@ cmake_minimum_required(VERSION 3.10)
 
 set(CMAKE_C_STANDARD 11)
 
+# Set default build type if not specified
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose the type of build (Debug, Release, RelWithDebInfo, MinSizeRel)" FORCE)
+endif()
+
+# Set available build types
+set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "RelWithDebInfo" "MinSizeRel")
+
 # Set Ninja as the default generator if not specified
 if(NOT CMAKE_GENERATOR)
     set(CMAKE_GENERATOR "Ninja")
@@ -34,6 +42,8 @@ message(STATUS "SDL2 target type: ${SDL2_TARGETS}")
 set(CORE_SOURCES
     src/core/game.c
     src/core/game.h
+    src/core/state_manager.c
+    src/core/state_manager.h
 )
 
 # Graphics subsystem sources
@@ -112,6 +122,14 @@ target_include_directories(quadromania PRIVATE
     ${CMAKE_SOURCE_DIR}/src
 )
 
+# Set compiler flags based on build type
+target_compile_options(quadromania PRIVATE
+    $<$<CONFIG:Debug>:-g -O0 -DDEBUG>
+    $<$<CONFIG:Release>:-O3 -DNDEBUG>
+    $<$<CONFIG:RelWithDebInfo>:-O2 -g -DNDEBUG>
+    $<$<CONFIG:MinSizeRel>:-Os -DNDEBUG>
+)
+
 # Organize source files in IDE
 source_group("Core" FILES ${CORE_SOURCES})
 source_group("Graphics" FILES ${GRAPHICS_SOURCES})
@@ -138,3 +156,6 @@ file(COPY ${CMAKE_SOURCE_DIR}/data DESTINATION ${CMAKE_BINARY_DIR})
 # Print build information
 message(STATUS "Build configuration:")
 message(STATUS "  - Build type: ${CMAKE_BUILD_TYPE}")
+message(STATUS "  - Generator: ${CMAKE_GENERATOR}")
+message(STATUS "  - Source dir: ${CMAKE_SOURCE_DIR}")
+message(STATUS "  - Binary dir: ${CMAKE_BINARY_DIR}")
