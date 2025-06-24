@@ -26,9 +26,8 @@
 #ifndef __QUADROMANIA_H
 	#define __QUADROMANIA_H
 
-#include "common/datatypes.h"
-#include "common/boolean.h"
-#include "core/game.h"
+#include <SDL.h>
+#include <stdbool.h>
 
 	/**************
 	 * PROTOTYPES *

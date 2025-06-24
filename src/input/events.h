@@ -25,8 +25,7 @@
 
 #ifndef __EVENT_H
 #define __EVENT_H
-#include "common/datatypes.h"
-#include "common/sysconfig.h"
+#include <SDL2/SDL.h>
 #include <stdbool.h>
 
 

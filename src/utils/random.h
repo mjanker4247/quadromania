@@ -25,7 +25,7 @@
 #ifndef __RANDOM_H
 	#define __RANDOM_H
 
-	#include "common/datatypes.h"
+	#include <SDL2/SDL.h>
 
 	/**************
 	 * PROTOTYPES *

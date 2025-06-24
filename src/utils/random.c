@@ -23,7 +23,7 @@
  *
  */
 
-#include "common/datatypes.h"
+#include <SDL2/SDL.h>
 #include <time.h>
 #include "utils/random.h"
 /* This is a simple custom pseudorandom number generator. It's not a very

@@ -11,8 +11,7 @@
 #ifndef SFONT_H
 #define SFONT_H
 
-#include "common/datatypes.h"
-#include <SDL.h>
+#include <SDL2/SDL.h>
 
 extern SDL_Texture *Font;
 extern Uint16 FontWidth;

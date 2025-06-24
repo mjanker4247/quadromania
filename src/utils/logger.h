@@ -1,7 +1,7 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
-#include "common/datatypes.h"
+#include <SDL2/SDL.h>
 #include <stdbool.h>
 #include <stddef.h>
 

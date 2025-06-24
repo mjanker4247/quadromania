@@ -26,8 +26,7 @@
 #ifndef __SOUND_H
 #define __SOUND_H
 
-	#include "common/datatypes.h"
-	#include "common/sysconfig.h"
+#include <SDL2/SDL.h>
 
 	/**************************
 	 * DATA TYPE DECLARATIONS *

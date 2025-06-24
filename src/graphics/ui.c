@@ -25,12 +25,11 @@
 
 #include <stdio.h>
 
-#include "common/datatypes.h"
 #include "graphics/ui.h"
 #include "graphics/renderer.h"
 #include "input/events.h"
 #include "core/game.h"
-#include "common/sysconfig.h"
+#include <SDL2/SDL.h>
 #include "utils/logger.h"
 
 /*******************************

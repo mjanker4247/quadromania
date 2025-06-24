@@ -5,10 +5,8 @@
 extern "C" {
 #endif
 
-#include "common/sysconfig.h"
-#include "common/datatypes.h"
-#include <SDL.h>
-#include <SDL_ttf.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 #include <stdbool.h>
 
 // Initialize TTF font system

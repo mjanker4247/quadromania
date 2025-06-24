@@ -26,8 +26,7 @@
 #ifndef __HIGHSCORE_H
 #define __HIGHSCORE_H
 
-	#include "common/datatypes.h"
-	#include "common/sysconfig.h"
+	#include <SDL2/SDL.h>
 
 	/************
 	 * DEFINES  *

@@ -24,12 +24,11 @@
  */
 
 /* for data types... */
-#include "common/datatypes.h"
-
+#include <SDL2/SDL.h>
 #include "utils/random.h"
 #include "graphics/renderer.h"
 #include "core/game.h"
-#include "common/boolean.h"
+#include <stdbool.h>
 #include "common/version.h"
 
 /*************

@@ -22,9 +22,9 @@
  * THIS SOFTWARE IS SUPPLIED AS IT IS WITHOUT ANY WARRANTY!
  *
  */
-#include <SDL.h>
-#include <SDL_image.h>
-#include <SDL_ttf.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+#include <SDL2/SDL_ttf.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,7 +37,6 @@
 #include "graphics/renderer.h"
 #include "graphics/fonts.h"
 #include "data/highscore.h"
-#include "common/sysconfig.h"
 #include "utils/logger.h"
 #include "graphics/ttf_font.h"
 

@@ -1,6 +1,4 @@
-#include "common/datatypes.h"
 #include "utils/logger.h"
-#include "common/sysconfig.h"
 #include <stdarg.h>
 #include <string.h>
 #include <stdlib.h>
@@ -8,6 +6,7 @@
 #include <libgen.h>
 #include <time.h>
 #include <stdio.h>
+#include <SDL2/SDL.h>
 
 #ifdef __APPLE__
 #include <mach-o/dyld.h>

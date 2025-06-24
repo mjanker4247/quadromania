@@ -24,9 +24,8 @@
  */
 
 /* for data types... */
-#include "common/datatypes.h"
 #include "data/highscore.h"
-#include "common/sysconfig.h"
+#include <SDL2/SDL.h>
 #include "utils/logger.h"
 
 #include <string.h>

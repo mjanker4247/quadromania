@@ -27,8 +27,7 @@
 	#define __MAIN_H
 
     #include "common/version.h"
-	#include "common/sysconfig.h"
-	#include "common/datatypes.h"
+	#include <SDL.h>
 	
 
 	/**************************

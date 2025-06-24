@@ -29,11 +29,9 @@
 extern "C" {
 #endif
 
-#include <SDL.h>
+#include <SDL2/SDL.h>
 #include <stdbool.h>
-#include "common/datatypes.h"
 #include "common/version.h"
-#include "common/sysconfig.h"
 
 	/************
 	 * DEFINES  *

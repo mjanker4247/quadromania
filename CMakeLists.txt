@@ -19,6 +19,7 @@ find_package(SDL2 CONFIG REQUIRED)
 find_package(SDL2_image CONFIG REQUIRED)
 find_package(SDL2_mixer CONFIG REQUIRED)
 find_package(SDL2_ttf CONFIG REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
 
 message(STATUS "SDL2 found: ${SDL2_FOUND}")
 message(STATUS "SDL2_image found: ${SDL2_image_FOUND}")
@@ -63,6 +64,8 @@ set(AUDIO_SOURCES
 set(DATA_SOURCES
     src/data/highscore.c
     src/data/highscore.h
+    src/data/config.c
+    src/data/config.h
 )
 
 # Utility sources
@@ -80,10 +83,7 @@ set(PLATFORM_SOURCES
 
 # Common headers
 set(COMMON_HEADERS
-    src/common/datatypes.h
-    src/common/boolean.h
     src/common/version.h
-    src/common/sysconfig.h
 )
 
 # Main application
@@ -129,6 +129,7 @@ target_link_libraries(quadromania PRIVATE
     $<IF:$<TARGET_EXISTS:SDL2_image::SDL2_image>,SDL2_image::SDL2_image,SDL2_image::SDL2_image-static>
     $<IF:$<TARGET_EXISTS:SDL2_mixer::SDL2_mixer>,SDL2_mixer::SDL2_mixer,SDL2_mixer::SDL2_mixer-static>
     $<IF:$<TARGET_EXISTS:SDL2_ttf::SDL2_ttf>,SDL2_ttf::SDL2_ttf,SDL2_ttf::SDL2_ttf-static>
+    spdlog::spdlog_header_only
 )
 
 # Copy data directory to build directory

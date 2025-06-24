@@ -23,26 +23,21 @@
  *
  */
 
-#include <SDL.h>
+#include <SDL2/SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "common/sysconfig.h"
 #include "audio/sound.h"
-#include "common/datatypes.h"
 #include "utils/logger.h"
 
-#if(HAVE_AUDIO == 1)
-#include <SDL_mixer.h>
-#endif
+#include <SDL2/SDL_mixer.h>
 
 /* data structures... */
 bool sound_initialized = false;
 /* the current mixer volume */
 Uint8 sound_volume;
 
-#if(HAVE_AUDIO == 1)
 /* actual mixer chunks for our sound effects */
 Mix_Chunk *sound_menu = NULL;
 Mix_Chunk *sound_turn = NULL;
@@ -50,7 +45,7 @@ Mix_Chunk *sound_win = NULL;
 Mix_Chunk *sound_loose = NULL;
 /* the current music to play */
 Mix_Music *music = NULL;
-#endif
+
 /*************
  * CONSTANTS *
  *************/
@@ -73,7 +68,7 @@ const int audio_buffers = 4096;
 /* initialize sound subsystem */
 void Sound_Init()
 {
-#if(HAVE_AUDIO == 1)
+
 	SDL_InitSubSystem(SDL_INIT_AUDIO);
 
 	/* open audio devices and setup basic parameters */
@@ -104,21 +99,19 @@ void Sound_Init()
 	atexit(Sound_Exit);
 
 	DEBUG_PRINT("Audio initialized");
-#endif
+
 	return;
 }
 
 /* terminate sound subsystem properly */
 void Sound_Exit()
 {
-#if(HAVE_AUDIO == 1)
 	/* stop playing music */
 	Mix_HaltMusic();
 	Mix_FreeMusic(music);
 	music = NULL;
 
 	Mix_CloseAudio();
-#endif
 	sound_initialized = false;
 	return;
 }
@@ -128,7 +121,6 @@ void Sound_PlayEffect(SoundEffect snd)
 {
 	if (sound_initialized == true)
 	{
-#if(HAVE_AUDIO == 1)
 		switch (snd)
 		{
 		case SOUND_MENU:
@@ -147,7 +139,6 @@ void Sound_PlayEffect(SoundEffect snd)
 			/* do nothing */
 			break;
 		}
-#endif
 	}
 	return;
 }
@@ -158,10 +149,8 @@ void Sound_SetVolume(Uint8 volume)
 	Uint8 calculated_volume;
 	if (volume > 100)
 		volume = 100;
-	calculated_volume = (Uint8) (((Uint16) volume * MIX_MAX_VOLUME) / 100);
-#if(HAVE_AUDIO == 1)
+	calculated_volume = (Uint8) (((Uint16) volume * SDL_MIX_MAXVOLUME) / 100);
 	Mix_Volume(-1, calculated_volume);
-#endif
 	return;
 }
 

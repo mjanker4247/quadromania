@@ -23,13 +23,11 @@
  *
  */
 
-#include <SDL.h>
+#include <SDL2/SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "common/datatypes.h"
 #include "input/events.h"
-#include "common/sysconfig.h"
 #include "utils/logger.h"
 
 #include "audio/sound.h"
