@@ -53,11 +53,15 @@
 /* the main function - program execution starts here... */
 int main(int argc, char *argv[])
 {
+	LOG_INFO("Quadromania starting up (version: %s)", VERSION);
+	
 	config_t *config = config_init();
 	if (!config) {
+		LOG_ERROR("Failed to initialize configuration");
 		fprintf(stderr, "Failed to initialize configuration\n");
 		return 1;
 	}
+	LOG_DEBUG("Configuration structure initialized");
 
 	/* First pass: look for --config option */
 	char *config_file = NULL;
@@ -72,29 +76,36 @@ int main(int argc, char *argv[])
 		/* Use default config file in executable directory */
 		config_file = config_get_default_path();
 		if (!config_file) {
+			LOG_ERROR("Failed to get default config path");
 			fprintf(stderr, "Failed to get default config path\n");
 			config_free(config);
 			return 1;
 		}
 	}
+	LOG_INFO("Using config file: %s", config_file);
 	
 	/* Always create or update the config file to ensure all options are present */
 	config_create_or_update(config_file);
+	LOG_DEBUG("Config file created/updated");
 	
 	/* Load configuration from file */
 	config_load(config, config_file);
+	LOG_DEBUG("Configuration loaded from file");
 	
 	/* Parse command line arguments (overrides config file) */
 	config_parse_args(config, argc, argv);
+	LOG_DEBUG("Command line arguments parsed");
 
-	/* Initialize logger system */
-	if (config->log_to_file || config->log_level != LOG_LEVEL_DEBUG || 
+	/* Initialize logger system with enhanced defaults */
+	if (config->debug || config->log_to_file || config->log_level != LOG_LEVEL_INFO || 
 		config->max_file_size > 0 || !config->log_to_stderr) {
-		logger_init(config->debug, config->log_to_file, config->log_to_stderr, 
+		logger_init(config->debug || config->log_level >= LOG_LEVEL_DEBUG, 
+				   config->log_to_file, config->log_to_stderr, 
 				   config->log_level, config->log_filename, config->max_file_size, 
 				   config->max_files, config->log_overwrite);
 	} else {
-		DEBUG_INIT(config->debug);
+		/* Enable basic logging for development */
+		logger_init(true, false, true, LOG_LEVEL_INFO, NULL, 0, 5, false);
 	}
 
 	/* initialize game engine... */
@@ -112,14 +123,17 @@ int main(int argc, char *argv[])
 		
 		/* Clean up state manager */
 		state_manager_cleanup(&state_context);
+		LOG_DEBUG("State manager cleaned up");
 	}
 	else
 	{
+		LOG_ERROR("Failed to initialize game engine");
 		config_free(config);
 		return (1);
 	}
 
 	config_free(config);
+	LOG_INFO("Quadromania shutting down");
 	return (0);
 }
 
@@ -129,22 +143,34 @@ int main(int argc, char *argv[])
  */
 bool InitGameEngine(bool fullscreen)
 {
+	LOG_INFO("Initializing game engine (fullscreen: %s)", fullscreen ? "true" : "false");
+	
 	/* initialize random number generator... */
 	Random_InitSeed();
+	LOG_DEBUG("Random number generator initialized");
+	
 	/* load highscores from disk */
 	Highscore_LoadTable();
+	LOG_DEBUG("Highscore table loaded");
+	
 	/* initialize sound system */
 	Sound_Init();
+	LOG_DEBUG("Sound system initialized");
+	
 	/* initialize graphics module... */
 	if(Graphics_Init(fullscreen))
 	{
+		LOG_INFO("Graphics system initialized successfully");
 		/* initialize event handler */
 		Event_Init();
+		LOG_DEBUG("Event handler initialized");
 		Quadromania_ClearPlayfield();
+		LOG_DEBUG("Playfield cleared");
 		return (true);
 	}
 	else
 	{
+		LOG_ERROR("Failed to initialize graphics system");
 		return(false);
 	}
 }
@@ -157,6 +183,8 @@ void MainHandler(game_state_context_t *context)
 {
 	if (!context) return;
 	
+	LOG_INFO("Starting main game loop");
+	
 	/* Main game loop */
 	while (state_manager_process_transitions(context)) {
 		state_manager_update(context);
@@ -165,4 +193,6 @@ void MainHandler(game_state_context_t *context)
 		/* Small delay to prevent excessive CPU usage */
 		SDL_Delay(16); /* ~60 FPS */
 	}
+	
+	LOG_INFO("Main game loop ended");
 }

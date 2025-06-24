@@ -62,6 +62,8 @@ void state_manager_transition_to(game_state_context_t *context, game_state_t new
 {
     if (!context) return;
     
+    LOG_DEBUG("State transition: %d -> %d", context->current_state, new_state);
+    
     context->previous_state = context->current_state;
     context->current_state = new_state;
     context->state_changed = true;
