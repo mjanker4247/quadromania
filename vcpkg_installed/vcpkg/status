@@ -1,0 +1,197 @@
+Package: vcpkg-cmake-config
+Version: 2024-05-23
+Architecture: arm64-osx
+Multi-Arch: same
+Abi: 16ed8575996f1e0d3cbe5d711be3471697e8f739fee164b1a85a080230d8b2bb
+Status: install ok installed
+
+Package: vcpkg-cmake
+Version: 2024-04-23
+Architecture: arm64-osx
+Multi-Arch: same
+Abi: 176303836f04714b21b1ba59d89b9446e586cf09dc0117dd92b5a85e542f01bf
+Status: install ok installed
+
+Package: sdl2
+Version: 2.32.8
+Depends: vcpkg-cmake, vcpkg-cmake-config
+Architecture: arm64-osx
+Multi-Arch: same
+Abi: 3a90d40ede997572eb4b32fb9d638cb9e061f57a2ab1d710b5a6d8308bdfe9e0
+Description: Simple DirectMedia Layer is a cross-platform development library designed to provide low level access to audio, keyboard, mouse, joystick, and graphics hardware via OpenGL and Direct3D.
+Status: install ok installed
+
+Package: zlib
+Version: 1.3.1
+Depends: vcpkg-cmake
+Architecture: arm64-osx
+Multi-Arch: same
+Abi: 9db9ebe7d1d7213d29e77e6d5edde63ed3371430f8df0aa6846c728686f1705e
+Description: A compression library
+Status: install ok installed
+
+Package: libpng
+Version: 1.6.48
+Depends: vcpkg-cmake, vcpkg-cmake-config, zlib
+Architecture: arm64-osx
+Multi-Arch: same
+Abi: 179014bcc8a6ce4e5f66ec418bec014397294f7f54e900ef5a801e19d12e900b
+Description: libpng is a library implementing an interface for reading and writing PNG (Portable Network Graphics) format files
+Status: install ok installed
+
+Package: sdl2-image
+Version: 2.8.8
+Port-Version: 1
+Depends: libpng, sdl2, vcpkg-cmake, vcpkg-cmake-config
+Architecture: arm64-osx
+Multi-Arch: same
+Abi: 2d8a41a9f8bdeff573d69321b48dadab3987efb9e2ef1ad31fd3652f1bde5a14
+Description: SDL_image is an image file loading library. It loads images as SDL surfaces and textures, and supports the following formats: BMP, GIF, JPEG, LBM, PCX, PNG, PNM, TGA, TIFF, WEBP, XCF, XPM, XV
+Status: install ok installed
+
+Package: wavpack
+Version: 5.8.1
+Port-Version: 2
+Depends: vcpkg-cmake, vcpkg-cmake-config
+Architecture: arm64-osx
+Multi-Arch: same
+Abi: a0c605294a8355ad8eb8ef2e526d2292b90237381b589b028d4d3a886e87e51e
+Description: WavPack encode/decode library, command-line programs, and several plugins
+Status: install ok installed
+
+Package: libogg
+Version: 1.3.6
+Depends: vcpkg-cmake, vcpkg-cmake-config
+Architecture: arm64-osx
+Multi-Arch: same
+Abi: 0a3b491a4b37994041f6166ce57a19e6f7883522cf0566d373a8396294b0b8b4
+Description: Ogg is a multimedia container format, and the native file and stream format for the Xiph.org multimedia codecs.
+Status: install ok installed
+
+Package: libvorbis
+Version: 1.3.7
+Port-Version: 4
+Depends: libogg, vcpkg-cmake, vcpkg-cmake-config
+Architecture: arm64-osx
+Multi-Arch: same
+Abi: 7700f6677195561541976d4646f99bd3b5352284b43c668883ce9150f07cfe41
+Description: Ogg Vorbis is a fully open, non-proprietary, patent-and-royalty-free, general-purpose compressed audio format
+Status: install ok installed
+
+Package: sdl2-mixer
+Version: 2.8.1
+Port-Version: 1
+Depends: libvorbis, sdl2, vcpkg-cmake, vcpkg-cmake-config
+Architecture: arm64-osx
+Multi-Arch: same
+Abi: 31448e5109e08bc6c7730f7cd7f96610fbef83c1d032355fd824d5f5d80933a4
+Description: Multi-channel audio mixer library for SDL.
+Default-Features: wavpack
+Status: install ok installed
+
+Package: sdl2-mixer
+Feature: wavpack
+Depends: wavpack
+Architecture: arm64-osx
+Multi-Arch: same
+Description: Enable WavPack music.
+Status: install ok installed
+
+Package: bzip2
+Version: 1.0.8
+Port-Version: 6
+Depends: vcpkg-cmake
+Architecture: arm64-osx
+Multi-Arch: same
+Abi: 0fa085675b466731717c2cf3e6d64151c80bedbfb3b72403b660d86a130cf455
+Description: bzip2 is a freely available, patent free, high-quality data compressor. It typically compresses files to within 10% to 15% of the best available techniques (the PPM family of statistical compressors), whilst being around twice as fast at compression and six times faster at decompression.
+Default-Features: tool
+Status: install ok installed
+
+Package: bzip2
+Feature: tool
+Architecture: arm64-osx
+Multi-Arch: same
+Description: Builds bzip2 executable
+Status: install ok installed
+
+Package: brotli
+Version: 1.1.0
+Port-Version: 1
+Depends: vcpkg-cmake, vcpkg-cmake-config
+Architecture: arm64-osx
+Multi-Arch: same
+Abi: 2f95f0fe478aa4dbb906b0ef5d5a02d69872b70826df725cc4eae0e4071c4ebd
+Description: a generic-purpose lossless compression algorithm that compresses data using a combination of a modern variant of the LZ77 algorithm, Huffman coding and 2nd order context modeling.
+Status: install ok installed
+
+Package: freetype
+Version: 2.13.3
+Depends: vcpkg-cmake, vcpkg-cmake-config
+Architecture: arm64-osx
+Multi-Arch: same
+Abi: 8fafc421b9dc867859c7c541c6a8c214f01f1b3df2cf47c63f705234dee3bb87
+Description: A library to render fonts.
+Default-Features: brotli, bzip2, png, zlib
+Status: install ok installed
+
+Package: freetype
+Feature: brotli
+Depends: brotli
+Architecture: arm64-osx
+Multi-Arch: same
+Description: Support decompression of WOFF2 streams
+Status: install ok installed
+
+Package: freetype
+Feature: bzip2
+Depends: bzip2
+Architecture: arm64-osx
+Multi-Arch: same
+Description: Support bzip2 compressed fonts.
+Status: install ok installed
+
+Package: freetype
+Feature: png
+Depends: libpng
+Architecture: arm64-osx
+Multi-Arch: same
+Description: Support PNG compressed OpenType embedded bitmaps.
+Status: install ok installed
+
+Package: freetype
+Feature: zlib
+Depends: zlib
+Architecture: arm64-osx
+Multi-Arch: same
+Description: Use zlib instead of internal library for DEFLATE
+Status: install ok installed
+
+Package: sdl2-ttf
+Version: 2.24.0
+Depends: freetype, sdl2, vcpkg-cmake, vcpkg-cmake-config
+Architecture: arm64-osx
+Multi-Arch: same
+Abi: 1cae9d623ddd368d558baf7dfd87d0ad58f3834d24d35d24b9ebfcfb6e7f15e6
+Description: A library for rendering TrueType fonts with SDL
+Status: install ok installed
+
+Package: fmt
+Version: 11.0.2
+Port-Version: 1
+Depends: vcpkg-cmake, vcpkg-cmake-config
+Architecture: arm64-osx
+Multi-Arch: same
+Abi: 91c12e922fa7b10125150a1674cd00050d9efe74399a63726f71c32e990a7674
+Description: {fmt} is an open-source formatting library providing a fast and safe alternative to C stdio and C++ iostreams.
+Status: install ok installed
+
+Package: spdlog
+Version: 1.15.3
+Depends: fmt, vcpkg-cmake, vcpkg-cmake-config
+Architecture: arm64-osx
+Multi-Arch: same
+Abi: 938892e7620be0f0d14f2fddbcaede87ff059fddbace8a8493a4b81916bd4f2f
+Description: Very fast, header-only/compiled, C++ logging library.
+Status: install ok installed
+

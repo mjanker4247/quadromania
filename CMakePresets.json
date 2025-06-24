@@ -9,7 +9,8 @@
         "binaryDir": "${sourceDir}/build",
         "cacheVariables": {
           "CMAKE_BUILD_TYPE": "Debug",
-          "CMAKE_C_STANDARD": "11"
+          "CMAKE_C_STANDARD": "11",
+          "CMAKE_TOOLCHAIN_FILE": "/Users/marcojanker/vcpkg/scripts/buildsystems/vcpkg.cmake"
         }
       },
       {
@@ -20,7 +21,8 @@
         "binaryDir": "${sourceDir}/build-debug",
         "cacheVariables": {
           "CMAKE_BUILD_TYPE": "Debug",
-          "CMAKE_C_STANDARD": "11"
+          "CMAKE_C_STANDARD": "11",
+          "CMAKE_TOOLCHAIN_FILE": "/Users/marcojanker/vcpkg/scripts/buildsystems/vcpkg.cmake"
         }
       },
       {
@@ -31,7 +33,8 @@
         "binaryDir": "${sourceDir}/build-release",
         "cacheVariables": {
           "CMAKE_BUILD_TYPE": "Release",
-          "CMAKE_C_STANDARD": "11"
+          "CMAKE_C_STANDARD": "11",
+          "CMAKE_TOOLCHAIN_FILE": "/Users/marcojanker/vcpkg/scripts/buildsystems/vcpkg.cmake"
         }
       },
       {
@@ -42,7 +45,8 @@
         "binaryDir": "${sourceDir}/build-relwithdebinfo",
         "cacheVariables": {
           "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-          "CMAKE_C_STANDARD": "11"
+          "CMAKE_C_STANDARD": "11",
+          "CMAKE_TOOLCHAIN_FILE": "/Users/marcojanker/vcpkg/scripts/buildsystems/vcpkg.cmake"
         }
       }
     ],

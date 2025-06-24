@@ -4,11 +4,20 @@ set(CMAKE_C_STANDARD 11)
 
 # Set default build type if not specified
 if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose the type of build (Debug, Release, RelWithDebInfo, MinSizeRel)" FORCE)
+    set(CMAKE_BUILD_TYPE "Debug-Macos" 
+        CACHE STRING 
+        "Choose the type of build (Debug, Release, RelWithDebInfo, MinSizeRel, Debug-Windows, Release-Windows, RelWithDebInfo-Windows, MinSizeRel-Windows, Debug-Macos, Release-Macos, RelWithDebInfo-Macos, MinSizeRel-Macos, Debug-Linux, Release-Linux, RelWithDebInfo-Linux, MinSizeRel-Linux, Debug-Android, Release-Android, RelWithDebInfo-Android, MinSizeRel-Android, Debug-IOS, Release-IOS, RelWithDebInfo-IOS, MinSizeRel-IOS)" FORCE)
 endif()
 
 # Set available build types
-set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "RelWithDebInfo" "MinSizeRel")
+set_property(CACHE CMAKE_BUILD_TYPE 
+    PROPERTY STRINGS 
+    "Debug" "Release" "RelWithDebInfo" "MinSizeRel"
+    "Debug-Windows" "Release-Windows" "RelWithDebInfo-Windows" "MinSizeRel-Windows"
+    "Debug-Macos" "Release-Macos" "RelWithDebInfo-Macos" "MinSizeRel-Macos"
+    "Debug-Linux" "Release-Linux" "RelWithDebInfo-Linux" "MinSizeRel-Linux"
+    "Debug-Android" "Release-Android" "RelWithDebInfo-Android" "MinSizeRel-Android"
+    "Debug-IOS" "Release-IOS" "RelWithDebInfo-IOS" "MinSizeRel-IOS")
 
 # Set Ninja as the default generator if not specified
 if(NOT CMAKE_GENERATOR)
@@ -33,6 +42,7 @@ message(STATUS "SDL2 found: ${SDL2_FOUND}")
 message(STATUS "SDL2_image found: ${SDL2_image_FOUND}")
 message(STATUS "SDL2_mixer found: ${SDL2_mixer_FOUND}")
 message(STATUS "SDL2_ttf found: ${SDL2_ttf_FOUND}")
+message(STATUS "spdlog found: ${spdlog_FOUND}")
 
 # Debug: Print available targets
 get_target_property(SDL2_TARGETS SDL2::SDL2 TYPE)
