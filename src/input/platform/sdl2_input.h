@@ -64,6 +64,7 @@ typedef struct
     int joystick_count;
     bool initialized;
     PlatformInputConfig config;
+    SDL_Renderer* renderer;  /* For coordinate conversion */
 } SDL2InputState;
 
 /**************
@@ -76,6 +77,12 @@ typedef struct
  * @return true on success, false on failure
  */
 bool SDL2Input_Init(const PlatformInputConfig* config);
+
+/**
+ * Set the renderer for coordinate conversion
+ * @param renderer SDL renderer to use for coordinate conversion
+ */
+void SDL2Input_SetRenderer(SDL_Renderer* renderer);
 
 /**
  * Shutdown SDL2 input system

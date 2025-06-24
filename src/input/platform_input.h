@@ -82,6 +82,12 @@ typedef struct
 bool PlatformInput_Init(const PlatformInputConfig* config);
 
 /**
+ * Set the renderer for coordinate conversion (platform-specific)
+ * @param renderer Renderer pointer (platform-specific type)
+ */
+void PlatformInput_SetRenderer(void* renderer);
+
+/**
  * Shutdown platform-specific input system
  */
 void PlatformInput_Shutdown(void);

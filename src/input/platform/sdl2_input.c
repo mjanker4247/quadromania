@@ -81,6 +81,7 @@ bool SDL2Input_Init(const PlatformInputConfig* config)
     /* Initialize joystick array */
     sdl2_input_state.joysticks = NULL;
     sdl2_input_state.joystick_count = 0;
+    sdl2_input_state.renderer = NULL;  /* Will be set later */
 
     /* Initialize SDL2 joysticks if enabled */
     if (sdl2_input_state.config.capabilities.has_joystick)
@@ -95,6 +96,15 @@ bool SDL2Input_Init(const PlatformInputConfig* config)
     LOG_INFO("SDL2 input system initialized successfully");
     
     return true;
+}
+
+/**
+ * Set the renderer for coordinate conversion
+ */
+void SDL2Input_SetRenderer(SDL_Renderer* renderer)
+{
+    sdl2_input_state.renderer = renderer;
+    DEBUG_PRINT("SDL2 input renderer set for coordinate conversion");
 }
 
 /**
@@ -168,22 +178,52 @@ bool SDL2Input_ConvertEvent(const SDL_Event* sdl_event, InputEvent* unified_even
 
     case SDL_MOUSEMOTION:
         unified_event->type = INPUT_EVENT_MOUSE_MOVE;
-        unified_event->data.mouse.x = sdl_event->motion.x;
-        unified_event->data.mouse.y = sdl_event->motion.y;
+        /* Convert screen coordinates to logical coordinates */
+        if (sdl2_input_state.renderer)
+        {
+            SDL_RenderWindowToLogical(sdl2_input_state.renderer, sdl_event->motion.x, sdl_event->motion.y, 
+                                     &unified_event->data.mouse.x, &unified_event->data.mouse.y);
+        }
+        else
+        {
+            /* Fallback to direct coordinates if renderer not available */
+            unified_event->data.mouse.x = sdl_event->motion.x;
+            unified_event->data.mouse.y = sdl_event->motion.y;
+        }
         unified_event->data.mouse.button = 0;
         return true;
 
     case SDL_MOUSEBUTTONDOWN:
         unified_event->type = INPUT_EVENT_MOUSE_DOWN;
-        unified_event->data.mouse.x = sdl_event->button.x;
-        unified_event->data.mouse.y = sdl_event->button.y;
+        /* Convert screen coordinates to logical coordinates */
+        if (sdl2_input_state.renderer)
+        {
+            SDL_RenderWindowToLogical(sdl2_input_state.renderer, sdl_event->button.x, sdl_event->button.y, 
+                                     &unified_event->data.mouse.x, &unified_event->data.mouse.y);
+        }
+        else
+        {
+            /* Fallback to direct coordinates if renderer not available */
+            unified_event->data.mouse.x = sdl_event->button.x;
+            unified_event->data.mouse.y = sdl_event->button.y;
+        }
         unified_event->data.mouse.button = sdl_event->button.button;
         return true;
 
     case SDL_MOUSEBUTTONUP:
         unified_event->type = INPUT_EVENT_MOUSE_UP;
-        unified_event->data.mouse.x = sdl_event->button.x;
-        unified_event->data.mouse.y = sdl_event->button.y;
+        /* Convert screen coordinates to logical coordinates */
+        if (sdl2_input_state.renderer)
+        {
+            SDL_RenderWindowToLogical(sdl2_input_state.renderer, sdl_event->button.x, sdl_event->button.y, 
+                                     &unified_event->data.mouse.x, &unified_event->data.mouse.y);
+        }
+        else
+        {
+            /* Fallback to direct coordinates if renderer not available */
+            unified_event->data.mouse.x = sdl_event->button.x;
+            unified_event->data.mouse.y = sdl_event->button.y;
+        }
         unified_event->data.mouse.button = sdl_event->button.button;
         return true;
 

@@ -85,6 +85,21 @@ bool PlatformInput_Init(const PlatformInputConfig* config)
 }
 
 /**
+ * Set the renderer for coordinate conversion (platform-specific)
+ */
+void PlatformInput_SetRenderer(void* renderer)
+{
+    if (!platform_input_state.initialized)
+    {
+        DEBUG_PRINT("Platform input system not initialized, cannot set renderer");
+        return;
+    }
+
+    /* Delegate to SDL2 implementation */
+    SDL2Input_SetRenderer((SDL_Renderer*)renderer);
+}
+
+/**
  * Shutdown platform-specific input system
  */
 void PlatformInput_Shutdown(void)

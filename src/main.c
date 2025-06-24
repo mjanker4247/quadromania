@@ -48,6 +48,7 @@
 
 #include "main.h"
 #include "input/events.h"
+#include "input/input_manager.h"
 #include "graphics/ui.h"
 
 /* the main function - program execution starts here... */
@@ -167,6 +168,9 @@ bool InitGameEngine(bool fullscreen)
 		/* initialize event handler */
 		Event_Init();
 		LOG_DEBUG("Event handler initialized");
+		/* Set the renderer for coordinate conversion */
+		InputManager_SetRenderer(Graphics_GetRenderer());
+		LOG_DEBUG("Renderer set for input coordinate conversion");
 		Quadromania_ClearPlayfield();
 		LOG_DEBUG("Playfield cleared");
 		return (true);

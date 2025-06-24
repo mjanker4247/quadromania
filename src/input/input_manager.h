@@ -133,14 +133,20 @@ typedef struct
  **************/
 
 /**
- * Initialize the input manager with the given configuration
+ * Initialize input manager
  * @param config Input configuration
  * @return true on success, false on failure
  */
 bool InputManager_Init(const InputConfig* config);
 
 /**
- * Shutdown the input manager and cleanup resources
+ * Set the renderer for coordinate conversion
+ * @param renderer Renderer pointer (platform-specific type)
+ */
+void InputManager_SetRenderer(void* renderer);
+
+/**
+ * Shutdown input manager
  */
 void InputManager_Shutdown(void);
 

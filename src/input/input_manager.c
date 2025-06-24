@@ -66,7 +66,7 @@ const uint8_t INPUT_DEBOUNCE_TIMESLICES = 20;
  *************/
 
 /**
- * Initialize the input manager with the given configuration
+ * Initialize input manager
  */
 bool InputManager_Init(const InputConfig* config)
 {
@@ -142,7 +142,22 @@ bool InputManager_Init(const InputConfig* config)
 }
 
 /**
- * Shutdown the input manager and cleanup resources
+ * Set the renderer for coordinate conversion
+ */
+void InputManager_SetRenderer(void* renderer)
+{
+    if (!input_manager_state.initialized)
+    {
+        DEBUG_PRINT("Input manager not initialized, cannot set renderer");
+        return;
+    }
+
+    /* Delegate to platform input system */
+    PlatformInput_SetRenderer(renderer);
+}
+
+/**
+ * Shutdown input manager
  */
 void InputManager_Shutdown(void)
 {
@@ -155,7 +170,6 @@ void InputManager_Shutdown(void)
     MouseHandler_Shutdown();
     KeyboardHandler_Shutdown();
     PlatformInput_Shutdown();
-
     memset(&input_manager_state, 0, sizeof(input_manager_state));
     LOG_INFO("Input manager shutdown complete");
 }

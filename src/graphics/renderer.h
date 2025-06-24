@@ -75,6 +75,16 @@ extern "C" {
 	SDL_Surface* Graphics_LoadGraphicsResource(char*);
 	void Graphics_SetWindowIcon(void);
 
+	/**
+	 * Get the SDL renderer for use by other systems
+	 * @return Pointer to the SDL renderer
+	 */
+	SDL_Renderer* Graphics_GetRenderer(void);
+
+	/**
+	 * This function draws the given highscore table and its associated entries.
+	 */
+
 #ifdef __cplusplus
 }
 #endif

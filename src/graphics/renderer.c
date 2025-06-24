@@ -512,12 +512,12 @@ bool Graphics_Init(bool set_fullscreen)
 
 /**
  * This callback function frees all memory requested by the Graphics submodule.
- * It is called with the atexit() mechanism at any fault or a proper program exit.
  */
 void Graphics_CleanUp()
 {
-	if (game_font != NULL) {
+	if (game_font) {
 		TTF_CloseFont(game_font);
+		game_font = NULL;
 	}
 	SDL_DestroyTexture(textures);
 	SDL_DestroyTexture(frame);
@@ -525,8 +525,14 @@ void Graphics_CleanUp()
 	SDL_DestroyTexture(font);
 	SDL_DestroyTexture(title);
 	SDL_DestroyTexture(copyright);
-	SDL_DestroyRenderer(renderer);
-	SDL_DestroyWindow(window);
+	if (renderer) {
+		SDL_DestroyRenderer(renderer);
+		renderer = NULL;
+	}
+	if (window) {
+		SDL_DestroyWindow(window);
+		window = NULL;
+	}
 
 #ifdef _DEBUG
 	fprintf(stderr,"image surfaces successfully freed....\n");
@@ -681,4 +687,12 @@ SDL_Surface* Graphics_LoadGraphicsResource(char* inputfilename)
 void Graphics_UpdateScreen()
 {
 	SDL_RenderPresent(renderer);
+}
+
+/**
+ * Get the SDL renderer for use by other systems
+ */
+SDL_Renderer* Graphics_GetRenderer(void)
+{
+	return renderer;
 }
