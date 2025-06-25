@@ -583,7 +583,10 @@ Uint16 Graphics_ScaleHeight(Uint16 logical_height)
  */
 void Graphics_WindowToLogical(int window_x, int window_y, int *logical_x, int *logical_y)
 {
-	SDL_RenderWindowToLogical(renderer, window_x, window_y, logical_x, logical_y);
+	float temp_x, temp_y;
+	SDL_RenderWindowToLogical(renderer, window_x, window_y, &temp_x, &temp_y);
+	*logical_x = (int)temp_x;
+	*logical_y = (int)temp_y;
 }
 
 /**
