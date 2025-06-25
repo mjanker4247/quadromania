@@ -144,8 +144,11 @@ bool SDL2Input_ConvertEvent(const SDL_Event* sdl_event, InputEvent* unified_even
         unified_event->type = INPUT_EVENT_MOUSE_MOVE;
         if (sdl2_input_state.renderer)
         {
+            float temp_x, temp_y;
             SDL_RenderWindowToLogical(sdl2_input_state.renderer, sdl_event->motion.x, sdl_event->motion.y, 
-                                     &unified_event->data.mouse.x, &unified_event->data.mouse.y);
+                                     &temp_x, &temp_y);
+            unified_event->data.mouse.x = (uint16_t)temp_x;
+            unified_event->data.mouse.y = (uint16_t)temp_y;
         }
         else
         {
@@ -159,8 +162,11 @@ bool SDL2Input_ConvertEvent(const SDL_Event* sdl_event, InputEvent* unified_even
         unified_event->type = INPUT_EVENT_MOUSE_DOWN;
         if (sdl2_input_state.renderer)
         {
+            float temp_x, temp_y;
             SDL_RenderWindowToLogical(sdl2_input_state.renderer, sdl_event->button.x, sdl_event->button.y, 
-                                     &unified_event->data.mouse.x, &unified_event->data.mouse.y);
+                                     &temp_x, &temp_y);
+            unified_event->data.mouse.x = (uint16_t)temp_x;
+            unified_event->data.mouse.y = (uint16_t)temp_y;
         }
         else
         {
@@ -174,8 +180,11 @@ bool SDL2Input_ConvertEvent(const SDL_Event* sdl_event, InputEvent* unified_even
         unified_event->type = INPUT_EVENT_MOUSE_UP;
         if (sdl2_input_state.renderer)
         {
+            float temp_x, temp_y;
             SDL_RenderWindowToLogical(sdl2_input_state.renderer, sdl_event->button.x, sdl_event->button.y, 
-                                     &unified_event->data.mouse.x, &unified_event->data.mouse.y);
+                                     &temp_x, &temp_y);
+            unified_event->data.mouse.x = (uint16_t)temp_x;
+            unified_event->data.mouse.y = (uint16_t)temp_y;
         }
         else
         {

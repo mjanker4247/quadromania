@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Set default build type if not specified
 if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE "Debug-Macos" 
+    set(CMAKE_BUILD_TYPE "Debug" 
         CACHE STRING 
         "Choose the type of build (Debug, Release, RelWithDebInfo, MinSizeRel, Debug-Windows, Release-Windows, RelWithDebInfo-Windows, MinSizeRel-Windows, Debug-Macos, Release-Macos, RelWithDebInfo-Macos, MinSizeRel-Macos, Debug-Linux, Release-Linux, RelWithDebInfo-Linux, MinSizeRel-Linux, Debug-Android, Release-Android, RelWithDebInfo-Android, MinSizeRel-Android, Debug-IOS, Release-IOS, RelWithDebInfo-IOS, MinSizeRel-IOS)" FORCE)
 endif()
@@ -120,11 +120,6 @@ set(UTILS_SOURCES
     src/utils/random.h
 )
 
-# Platform abstraction sources
-set(PLATFORM_SOURCES
-    # Will be added later when platform-specific code is extracted
-)
-
 # Common headers
 set(COMMON_HEADERS
     src/common/version.h
@@ -145,7 +140,6 @@ set(ALL_SOURCES
     ${AUDIO_SOURCES}
     ${DATA_SOURCES}
     ${UTILS_SOURCES}
-    ${PLATFORM_SOURCES}
     ${COMMON_HEADERS}
     ${MAIN_SOURCES}
 )
@@ -173,7 +167,6 @@ source_group("Input" FILES ${INPUT_SOURCES})
 source_group("Audio" FILES ${AUDIO_SOURCES})
 source_group("Data" FILES ${DATA_SOURCES})
 source_group("Utils" FILES ${UTILS_SOURCES})
-source_group("Platform" FILES ${PLATFORM_SOURCES})
 source_group("Common" FILES ${COMMON_HEADERS})
 source_group("Main" FILES ${MAIN_SOURCES})
 
@@ -185,6 +178,18 @@ target_link_libraries(quadromania PRIVATE
     $<IF:$<TARGET_EXISTS:SDL2_ttf::SDL2_ttf>,SDL2_ttf::SDL2_ttf,SDL2_ttf::SDL2_ttf-static>
     spdlog::spdlog_header_only
 )
+
+# Add linker flags to handle duplicate libraries
+if(APPLE)
+    target_link_options(quadromania PRIVATE
+        -Wl,-dead_strip_dylibs
+    )
+elseif(UNIX AND NOT APPLE)
+    target_link_options(quadromania PRIVATE
+        -Wl,--as-needed
+        -Wl,--allow-multiple-definition
+    )
+endif()
 
 # Copy data directory to build directory
 file(COPY ${CMAKE_SOURCE_DIR}/data DESTINATION ${CMAKE_BINARY_DIR})

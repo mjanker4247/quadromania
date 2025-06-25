@@ -37,28 +37,6 @@
             "dependsOn": "configure"
         },
         {
-            "label": "package",
-            "type": "shell",
-            "command": "${workspaceFolder}/package.sh",
-            "presentation": {
-                "reveal": "always",
-                "panel": "shared"
-            }
-        },
-        {
-            "label": "build and package",
-            "dependsOrder": "sequence",
-            "dependsOn": [
-                "clean",
-                "build",
-                "package"
-            ],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            }
-        },
-        {
             "label": "run",
             "type": "shell",
             "command": "${workspaceFolder}/build/quadromania",
