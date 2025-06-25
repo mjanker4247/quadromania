@@ -23,39 +23,57 @@
  *
  */
 
-#include "state_manager.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "core/state_manager.h"
 #include "core/game.h"
 #include "graphics/renderer.h"
 #include "graphics/ui.h"
+#include "input/events.h"
 #include "audio/sound.h"
 #include "data/highscore.h"
-#include "input/events.h"
+#include "menu/main_menu.h"
 #include "utils/logger.h"
 
 void state_manager_init(game_state_context_t *context)
 {
     if (!context) return;
     
-    context->current_state = GAME_STATE_UNINITIALIZED;
-    context->previous_state = GAME_STATE_NONE;
-    context->state_changed = false;
-    
-    /* Initialize game configuration */
+    memset(context, 0, sizeof(game_state_context_t));
+    context->current_state = GAME_STATE_TITLE;
+    context->state_changed = true;
     context->max_rotations = 1;
     context->level = 1;
     context->score = 0;
-    context->highscore_position = 0;
+    context->highscore_position = HIGHSCORE_NO_ENTRY;
     context->highscore_entry = NULL;
+    
+    // Create main menu instance
+    context->main_menu = MainMenu_Create(context);
+    if (!context->main_menu) {
+        LOG_ERROR("Failed to create main menu for state manager");
+    }
+    
+    LOG_INFO("State manager initialized");
 }
 
 void state_manager_cleanup(game_state_context_t *context)
 {
     if (!context) return;
     
+    // Destroy main menu
+    if (context->main_menu) {
+        MainMenu_Destroy(context->main_menu);
+        context->main_menu = NULL;
+    }
+    
     if (context->highscore_entry) {
         free(context->highscore_entry);
         context->highscore_entry = NULL;
     }
+    
+    LOG_INFO("State manager cleaned up");
 }
 
 void state_manager_transition_to(game_state_context_t *context, game_state_t new_state)
@@ -135,71 +153,35 @@ void state_manager_render(game_state_context_t *context)
 
 void state_manager_handle_title(game_state_context_t *context)
 {
+    if (!context || !context->main_menu) return;
+    
     if (context->state_changed) {
-        /* Redraw the title screen */
-        GUI_DrawMainmenu(context->max_rotations + 1, context->level);
+        /* Redraw the title screen using the new menu system */
+        MainMenu_Render(context->main_menu);
         if (context->current_state == GAME_STATE_SETUP_CHANGED) {
             state_manager_transition_to(context, GAME_STATE_TITLE);
         }
         context->state_changed = false;
     }
     
-    /* Check for menu clicks */
+    /* Update menu state */
+    MainMenu_Update(context->main_menu);
+    
+    /* Handle mouse clicks through the new menu system */
     if (Event_MouseClicked()) {
         DEBUG_PRINT("Mouse clicked detected in title state");
         if (Event_GetMouseButton() == 1) {
             DEBUG_PRINT("Left mouse button detected");
-            tGUI_MenuEntries menu = GUI_GetClickedMenuEntry();
-            DEBUG_PRINT("Menu entry detected: %d", menu);
             
-            switch (menu) {
-                case MENU_START_GAME:
-                    Sound_PlayEffect(SOUND_MENU);
-                    state_manager_transition_to(context, GAME_STATE_GAME);
-                    Quadromania_InitPlayfield(
-                        Quadromania_GetRotationsPerLevel(context->level),
-                        context->max_rotations);
-                    Quadromania_DrawPlayfield();
-                    Graphics_UpdateScreen();
-                    break;
-                    
-                case MENU_CHANGE_NR_OF_COLORS:
-                    Sound_PlayEffect(SOUND_MENU);
-                    state_manager_transition_to(context, GAME_STATE_SETUP_CHANGED);
-                    ++context->max_rotations;
-                    if (context->max_rotations > 4) {
-                        context->max_rotations = 1;
-                    }
-                    break;
-                    
-                case MENU_CHANGE_NR_OF_ROTATIONS:
-                    Sound_PlayEffect(SOUND_MENU);
-                    state_manager_transition_to(context, GAME_STATE_SETUP_CHANGED);
-                    ++context->level;
-                    if (context->level > HIGHSCORE_NR_OF_TABLES) {
-                        context->level = 1;
-                    }
-                    break;
-                    
-                case MENU_INSTRUCTIONS:
-                    Sound_PlayEffect(SOUND_MENU);
-                    state_manager_transition_to(context, GAME_STATE_INSTRUCTIONS);
-                    break;
-                    
-                case MENU_HIGHSCORES:
-                    Sound_PlayEffect(SOUND_MENU);
-                    state_manager_transition_to(context, GAME_STATE_SHOW_HIGHSCORES);
-                    break;
-                    
-                case MENU_QUIT:
-                    Sound_PlayEffect(SOUND_MENU);
-                    state_manager_transition_to(context, GAME_STATE_QUIT);
-                    break;
-                    
-                default:
-                    /* Undefined menu entry */
-                    break;
-            }
+            Uint16 mouse_x = Event_GetMouseX();
+            Uint16 mouse_y = Event_GetMouseY();
+            DEBUG_PRINT("Mouse coordinates: %d,%d", mouse_x, mouse_y);
+            
+            // Handle click directly with menu manager
+            MenuEvent menu_event = MainMenu_HandleClick(context->main_menu, mouse_x, mouse_y);
+            DEBUG_PRINT("Menu event: type=%d, item=%d, text='%s'", 
+                       menu_event.type, menu_event.item_index, 
+                       menu_event.item_text ? menu_event.item_text : "NULL");
         }
         Event_DebounceMouse();
     }

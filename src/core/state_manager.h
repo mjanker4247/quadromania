@@ -30,6 +30,9 @@
 #include <stdbool.h>
 #include "graphics/ui.h"
 
+// Forward declaration
+struct MainMenu;
+
 /**************************
  * DATA TYPE DECLARATIONS *
  **************************/
@@ -61,6 +64,9 @@ typedef struct {
     
     /* State-specific data */
     char *highscore_entry;
+    
+    /* Menu system */
+    struct MainMenu *main_menu;
 } game_state_context_t;
 
 /**************

@@ -70,6 +70,16 @@ set(GRAPHICS_SOURCES
     src/graphics/ui.h
 )
 
+# Menu subsystem sources
+set(MENU_SOURCES
+    src/menu/menu_manager.c
+    src/menu/menu_manager.h
+    src/menu/main_menu.c
+    src/menu/main_menu.h
+    src/input/menu_input.c
+    src/input/menu_input.h
+)
+
 # Input subsystem sources
 set(INPUT_SOURCES
     # src/input/events.c  # Excluded to avoid duplicate symbols with events_compat.c
@@ -130,6 +140,7 @@ set(MAIN_SOURCES
 set(ALL_SOURCES
     ${CORE_SOURCES}
     ${GRAPHICS_SOURCES}
+    ${MENU_SOURCES}
     ${INPUT_SOURCES}
     ${AUDIO_SOURCES}
     ${DATA_SOURCES}
@@ -157,6 +168,7 @@ target_compile_options(quadromania PRIVATE
 # Organize source files in IDE
 source_group("Core" FILES ${CORE_SOURCES})
 source_group("Graphics" FILES ${GRAPHICS_SOURCES})
+source_group("Menu" FILES ${MENU_SOURCES})
 source_group("Input" FILES ${INPUT_SOURCES})
 source_group("Audio" FILES ${AUDIO_SOURCES})
 source_group("Data" FILES ${DATA_SOURCES})
