@@ -167,6 +167,18 @@ target_link_libraries(quadromania PRIVATE
     spdlog::spdlog_header_only
 )
 
+# Add linker flags to handle duplicate libraries
+if(APPLE)
+    target_link_options(quadromania PRIVATE
+        -Wl,-dead_strip_dylibs
+    )
+elseif(UNIX AND NOT APPLE)
+    target_link_options(quadromania PRIVATE
+        -Wl,--as-needed
+        -Wl,--allow-multiple-definition
+    )
+endif()
+
 # Copy data directory to build directory
 file(COPY ${CMAKE_SOURCE_DIR}/data DESTINATION ${CMAKE_BINARY_DIR})
 
