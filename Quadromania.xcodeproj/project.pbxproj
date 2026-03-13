@@ -8,6 +8,7 @@
 
 /* Begin PBXFileReference section */
 		1D550BCC2F634CF100BD8ED6 /* Quadromania.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Quadromania.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1D550C1C2F63E33800BD8ED6 /* Game purpose.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "Game purpose.md"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -32,6 +33,7 @@
 		1D550BC32F634CF100BD8ED6 = {
 			isa = PBXGroup;
 			children = (
+				1D550C1C2F63E33800BD8ED6 /* Game purpose.md */,
 				1D550BCE2F634CF100BD8ED6 /* Quadromania */,
 				1D550BCD2F634CF100BD8ED6 /* Products */,
 			);

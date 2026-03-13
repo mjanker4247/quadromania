@@ -1,0 +1,60 @@
+# Xcode build output
+Build/
+DerivedData/
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcworkspace/xcuserdata/
+*.moved-aside
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+
+# Build intermediates
+*.build/
+*.noindex/
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# CocoaPods (not used, but common)
+Pods/
+Podfile.lock
+
+# Fastlane (not used, but common)
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+.fseventsd
+
+# Editor / IDE
+.vscode/
+*.swp
+*.swo
+*~
+
+# vexp tool
+.vexp/
+vexp.toml
+
+# Claude Code
+.claude/
+
+# Compiled output
+*.o
+*.a
+*.dylib
