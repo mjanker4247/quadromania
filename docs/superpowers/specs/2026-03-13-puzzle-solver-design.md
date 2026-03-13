@@ -86,6 +86,12 @@ struct PuzzleGenerator {
 
         /// Total player presses in the known solution. Always ≥ 1 and ≤ limit.
         let knownSolutionMoveCount: Int
+
+        /// Press counts per rotation center, indexed [column][row] over the full 18×13 grid.
+        /// Only positions in x ∈ 1...16, y ∈ 1...11 can be non-zero.
+        /// Applying `solutionMap[x][y]` presses at each (x,y) solves the board.
+        /// Exposed to enable correctness testing and future hint system support.
+        let solutionMap: [[Int]]
     }
 
     /// Generate a solvable puzzle.
@@ -93,7 +99,7 @@ struct PuzzleGenerator {
     /// - Parameters:
     ///   - level: Difficulty level. Clamped to 1...10.
     ///   - maxColors: Maximum color index. Clamped to 1...4.
-    /// - Returns: A scrambled playfield and the known solution move count.
+    /// - Returns: A scrambled playfield, the known solution move count, and the solution map.
     static func generate(level: Int, maxColors: Int) -> Result
 }
 ```
