@@ -6,12 +6,28 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXContainerItemProxy section */
+		1D1A658E2F65405A00A3467A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1D550BC42F634CF100BD8ED6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1D550BCB2F634CF100BD8ED6;
+			remoteInfo = Quadromania;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		1D1A658A2F65405A00A3467A /* QuadroTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = QuadroTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		1D550BCC2F634CF100BD8ED6 /* Quadromania.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Quadromania.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1D550C1C2F63E33800BD8ED6 /* Game purpose.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "Game purpose.md"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		1D1A658B2F65405A00A3467A /* QuadroTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = QuadroTests;
+			sourceTree = "<group>";
+		};
 		1D550BCE2F634CF100BD8ED6 /* Quadromania */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Quadromania;
@@ -20,6 +36,13 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		1D1A65872F65405A00A3467A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		1D550BC92F634CF100BD8ED6 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -35,6 +58,7 @@
 			children = (
 				1D550C1C2F63E33800BD8ED6 /* Game purpose.md */,
 				1D550BCE2F634CF100BD8ED6 /* Quadromania */,
+				1D1A658B2F65405A00A3467A /* QuadroTests */,
 				1D550BCD2F634CF100BD8ED6 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -43,6 +67,7 @@
 			isa = PBXGroup;
 			children = (
 				1D550BCC2F634CF100BD8ED6 /* Quadromania.app */,
+				1D1A658A2F65405A00A3467A /* QuadroTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -50,6 +75,29 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		1D1A65892F65405A00A3467A /* QuadroTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1D1A65922F65405A00A3467A /* Build configuration list for PBXNativeTarget "QuadroTests" */;
+			buildPhases = (
+				1D1A65862F65405A00A3467A /* Sources */,
+				1D1A65872F65405A00A3467A /* Frameworks */,
+				1D1A65882F65405A00A3467A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				1D1A658F2F65405A00A3467A /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				1D1A658B2F65405A00A3467A /* QuadroTests */,
+			);
+			name = QuadroTests;
+			packageProductDependencies = (
+			);
+			productName = QuadroTests;
+			productReference = 1D1A658A2F65405A00A3467A /* QuadroTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		1D550BCB2F634CF100BD8ED6 /* Quadromania */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 1D550BE02F634CF200BD8ED6 /* Build configuration list for PBXNativeTarget "Quadromania" */;
@@ -82,6 +130,10 @@
 				LastSwiftUpdateCheck = 2630;
 				LastUpgradeCheck = 2630;
 				TargetAttributes = {
+					1D1A65892F65405A00A3467A = {
+						CreatedOnToolsVersion = 26.3;
+						TestTargetID = 1D550BCB2F634CF100BD8ED6;
+					};
 					1D550BCB2F634CF100BD8ED6 = {
 						CreatedOnToolsVersion = 26.3;
 					};
@@ -102,11 +154,19 @@
 			projectRoot = "";
 			targets = (
 				1D550BCB2F634CF100BD8ED6 /* Quadromania */,
+				1D1A65892F65405A00A3467A /* QuadroTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		1D1A65882F65405A00A3467A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		1D550BCA2F634CF100BD8ED6 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -117,6 +177,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		1D1A65862F65405A00A3467A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		1D550BC82F634CF100BD8ED6 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -126,7 +193,57 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		1D1A658F2F65405A00A3467A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1D550BCB2F634CF100BD8ED6 /* Quadromania */;
+			targetProxy = 1D1A658E2F65405A00A3467A /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		1D1A65902F65405A00A3467A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8J58VWJG83;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "marco-janker.de.QuadroTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Quadromania.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Quadromania";
+			};
+			name = Debug;
+		};
+		1D1A65912F65405A00A3467A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8J58VWJG83;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "marco-janker.de.QuadroTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Quadromania.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Quadromania";
+			};
+			name = Release;
+		};
 		1D550BDE2F634CF200BD8ED6 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -324,6 +441,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		1D1A65922F65405A00A3467A /* Build configuration list for PBXNativeTarget "QuadroTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1D1A65902F65405A00A3467A /* Debug */,
+				1D1A65912F65405A00A3467A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		1D550BC72F634CF100BD8ED6 /* Build configuration list for PBXProject "Quadromania" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
