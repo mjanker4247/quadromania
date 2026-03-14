@@ -11,6 +11,8 @@ import Cocoa
 class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
+        // Skip app initialization when running under XCTest.
+        guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return }
         NSApp.activate(ignoringOtherApps: true)
         SoundManager.shared.startMusic()
         updateMusicMenuItem()

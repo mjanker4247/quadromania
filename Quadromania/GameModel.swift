@@ -40,6 +40,9 @@ class GameModel {
     /// Random background art index (0–9) chosen at init.
     let backgroundArtIndex: Int
 
+    /// Total player presses in the known solution for this puzzle. Always ≤ limit.
+    let knownSolutionMoveCount: Int
+
     // MARK: - Init
 
     /// Create and scramble a new game.
@@ -53,21 +56,10 @@ class GameModel {
         self.limit            = self.initialRotations * self.maxColors
         self.backgroundArtIndex = Int.random(in: 0...9)
 
-        // Start with a cleared playfield.
-        playfield = Array(
-            repeating: Array(repeating: GameModel.baseColor, count: GameModel.gridHeight),
-            count: GameModel.gridWidth
-        )
-
-        // Scramble: same logic as Quadromania_InitPlayfield.
-        // x in 1...16, y in 1...11 (interior cells that allow a full 3×3 block)
-        for _ in 1..<initialRotations {
-            let rx = Int.random(in: 1...16)
-            let ry = Int.random(in: 1...11)
-            applyRotate(x: rx, y: ry)
-        }
-        // turns is reset to 0 after scramble — scramble moves don't count
-        turns = 0
+        // Generate a guaranteed-solvable puzzle via backwards construction.
+        let generated = PuzzleGenerator.generate(level: self.level, maxColors: self.maxColors)
+        playfield = generated.playfield
+        knownSolutionMoveCount = generated.knownSolutionMoveCount
     }
 
     // MARK: - Public API
@@ -102,6 +94,13 @@ class GameModel {
     static func rotations(forLevel level: Int) -> Int {
         baseRotations + level * modifierPerLevel
     }
+
+    // Explicitly non-isolated deinit to prevent Swift concurrency back-deployment
+    // stub (swift_task_deinitOnExecutorMainActorBackDeploy) from running in
+    // non-concurrency contexts such as XCTest — required because GameModel is
+    // inferred @MainActor when compiled alongside SpriteKit scenes on macOS 14+
+    // deployment targets.
+    nonisolated deinit {}
 
     // MARK: - Private
 
