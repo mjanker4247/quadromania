@@ -46,7 +46,7 @@ final class PuzzleGeneratorTests: XCTestCase {
     func testKnownSolutionMoveCountWithinLimit() {
         for level in 1...10 {
             for maxColors in 1...4 {
-                let initialRotations = 56 + level * 13
+                let initialRotations = 56 + (11 - level) * 13
                 let limit = initialRotations * maxColors
                 let result = PuzzleGenerator.generate(level: level, maxColors: maxColors)
                 XCTAssertLessThanOrEqual(result.knownSolutionMoveCount, limit,
@@ -118,7 +118,7 @@ final class PuzzleGeneratorTests: XCTestCase {
 
     func testLevelBelowMinIsClamped() {
         let result0 = PuzzleGenerator.generate(level: 0, maxColors: 2)
-        let limit1 = (56 + 1 * 13) * 2
+        let limit1 = (56 + (11 - 1) * 13) * 2   // level 1 → 186 rotations
         XCTAssertLessThanOrEqual(result0.knownSolutionMoveCount, limit1)
     }
 

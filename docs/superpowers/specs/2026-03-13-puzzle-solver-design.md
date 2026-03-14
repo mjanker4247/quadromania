@@ -24,7 +24,7 @@ All rotations in Quadromania commute because they are additions over Z_{maxColor
 
 **Solvability guarantee (proof):**
 
-Minimum `limit` over all valid inputs: `(56 + 1×13) × 1 = 69`, so `limit ≥ 69 > 0` always.
+Minimum `limit` over all valid inputs: `(56 + (11−10)×13) × 1 = 69` (level 10, maxColors 1), so `limit ≥ 69 > 0` always.
 Let `P` denote the set of all valid rotation centers `{(x,y) | x ∈ 1...16, y ∈ 1...11}`.
 `S = max(1, Int(Double(limit) × margin)) ≤ limit` since `margin ≤ 0.90 < 1.0`.
 Each sample increments exactly one `c[x][y]`, so `Σ_{P} c[x][y] = S`.
@@ -52,7 +52,8 @@ margin(level) = 0.60 + (level − 1) × (0.30 / 9)
 | 10    | 90%    | 10%    |
 
 `S = max(1, Int(Double(limit) × margin(level)))` — clamped to at least 1 to ensure the board is never trivially solved.
-`limit = initialRotations × maxColors`, where `initialRotations = 56 + level × 13`.
+`limit = initialRotations × maxColors`, where `initialRotations = 56 + (11 − level) × 13`.
+Level 1 → 186 rotations (most turns, easiest); level 10 → 69 rotations (fewest turns, hardest).
 Inputs are clamped to `level ∈ 1...10`, `maxColors ∈ 1...4` before any computation (matching `GameModel`'s existing clamps).
 
 ---

@@ -91,8 +91,10 @@ class GameModel {
     // MARK: - Static helpers
 
     /// Number of scramble rotations for a given level (1–10).
+    /// Level 1 gives the most rotations (easiest — most turns to solve);
+    /// level 10 gives the fewest (hardest — fewest turns to solve).
     static func rotations(forLevel level: Int) -> Int {
-        baseRotations + level * modifierPerLevel
+        baseRotations + (11 - level) * modifierPerLevel
     }
 
     // Explicitly non-isolated deinit to prevent Swift concurrency back-deployment

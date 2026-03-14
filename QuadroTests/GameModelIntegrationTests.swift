@@ -71,7 +71,7 @@ final class GameModelIntegrationTests: XCTestCase {
         for level in [1, 5, 10] {
             for maxColors in [1, 4] {
                 let model = GameModel(level: level, maxColors: maxColors)
-                let expected = (56 + level * 13) * maxColors
+                let expected = (56 + (11 - level) * 13) * maxColors
                 XCTAssertEqual(model.limit, expected,
                     "level=\(level) maxColors=\(maxColors)")
             }

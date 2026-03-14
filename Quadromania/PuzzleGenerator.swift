@@ -32,7 +32,7 @@ struct PuzzleGenerator {
         let maxColors = max(1, min(4, maxColors))
         let modulus   = maxColors + 1
 
-        let initialRotations = 56 + level * 13
+        let initialRotations = 56 + (11 - level) * 13
         let limit            = initialRotations * maxColors
         let margin           = 0.60 + Double(level - 1) * (0.30 / 9.0)
         let S                = max(1, Int(Double(limit) * margin))
