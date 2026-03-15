@@ -1,28 +1,8 @@
 # Quadromania
 
-A macOS puzzle game — Swift/SpriteKit port of the original Quadromania by **Matthias Arndt** (ASM Software).
+A macOS puzzle game. Restore an 18×13 grid of colored tiles to their lightest color before you run out of turns.
 
-> Original C/SDL version © 2002/2003/2009/2010 Matthias Arndt <marndt@asmsoftware.de>
-> http://www.asmsoftware.de/
-> Licensed under the GNU General Public License.
-
----
-
-## The Game
-
-Restore an **18×13 grid** of colored tiles back to red by clicking the center of any 3×3 section. Each click cycles every tile in that section forward by one color. The computer scrambles the board at the start — you have a fixed number of turns to solve it.
-
-- **Colors**: 1–4 (configurable), cycling back to red (0) at the maximum
-- **Turn limit**: `initialRotations × maxColors`
-- **Score**: `((limit − turns) × 10000) / turns` — fewer turns scores higher; exceeding the limit scores 0
-- **Level rotations**: `56 + level × 13` (levels 1–10)
-
-## Requirements
-
-- macOS 14 or later
-- Xcode 15 or later
-
-## Build & Run
+## Build
 
 Open `Quadromania.xcodeproj` in Xcode and press **Cmd+R**, or from the terminal:
 
@@ -30,51 +10,22 @@ Open `Quadromania.xcodeproj` in Xcode and press **Cmd+R**, or from the terminal:
 xcodebuild -project Quadromania.xcodeproj -scheme Quadromania -configuration Debug build
 ```
 
-## Controls
+Requires macOS 13+ and Xcode 15+.
 
-| Action | Input |
-|--------|-------|
-| Rotate 3×3 section | Click the center tile |
-| Navigate menus | Mouse hover + click |
+## How to play
 
-## Menu Bar
+1. **Goal** — Return every tile to its lightest color (color 0) before you run out of turns.
+2. **Click** any tile to rotate the 3×3 block centered on it. Every tile in that block steps forward by one color. Tiles at the maximum color wrap back to 0.
+3. **Turn limit** — shown at the top. Each click costs one turn. Plan carefully.
+4. **Scoring** — solve the board in fewer turns to score higher.
 
-| Menu | Item | Shortcut |
-|------|------|----------|
-| Game | New Game | Cmd+N |
-| Game | Instructions | Cmd+I |
-| Game | Highscores | Cmd+Shift+H |
-| Sound | Stop/Start Music | Cmd+Shift+M |
-| Window | Enter Full Screen | Ctrl+Cmd+F |
+## Options
 
-## Architecture
+- **Select colors** — sets how many color steps tiles cycle through (1–4 extra colors).
+- **Select level** — controls how scrambled the board starts (1 = easiest, 10 = hardest).
+- **Palette** menu — choose from Spring 🌸, Ocean 🌊, Sunset 🌅, or Forest 🌿.
+- **Color Symbols** — adds shape symbols to tiles for colorblind accessibility.
 
-Built with Swift and SpriteKit, targeting macOS via Cocoa. Game logic is fully decoupled from the presentation layer.
+## Tutorial
 
-```
-AppDelegate
-  └─ GameViewController (SKView 1280×960)
-       └─ TitleScene          ← main menu
-            └─ GamePlayScene  ← active gameplay
-                 └─ TitleScene (on game end)
-```
-
-Key source files:
-
-| File | Responsibility |
-|------|----------------|
-| `AppDelegate.swift` | App lifecycle, music startup |
-| `GameViewController.swift` | Hosts SKView, handles menu bar actions |
-| `GameModel.swift` | Pure game logic: grid, rotation, win/loss, scoring |
-| `HighscoreManager.swift` | Persistent highscores via UserDefaults (10 levels × 10 entries) |
-| `SoundManager.swift` | Background music + sound effects (AVFoundation) |
-| `TitleScene.swift` | Main menu scene |
-| `GamePlayScene.swift` | Active gameplay scene |
-| `InstructionsScene.swift` | Instructions screen |
-| `HighscoreScene.swift` | Highscore display |
-| `TileGridNode.swift` | 18×13 tile grid node |
-
-## Credits
-
-Original game design and implementation by **Matthias Arndt** / ASM Software (2002–2010).
-macOS Swift/SpriteKit port by Marco Janker (2026).
+Open **Instructions** from the main menu, then click **Start Tutorial** for a guided walkthrough on a small grid.
