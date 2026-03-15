@@ -14,7 +14,9 @@ class TitleScene: SKScene {
 
     // MARK: - Game configuration
     private var selectedColors  = 1              // 1–4
-    private var selectedLevel   = 1              // 1–10
+    private var selectedLevel   = 1              // restricted to difficultyLevels
+    private let difficultyLevels = [1, 5, 10]
+    private let difficultyNames: [Int: String] = [1: "Beginner", 5: "Intermediate", 10: "Expert"]
     private var selectedPalette: TilePalette = .spring
 
     // MARK: - UI nodes
@@ -95,7 +97,7 @@ class TitleScene: SKScene {
         let items: [(MenuItem, String)] = [
             (.startGame,    "Start the game"),
             (.selectColors, "Select colors:"),
-            (.selectTurns,  "Select level:"),
+            (.selectTurns,  "Select difficulty:"),
             (.instructions, "Instructions"),
             (.quit,         "Quit"),
         ]
@@ -134,10 +136,9 @@ class TitleScene: SKScene {
     }
 
     private func updateDynamicLabels() {
-        // Rotations count next to "Select level:"
         rotationsValueLabel?.removeFromParent()
-        let rotations = GameModel.rotations(forLevel: selectedLevel)
-        let label = SKLabelNode(text: "Level \(selectedLevel)  (\(rotations) rotations)")
+        let name = difficultyNames[selectedLevel] ?? "Beginner"
+        let label = SKLabelNode(text: name)
         label.fontName  = "Helvetica"
         label.fontSize  = 24
         label.fontColor = SKColor(white: 0.75, alpha: 1)
@@ -280,7 +281,8 @@ class TitleScene: SKScene {
             addColorDots()
 
         case .selectTurns:
-            selectedLevel = (selectedLevel % 10) + 1    // cycles 1→2→…→10→1
+            let idx = ((difficultyLevels.firstIndex(of: selectedLevel) ?? 0) + 1) % 3
+            selectedLevel = difficultyLevels[idx]
             updateDynamicLabels()
 
         case .instructions:
