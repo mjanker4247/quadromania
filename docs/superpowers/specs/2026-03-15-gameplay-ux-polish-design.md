@@ -36,6 +36,10 @@ Built in `buildColorStrip()` called from `buildUI()` after placing the tile grid
 ### Palette updates
 `handlePaletteDidChange(_:)` already calls `tileGrid.applyPalette(palette)`. It additionally iterates `colorSwatchNodes` and updates each sprite's `color` to `newPalette.colors[index]`.
 
+The local binding in the handler must be named `newPalette` (not `palette`) to avoid shadowing the scene's stored `private var palette` property. `palette` should be changed from `private let` to `private var` in `GamePlayScene` so it stays in sync and can be used (e.g. when passing `sourcePalette` to `InstructionsScene`).
+
+> **Note:** The strip Y arithmetic (`gridY + gridPixelHeight + 10 + 14 = 906`) is correct for the current values (`tileSize = 64`, `gridHeight = 13`). It will silently break if either constant changes — the implementation should derive the position from the constants rather than hardcoding 906.
+
 ---
 
 ## 2. Difficulty Levels — Beginner / Intermediate / Expert
@@ -58,9 +62,10 @@ Built in `buildColorStrip()` called from `buildUI()` after placing the tile grid
 - `updateDynamicLabels()` displays `difficultyNames[selectedLevel]!` (e.g. `"Beginner"`) instead of `"Level N (X rotations)"`
 - Cycling on click: find current index in `difficultyLevels`, advance modulo 3
   ```swift
-  let idx = (difficultyLevels.firstIndex(of: selectedLevel) ?? 0 + 1) % 3
+  let idx = ((difficultyLevels.firstIndex(of: selectedLevel) ?? 0) + 1) % 3
   selectedLevel = difficultyLevels[idx]
   ```
+  (The inner `?? 0` must be parenthesised before the `+ 1` advancement to avoid Swift's operator precedence collapsing `0 + 1` inside the nil-coalescing clause.)
 - Default: `selectedLevel = 1` (Beginner) — no change to initialisation
 
 ---
@@ -115,9 +120,14 @@ override func mouseDown(with event: NSEvent) {
 ```
 
 ### Footer hint text
-Adapts based on context:
-- `sourceGame != nil` → `"Click anywhere to return to game"`
-- `sourceGame == nil` → `"Click anywhere to return"`
+The footer `SKLabelNode` is created inside `buildUI()`, which reads `self.sourceGame` directly (no need to store the label as a property):
+
+```swift
+let hintText = (sourceGame != nil) ? "Click anywhere to return to game" : "Click anywhere to return"
+let hint = SKLabelNode(text: hintText)
+```
+
+This works because `buildUI()` is called from `didMove(to:)`, by which time the stored properties are fully initialised.
 
 ### TitleScene — existing click path
 The existing `.instructions` switch case in `TitleScene.mouseDown` is updated to use the new initialiser:
