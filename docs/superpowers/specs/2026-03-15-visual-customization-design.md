@@ -201,7 +201,7 @@ Clockwise ordering of the 8 outer tiles of the 3×3 (col offset, row offset from
 ```
 (In model/grid coordinates, row offset −1 is a lower row index, which renders higher on screen because SpriteKit's Y origin is at the bottom.)
 
-Each outer tile gets its colour transition delayed by `tileIndex * 0.035` s. Centre tile delayed by `8 * 0.035 = 0.280` s.
+Each outer tile gets its colour transition delayed by `Double(tileIndex) * 0.035` s (where `tileIndex: Int` is the 0-based position in the clockwise ordering). Centre tile delayed by `Double(8) * 0.035 = 0.280` s.
 
 All tiles outside the 3×3 that also changed (not possible in current game rules, but guard anyway) use immediate transitions.
 
