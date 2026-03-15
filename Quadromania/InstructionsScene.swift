@@ -2,10 +2,23 @@
 // How-to-play screen — port of Graphics_DrawInstructions().
 
 import SpriteKit
+import QuadroCore
 
 class InstructionsScene: SKScene {
 
+    // MARK: - Context (set nil when launched from title screen)
+    private let sourceGame:    GameModel?
+    private let sourcePalette: TilePalette
+
     private var tutorialButtonLabel: SKLabelNode?
+
+    init(size: CGSize, sourceGame: GameModel? = nil, sourcePalette: TilePalette = .spring) {
+        self.sourceGame    = sourceGame
+        self.sourcePalette = sourcePalette
+        super.init(size: size)
+    }
+
+    required init?(coder: NSCoder) { fatalError("Use init(size:)") }
 
     override func didMove(to view: SKView) {
         backgroundColor = SKColor(red: 0.06, green: 0.08, blue: 0.14, alpha: 1)
@@ -71,7 +84,8 @@ class InstructionsScene: SKScene {
         tutorialButtonLabel = tutBtn
 
         // Footer hint
-        let hint = SKLabelNode(text: "Click anywhere else to return")
+        let hintText = (sourceGame != nil) ? "Click anywhere to return to game" : "Click anywhere to return"
+        let hint = SKLabelNode(text: hintText)
         hint.fontName  = "Helvetica"
         hint.fontSize  = 18
         hint.fontColor = SKColor(white: 0.45, alpha: 1)
@@ -93,6 +107,10 @@ class InstructionsScene: SKScene {
             let scene = TutorialScene(size: size)
             scene.scaleMode = scaleMode
             view?.presentScene(scene, transition: .fade(withDuration: 0.3))
+        } else if let model = sourceGame {
+            let scene = GamePlayScene(model: model, palette: sourcePalette, size: size)
+            scene.scaleMode = scaleMode
+            view?.presentScene(scene, transition: .fade(withDuration: 0.2))
         } else {
             let scene = TitleScene(size: size)
             scene.scaleMode = scaleMode
