@@ -3,6 +3,7 @@
 
 import SpriteKit
 import QuadroCore
+import Cocoa
 
 class GamePlayScene: SKScene {
 
@@ -35,6 +36,18 @@ class GamePlayScene: SKScene {
             alpha: 1
         )
         buildUI()
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handlePaletteDidChange(_:)),
+            name: .paletteDidChange,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleSymbolOverlayDidChange(_:)),
+            name: .symbolOverlayDidChange,
+            object: nil
+        )
     }
 
     // MARK: - UI
@@ -48,6 +61,9 @@ class GamePlayScene: SKScene {
         let gridY: CGFloat = 50
         tileGrid.position = CGPoint(x: gridX, y: gridY)
         addChild(tileGrid)
+        if let appDelegate = NSApp.delegate as? AppDelegate {
+            tileGrid.symbolOverlayEnabled = appDelegate.symbolOverlayEnabled
+        }
 
         // --- HUD labels ---
         let labelY: CGFloat = 18
@@ -196,5 +212,20 @@ class GamePlayScene: SKScene {
         let scene = TitleScene(size: size)
         scene.scaleMode = scaleMode
         view?.presentScene(scene, transition: .fade(withDuration: 0.4))
+    }
+
+    @objc private func handlePaletteDidChange(_ notification: Notification) {
+        guard let raw = notification.userInfo?["palette"] as? Int,
+              let palette = TilePalette(rawValue: raw) else { return }
+        tileGrid.applyPalette(palette)
+    }
+
+    @objc private func handleSymbolOverlayDidChange(_ notification: Notification) {
+        guard let enabled = notification.userInfo?["enabled"] as? Bool else { return }
+        tileGrid.symbolOverlayEnabled = enabled
+    }
+
+    override func willMove(from view: SKView) {
+        NotificationCenter.default.removeObserver(self)
     }
 }
