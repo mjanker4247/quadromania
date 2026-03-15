@@ -26,8 +26,6 @@ class InstructionsScene: SKScene {
     }
 
     private func buildUI() {
-        backgroundColor = SKColor(red: 0.06, green: 0.08, blue: 0.14, alpha: 1)
-
         // Title
         let title = SKLabelNode(text: "HOW TO PLAY")
         title.fontName  = "Helvetica-Bold"

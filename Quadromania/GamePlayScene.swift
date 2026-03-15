@@ -254,8 +254,8 @@ class GamePlayScene: SKScene {
     }
 
     @objc private func handleShowInstructions(_ notification: Notification) {
-        let newPalette = (NSApp.delegate as? AppDelegate)?.activePalette ?? .spring
-        let scene = InstructionsScene(size: size, sourceGame: model, sourcePalette: newPalette)
+        guard !waitingForClick else { return }
+        let scene = InstructionsScene(size: size, sourceGame: model, sourcePalette: palette)
         scene.scaleMode = scaleMode
         view?.presentScene(scene, transition: .fade(withDuration: 0.2))
     }
