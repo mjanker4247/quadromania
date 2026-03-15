@@ -154,8 +154,8 @@ Both scenes add an observer for `.showInstructions` in `didMove(to:)` and remove
 **GamePlayScene handler:**
 ```swift
 @objc private func handleShowInstructions(_ notification: Notification) {
-    let palette = (NSApp.delegate as? AppDelegate)?.activePalette ?? .spring
-    let scene = InstructionsScene(size: size, sourceGame: model, sourcePalette: palette)
+    let newPalette = (NSApp.delegate as? AppDelegate)?.activePalette ?? .spring
+    let scene = InstructionsScene(size: size, sourceGame: model, sourcePalette: newPalette)
     scene.scaleMode = scaleMode
     view?.presentScene(scene, transition: .fade(withDuration: 0.2))
 }
