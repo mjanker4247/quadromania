@@ -49,6 +49,12 @@ class TitleScene: SKScene {
             name: .paletteDidChange,
             object: nil
         )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleShowInstructions(_:)),
+            name: .showInstructions,
+            object: nil
+        )
         // Sync with whatever palette the menu bar currently has selected
         if let appDelegate = NSApp.delegate as? AppDelegate {
             selectPalette(appDelegate.activePalette)
@@ -299,6 +305,12 @@ class TitleScene: SKScene {
         guard let raw = notification.userInfo?["palette"] as? Int,
               let palette = TilePalette(rawValue: raw) else { return }
         selectPalette(palette)
+    }
+
+    @objc private func handleShowInstructions(_ notification: Notification) {
+        let scene = InstructionsScene(size: size)
+        scene.scaleMode = scaleMode
+        view?.presentScene(scene, transition: .fade(withDuration: 0.2))
     }
 
     override func willMove(from view: SKView) {

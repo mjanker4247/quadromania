@@ -48,6 +48,12 @@ class GamePlayScene: SKScene {
             name: .symbolOverlayDidChange,
             object: nil
         )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleShowInstructions(_:)),
+            name: .showInstructions,
+            object: nil
+        )
     }
 
     // MARK: - UI
@@ -209,6 +215,13 @@ class GamePlayScene: SKScene {
     @objc private func handleSymbolOverlayDidChange(_ notification: Notification) {
         guard let enabled = notification.userInfo?["enabled"] as? Bool else { return }
         tileGrid.symbolOverlayEnabled = enabled
+    }
+
+    @objc private func handleShowInstructions(_ notification: Notification) {
+        let newPalette = (NSApp.delegate as? AppDelegate)?.activePalette ?? .spring
+        let scene = InstructionsScene(size: size, sourceGame: model, sourcePalette: newPalette)
+        scene.scaleMode = scaleMode
+        view?.presentScene(scene, transition: .fade(withDuration: 0.2))
     }
 
     override func willMove(from view: SKView) {
