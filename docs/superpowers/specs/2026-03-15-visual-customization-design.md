@@ -70,7 +70,9 @@ private func lerpColor(from: SKColor, to: SKColor, t: CGFloat) -> SKColor {
 
 ### applyPalette update
 
-`applyPalette` currently uses `SKAction.colorize`. Replace with direct `fillColor` assignment (instant, no animation):
+`applyPalette` currently uses `SKAction.colorize`. Replace with direct `fillColor` assignment (instant, no animation).
+
+`colorIndices: [[Int]]` is an existing field in `TileGridNode` that stores the current colour index (0…maxColors) for each tile. It is populated during `buildGrid` and mutated by `updateAll`. No changes to `colorIndices` are required by this spec.
 
 ```swift
 func applyPalette(_ newPalette: TilePalette) {
@@ -168,7 +170,7 @@ When `rotationCenter` is non-nil, use the current `transitionStyle`'s animation 
 3. Animate with `SKAction.customAction(withDuration: 0.30)` that at each frame redraws the arc from 0 to `elapsed/0.30 * 2π`.
 4. `strokeColor` = white, `lineWidth = 4`, `fillColor = .clear`.
 5. After the arc completes, fade it out (`fadeOut(withDuration: 0.10)` then `removeFromParent`).
-6. Simultaneously, after `0.20` s delay, run the colour transitions on tiles.
+6. Dispatch a delayed colour action at the same time as the arc starts: `SKAction.wait(forDuration: 0.20)` then run the colour transitions on all 9 tiles simultaneously (not one-by-one as the arc passes over them).
 
 The arc node is added as a child of `TileGridNode` (`self`) at `zPosition = 5` (tiles are at zPosition 0). No coordinate conversion is required — the block centre is already in TileGridNode's local coordinate space.
 
@@ -200,8 +202,10 @@ let scaleAction = SKAction.sequence([
     SKAction.scale(to: 1.12, duration: 0.08),
     SKAction.scale(to: 1.00, duration: 0.10)
 ])
+let colourAction = colorTransition(from: currentColor, to: newColor)  // 0.18 s, no delay
+tile.run(SKAction.group([scaleAction, colourAction]))
 ```
-Colour transition runs concurrently (no delay, 0.18 s).
+The colour transition and scale animation run **concurrently** on each tile (both started together via `SKAction.group`). The centre tile (distance 0) scales and colour-changes immediately; edge tiles (distance 1) after 0.04 s; corner tiles (distance 2) after 0.08 s.
 
 ### GamePlayScene changes
 
@@ -296,9 +300,11 @@ enum TilePalette: Int, CaseIterable {
 
 ### TitleScene palette grid with `.custom`
 
-`TitleScene.addPaletteGrid()` renders a 2×2 grid for the four built-in palettes. The `.custom` palette is **not** added to this grid (no fifth swatch in the 2×2 layout). Players select `.custom` exclusively from the macOS menu bar. As a result, the palette selection border in `TitleScene` will not be shown when `.custom` is active — this is acceptable and intentional.
+`TitleScene.addPaletteGrid()` renders a 2×2 grid for the four built-in palettes using a **hardcoded** `[(TilePalette, CGPoint)]` positions array (not `TilePalette.allCases`). Adding `.custom` to `allCases` does NOT affect this method — no guard is needed, no changes to `addPaletteGrid()` or `paletteBorderNodes`.
 
-`TitleScene` only observes `.customPaletteDidChange` to refresh its colour dot strip when the custom palette is active. No changes to `addPaletteGrid()` or `paletteBorderNodes`.
+The `.custom` palette is not shown in the 2×2 grid. Players select `.custom` exclusively from the macOS menu bar. The palette selection border will not appear when `.custom` is active — this is intentional.
+
+**`allCases` audit:** The only site that iterates `TilePalette.allCases` in the existing codebase is `AppDelegate.buildPaletteMenu()` (line 60). All other palette references use direct enum cases or rawValue lookup. The spec's loop-skip guard in `buildPaletteMenu()` covers the only affected site.
 
 ### CustomPalettePanel
 
@@ -315,7 +321,7 @@ New file `Quadromania/CustomPalettePanel.swift`. A floating `NSPanel` with:
 
 **Behaviour:**
 - On `init`: populate each `NSColorWell.color` from `CustomPaletteStore.shared.colors[i]`
-- On OK (`okClicked(_:)`): read `colorWells.map { $0.color }`, cast to `SKColor`, call `CustomPaletteStore.shared.save(colors)`, then `close()`
+- On OK (`okClicked(_:)`): `SKColor` is a typealias for `NSColor` on macOS, so `colorWells.map { $0.color }` returns `[SKColor]` directly — no cast needed. Call `CustomPaletteStore.shared.save(colorWells.map { $0.color })`, then `close()`
 - On Cancel (`cancelClicked(_:)`) and window close button: `close()` without saving (override `windowShouldClose` to return `true`)
 - `NSColorWell` activates the system `NSColorPanel` automatically on click — no additional setup needed. The panel uses `utilityWindow` style so it stays accessible alongside the color panel.
 
@@ -359,9 +365,11 @@ The `"🎨 Custom"` radio item uses the existing `selectPaletteItem` action (tag
     if customPalettePanel == nil {
         customPalettePanel = CustomPalettePanel()
     }
+    customPalettePanel?.center()
     customPalettePanel?.makeKeyAndOrderFront(nil)
 }
 ```
+`center()` centres the panel on the screen on each open call (idempotent, safe to call even if already visible). The panel instance is retained for the app's lifetime (`isReleasedWhenClosed = false`) and reused on subsequent opens.
 
 ### Scene refresh on custom palette change
 
