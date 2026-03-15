@@ -265,11 +265,14 @@ class CustomPaletteStore {
     /// Five SKColors for the custom palette.
     var colors: [SKColor] {
         get {
+            // UserDefaults round-trips numeric arrays as [[Double]] via NSNumber bridging;
+            // casting as [[CGFloat]] always returns nil even though CGFloat == Double on 64-bit.
             guard let data = UserDefaults.standard.array(forKey: Self.defaultsKey)
-                    as? [[CGFloat]], data.count == 5 else {
+                    as? [[Double]], data.count == 5 else {
                 return defaultColors
             }
-            return data.map { SKColor(red: $0[0], green: $0[1], blue: $0[2], alpha: 1) }
+            return data.map { SKColor(red: CGFloat($0[0]), green: CGFloat($0[1]),
+                                      blue: CGFloat($0[2]), alpha: 1) }
         }
         set {
             let data = newValue.map { c -> [CGFloat] in
