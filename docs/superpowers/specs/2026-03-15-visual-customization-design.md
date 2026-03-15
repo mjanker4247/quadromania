@@ -210,7 +210,7 @@ All tiles outside the 3×3 that also changed (not possible in current game rules
 All 9 tiles in the 3×3 change colour simultaneously (0 delay), but each also runs a scale animation:
 ```swift
 let distance = abs(colOffset) + abs(rowOffset)  // Manhattan distance from centre (0, 1, or 2)
-let delay = CGFloat(distance) * 0.040
+let delay = TimeInterval(distance) * 0.040  // TimeInterval (Double) required by SKAction.wait
 let scaleAction = SKAction.sequence([
     SKAction.wait(forDuration: delay),
     SKAction.scale(to: 1.12, duration: 0.08),
