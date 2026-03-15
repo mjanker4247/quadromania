@@ -5,6 +5,8 @@
 import SpriteKit
 import QuadroCore
 
+private let tileSymbols = ["●", "■", "▲", "◆", "★"]
+
 class TileGridNode: SKNode {
 
     // MARK: - Layout
@@ -18,7 +20,7 @@ class TileGridNode: SKNode {
 
     // MARK: - State
 
-    private let palette: TilePalette
+    private var palette: TilePalette
     private var tiles: [[SKSpriteNode]] = []
     private var colorIndices: [[Int]] = []
 
@@ -60,6 +62,17 @@ class TileGridNode: SKNode {
                 addChild(sprite)
                 tiles[col].append(sprite)
                 colorIndices[col][row] = colorIndex
+
+                let symLabel = SKLabelNode(text: tileSymbols[colorIndex])
+                symLabel.name = "symbol"
+                symLabel.fontName = "Helvetica-Bold"
+                symLabel.fontSize = 14
+                symLabel.fontColor = SKColor(white: 0, alpha: 0.6)
+                symLabel.verticalAlignmentMode   = .center
+                symLabel.horizontalAlignmentMode = .center
+                symLabel.position = .zero
+                symLabel.isHidden = true
+                sprite.addChild(symLabel)
             }
         }
     }
@@ -79,6 +92,36 @@ class TileGridNode: SKNode {
                     duration: 0.18
                 )
                 tiles[col][row].run(action)
+                if let sym = tiles[col][row].childNode(withName: "symbol") as? SKLabelNode {
+                    sym.text = tileSymbols[newIndex]
+                }
+            }
+        }
+    }
+
+    /// Recolor all tiles for a new palette without changing playfield state.
+    /// Uses colorIndices directly (not updateAll) to recolor every tile unconditionally.
+    func applyPalette(_ newPalette: TilePalette) {
+        palette = newPalette
+        let colors = newPalette.colors
+        for col in 0..<tiles.count {
+            for row in 0..<tiles[col].count {
+                let idx = colorIndices[col][row]
+                tiles[col][row].run(SKAction.colorize(with: colors[idx],
+                                                       colorBlendFactor: 1.0,
+                                                       duration: 0.18))
+            }
+        }
+    }
+
+    var symbolOverlayEnabled: Bool = false {
+        didSet { updateSymbols() }
+    }
+
+    private func updateSymbols() {
+        for col in tiles {
+            for sprite in col {
+                sprite.childNode(withName: "symbol")?.isHidden = !symbolOverlayEnabled
             }
         }
     }
