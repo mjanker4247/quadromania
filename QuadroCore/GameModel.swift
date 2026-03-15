@@ -97,13 +97,6 @@ class GameModel {
         baseRotations + (11 - level) * modifierPerLevel
     }
 
-    // Explicitly non-isolated deinit to prevent Swift concurrency back-deployment
-    // stub (swift_task_deinitOnExecutorMainActorBackDeploy) from running in
-    // non-concurrency contexts such as XCTest — required because GameModel is
-    // inferred @MainActor when compiled alongside SpriteKit scenes on macOS 14+
-    // deployment targets.
-    nonisolated deinit {}
-
     // MARK: - Private
 
     private func applyRotate(x: Int, y: Int) {
