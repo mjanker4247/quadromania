@@ -28,6 +28,8 @@ class TitleScene: SKScene {
     private let menuX:       CGFloat = 110
     private let menuStartY:  CGFloat = 680
     private let lineSpacing: CGFloat = 52
+    private let stripWidth:  CGFloat = 106   // 5 * 18 + 4 * 4
+    private let swatchSize:  CGFloat = 18
 
     // MARK: - Colors
     private let normalColor:    SKColor = .white
@@ -137,9 +139,7 @@ class TitleScene: SKScene {
     }
 
     private func addPaletteGrid() {
-        let swatchSize:  CGFloat = 18
         let swatchGap:   CGFloat = 4
-        let stripWidth:  CGFloat = 5 * swatchSize + 4 * swatchGap   // = 106
         let columnGap:   CGFloat = 12
         let rowGap:      CGFloat = 8
 
@@ -202,9 +202,14 @@ class TitleScene: SKScene {
     }
 
     private func paletteHit(at point: CGPoint) -> TilePalette? {
-        // node.frame is in scene coordinates (containers are direct children of the scene)
+        let halfW = stripWidth / 2 + 4
+        let halfH = swatchSize / 2 + 4
         for (palette, node) in paletteContainerNodes {
-            if node.frame.contains(point) { return palette }
+            let rect = CGRect(
+                x: node.position.x - halfW, y: node.position.y - halfH,
+                width: halfW * 2,           height: halfH * 2
+            )
+            if rect.contains(point) { return palette }
         }
         return nil
     }
