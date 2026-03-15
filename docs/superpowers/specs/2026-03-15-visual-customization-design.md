@@ -312,6 +312,16 @@ enum TilePalette: Int, CaseIterable {
 
 `colors` for `.custom`: `CustomPaletteStore.shared.colors`
 
+Both `switch self` statements in `TilePalette.swift` must add the new case to remain exhaustive:
+
+```swift
+// In displayName:
+case .custom: return "🎨 Custom"
+
+// In colors:
+case .custom: return CustomPaletteStore.shared.colors
+```
+
 **Note:** This introduces a singleton dependency from `TilePalette` to `CustomPaletteStore`. Both live in the `Quadromania` target, so there is no module boundary issue. `TilePalette` must remain in the `Quadromania` target — moving it to `QuadroCore` would break this dependency.
 
 ### TitleScene palette grid with `.custom`
