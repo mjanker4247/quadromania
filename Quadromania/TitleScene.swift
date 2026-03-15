@@ -9,7 +9,7 @@ class TitleScene: SKScene {
 
     // MARK: - Menu item enum
     private enum MenuItem: CaseIterable {
-        case startGame, selectColors, selectTurns, instructions, highscores, quit
+        case startGame, selectColors, selectTurns, instructions, quit
     }
 
     // MARK: - Game configuration
@@ -89,8 +89,7 @@ class TitleScene: SKScene {
             .selectColors: menuStartY - lineSpacing,
             .selectTurns:  menuStartY - 2 * lineSpacing,
             .instructions: menuStartY - 5 * lineSpacing,
-            .highscores:   menuStartY - 6 * lineSpacing,
-            .quit:         menuStartY - 7 * lineSpacing,
+            .quit:         menuStartY - 6 * lineSpacing,
         ]
 
         let items: [(MenuItem, String)] = [
@@ -98,7 +97,6 @@ class TitleScene: SKScene {
             (.selectColors, "Select colors:"),
             (.selectTurns,  "Select level:"),
             (.instructions, "Instructions"),
-            (.highscores,   "Highscores"),
             (.quit,         "Quit"),
         ]
 
@@ -287,11 +285,6 @@ class TitleScene: SKScene {
 
         case .instructions:
             let scene = InstructionsScene(size: size)
-            scene.scaleMode = scaleMode
-            view?.presentScene(scene, transition: .fade(withDuration: 0.2))
-
-        case .highscores:
-            let scene = HighscoreScene(level: selectedLevel, size: size)
             scene.scaleMode = scaleMode
             view?.presentScene(scene, transition: .fade(withDuration: 0.2))
 

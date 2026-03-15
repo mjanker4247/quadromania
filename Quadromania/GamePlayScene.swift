@@ -140,7 +140,6 @@ class GamePlayScene: SKScene {
             subtext: "Score: \(model.score)",
             color: SKColor(red: 0.0, green: 0.15, blue: 0.55, alpha: 0.88)
         )
-        recordHighscoreIfQualifies()
         waitingForClick = true
     }
 
@@ -191,19 +190,6 @@ class GamePlayScene: SKScene {
         hint.position  = CGPoint(x: size.width / 2, y: boxY - 30)
         hint.zPosition = 11
         addChild(hint)
-    }
-
-    // MARK: - Highscore
-
-    private func recordHighscoreIfQualifies() {
-        let tableIndex = model.level - 1   // level 1–10 → table 0–9
-        let hs = HighscoreManager.shared
-        if let pos = hs.position(forTable: tableIndex, score: model.score) {
-            hs.enterScore(model.score,
-                          name: hs.nameFromTimestamp,
-                          table: tableIndex,
-                          at: pos)
-        }
     }
 
     // MARK: - Navigation

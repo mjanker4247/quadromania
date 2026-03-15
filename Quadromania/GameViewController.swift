@@ -42,11 +42,4 @@ class GameViewController: NSViewController {
         skView.presentScene(scene, transition: .fade(withDuration: 0.2))
     }
 
-    @objc func showHighscores(_ sender: Any?) {
-        guard let skView = view as? SKView else { return }
-        SoundManager.shared.playEffect(.menu)
-        let scene = HighscoreScene(level: 1, size: CGSize(width: 1280, height: 960))
-        scene.scaleMode = .aspectFit
-        skView.presentScene(scene, transition: .fade(withDuration: 0.2))
-    }
 }

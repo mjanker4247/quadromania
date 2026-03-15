@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="24506" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" initialViewController="B8D-0N-5wS">
     <dependencies>
+        <deployment identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="24506"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -66,12 +67,6 @@
                                         <menuItem title="Instructions" keyEquivalent="i" id="Gm6-xQ-7aG">
                                             <connections>
                                                 <action selector="showInstructions:" target="Ady-hI-5gd" id="Gm7-xQ-7aH"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem title="Highscores" keyEquivalent="h" id="Gm8-xQ-7aI">
-                                            <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES"/>
-                                            <connections>
-                                                <action selector="showHighscores:" target="Ady-hI-5gd" id="Gm9-xQ-7aJ"/>
                                             </connections>
                                         </menuItem>
                                     </items>
