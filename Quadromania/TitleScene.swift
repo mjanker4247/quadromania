@@ -3,6 +3,7 @@
 
 import SpriteKit
 import QuadroCore
+import Cocoa
 
 class TitleScene: SKScene {
 
@@ -40,6 +41,16 @@ class TitleScene: SKScene {
     override func didMove(to view: SKView) {
         backgroundColor = SKColor(red: 0.10, green: 0.08, blue: 0.15, alpha: 1)
         buildUI()
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handlePaletteDidChange(_:)),
+            name: .paletteDidChange,
+            object: nil
+        )
+        // Sync with whatever palette the menu bar currently has selected
+        if let appDelegate = NSApp.delegate as? AppDelegate {
+            selectPalette(appDelegate.activePalette)
+        }
     }
 
     // MARK: - Build UI
@@ -287,5 +298,15 @@ class TitleScene: SKScene {
         case .quit:
             NSApp.terminate(nil)
         }
+    }
+
+    @objc private func handlePaletteDidChange(_ notification: Notification) {
+        guard let raw = notification.userInfo?["palette"] as? Int,
+              let palette = TilePalette(rawValue: raw) else { return }
+        selectPalette(palette)
+    }
+
+    override func willMove(from view: SKView) {
+        NotificationCenter.default.removeObserver(self)
     }
 }
