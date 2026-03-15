@@ -21,7 +21,7 @@ class TitleScene: SKScene {
 
     // MARK: - UI nodes
     private var menuLabels:    [MenuItem: SKLabelNode] = [:]
-    private var colorDotNodes: [SKSpriteNode] = []
+    private var colorDotNodes: [SKShapeNode] = []
     private var rotationsValueLabel: SKLabelNode!
     private var highlightedItem: MenuItem? = nil
     private var paletteContainerNodes: [TilePalette: SKNode]      = [:]
@@ -131,10 +131,9 @@ class TitleScene: SKScene {
         let y = menuStartY - lineSpacing + dotSize / 2 - 8   // align with selectColors row
 
         for i in 0...selectedColors {
-            let dot = SKSpriteNode(
-                color: selectedPalette.colors[i],
-                size: CGSize(width: dotSize, height: dotSize)
-            )
+            let dot = SKShapeNode(circleOfRadius: dotSize / 2)
+            dot.fillColor   = selectedPalette.colors[i]
+            dot.strokeColor = .clear
             dot.position = CGPoint(x: startX + CGFloat(i) * dotSpacing, y: y)
             addChild(dot)
             colorDotNodes.append(dot)
