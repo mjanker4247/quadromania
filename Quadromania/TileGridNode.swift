@@ -74,7 +74,7 @@ class TileGridNode: SKNode {
                 circle.addChild(highlight)
 
                 // Symbol overlay label
-                let symLabel = SKLabelNode(text: tileSymbols[colorIndex])
+                let symLabel = SKLabelNode(text: colorIndex < tileSymbols.count ? tileSymbols[colorIndex] : "")
                 symLabel.name = "symbol"
                 symLabel.fontName = "Helvetica-Bold"
                 symLabel.fontSize = 14
@@ -94,11 +94,13 @@ class TileGridNode: SKNode {
 
     // MARK: - Animations
 
+    private static let colorTransitionDuration: TimeInterval = 0.18
+
     private func colorTransition(from oldColor: SKColor, to newColor: SKColor) -> SKAction {
-        SKAction.customAction(withDuration: 0.18) { node, elapsed in
+        let d = CGFloat(Self.colorTransitionDuration)
+        return SKAction.customAction(withDuration: Self.colorTransitionDuration) { node, elapsed in
             guard let shape = node as? SKShapeNode else { return }
-            let t = min(elapsed / CGFloat(0.18), 1.0)
-            shape.fillColor = lerpColor(from: oldColor, to: newColor, t: t)
+            shape.fillColor = lerpColor(from: oldColor, to: newColor, t: min(elapsed / d, 1.0))
         }
     }
 
@@ -113,9 +115,11 @@ class TileGridNode: SKNode {
                 let oldColor = palette.colors[colorIndices[col][row]]
                 let newColor = palette.colors[newIndex]
                 colorIndices[col][row] = newIndex
-                tiles[col][row].run(colorTransition(from: oldColor, to: newColor))
+                let key = "colorTransition"
+                tiles[col][row].removeAction(forKey: key)
+                tiles[col][row].run(colorTransition(from: oldColor, to: newColor), withKey: key)
                 if let sym = tiles[col][row].childNode(withName: "symbol") as? SKLabelNode {
-                    sym.text = tileSymbols[newIndex]
+                    sym.text = newIndex < tileSymbols.count ? tileSymbols[newIndex] : ""
                 }
             }
         }
