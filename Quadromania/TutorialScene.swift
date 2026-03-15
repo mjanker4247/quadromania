@@ -51,7 +51,7 @@ class TutorialScene: SKScene {
     // MARK: - State
 
     private var tutorialPlayfield: [[Int]] = []
-    private var tileSprites: [[SKSpriteNode]] = []
+    private var tileSprites: [[SKShapeNode]] = []
     private var currentStepIndex = 0
     private var pulseRing: SKShapeNode?
     private var messageLabel: SKLabelNode!
@@ -133,18 +133,24 @@ class TutorialScene: SKScene {
 
     private func buildTutorialGrid() {
         let colors = palette.colors
-        let drawSize = CGSize(width: tileSize - 2, height: tileSize - 2)
+        let radius = (tileSize - 2) / 2
         tileSprites = Array(repeating: [], count: cols)
         for col in 0..<cols {
             tileSprites[col] = []
             for row in 0..<rows {
-                let sprite = SKSpriteNode(
-                    color: colors[tutorialPlayfield[col][row]],
-                    size: drawSize
-                )
-                sprite.position = tilePosition(col: col, row: row)
-                addChild(sprite)
-                tileSprites[col].append(sprite)
+                let circle = SKShapeNode(circleOfRadius: radius)
+                circle.fillColor   = colors[tutorialPlayfield[col][row]]
+                circle.strokeColor = .clear
+                circle.position = tilePosition(col: col, row: row)
+
+                // Frosted highlight overlay
+                let highlight = SKShapeNode(ellipseIn: CGRect(x: -18, y: 2, width: 22, height: 18))
+                highlight.fillColor   = SKColor(white: 1, alpha: 0.42)
+                highlight.strokeColor = .clear
+                circle.addChild(highlight)
+
+                addChild(circle)
+                tileSprites[col].append(circle)
             }
         }
     }
@@ -218,12 +224,7 @@ class TutorialScene: SKScene {
         let colors = palette.colors
         for col in 0..<cols {
             for row in 0..<rows {
-                let idx = tutorialPlayfield[col][row]
-                tileSprites[col][row].run(
-                    SKAction.colorize(with: colors[idx],
-                                      colorBlendFactor: 1.0,
-                                      duration: 0.18)
-                )
+                tileSprites[col][row].fillColor = colors[tutorialPlayfield[col][row]]
             }
         }
     }
