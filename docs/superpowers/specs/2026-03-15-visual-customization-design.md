@@ -96,6 +96,20 @@ func applyPalette(_ newPalette: TilePalette) {
 
 `TutorialScene` has its own inline tile drawing (independent of `TileGridNode`). Update its tile creation to `SKShapeNode` circles with the same frosted highlight overlay for visual consistency. `TutorialScene` retains its own inline grid — it does NOT use `TileGridNode` and does NOT gain transition animations (ring sweep, sequential, radial pulse). Only the visual appearance changes.
 
+Required changes in `TutorialScene.swift`:
+- `private var tileSprites: [[SKSpriteNode]]` → `private var tileSprites: [[SKShapeNode]]`
+- `refreshTileColors()` currently uses `SKAction.colorize`, which is unavailable on `SKShapeNode`. Replace with direct `fillColor` assignment (instant, same as `applyPalette`):
+  ```swift
+  func refreshTileColors() {
+      let colors = palette.colors
+      for col in 0..<tileSprites.count {
+          for row in 0..<tileSprites[col].count {
+              tileSprites[col][row].fillColor = colors[grid[col][row]]
+          }
+      }
+  }
+  ```
+
 ### TitleScene colour dot strip
 
 `TitleScene.addColorDots()` creates `SKSpriteNode` dots in a horizontal strip above the palette grid. Migrate these to `SKShapeNode(circleOfRadius: dotRadius)` with `fillColor` set directly, matching the swatch style in `GamePlayScene`. `colorDotNodes` type changes from `[SKSpriteNode]` to `[SKShapeNode]`. `handleCustomPaletteDidChange` calls `addColorDots()` to rebuild the strip (same as for `handlePaletteDidChange`).
@@ -240,6 +254,8 @@ if let appDelegate = NSApp.delegate as? AppDelegate {
 New file `Quadromania/CustomPaletteStore.swift`:
 
 ```swift
+import SpriteKit
+
 class CustomPaletteStore {
     static let shared = CustomPaletteStore()
     private static let defaultsKey = "customPaletteColors"
@@ -304,6 +320,8 @@ enum TilePalette: Int, CaseIterable {
 
 The `.custom` palette is not shown in the 2×2 grid. Players select `.custom` exclusively from the macOS menu bar. The palette selection border will not appear when `.custom` is active — this is intentional.
 
+`TitleScene.handlePaletteDidChange` calls `selectPalette(palette)` when the menu changes. When `palette == .custom`, `selectPalette` sets `selectedPalette = .custom` and calls `addColorDots()`. `addColorDots()` calls `selectedPalette.colors`, which for `.custom` returns `CustomPaletteStore.shared.colors` — this is intentional and safe. The border loop hides all four borders (none match `.custom`), giving the intended "no border" state.
+
 **`allCases` audit:** The only site that iterates `TilePalette.allCases` in the existing codebase is `AppDelegate.buildPaletteMenu()` (line 60). All other palette references use direct enum cases or rawValue lookup. The spec's loop-skip guard in `buildPaletteMenu()` covers the only affected site.
 
 ### CustomPalettePanel
@@ -349,16 +367,19 @@ class CustomPalettePanel: NSPanel {
 ```swift
 // In buildPaletteMenu():
 for palette in TilePalette.allCases where palette != .custom {
-    // existing radio item creation
+    // existing radio item creation — already stored in paletteMenuItems[palette]
 }
 // Then manually:
 menu.addItem(.separator())
-// add "🎨 Custom" radio item (tag = 4, same selectPaletteItem action)
+let customItem = NSMenuItem(title: "🎨 Custom", action: #selector(selectPaletteItem(_:)), keyEquivalent: "")
+customItem.tag = TilePalette.custom.rawValue  // 4
+paletteMenuItems[.custom] = customItem  // IMPORTANT: must be inserted here so toggle-off works
+menu.addItem(customItem)
 menu.addItem(.separator())
 // add "Edit Custom Colors…" item
 ```
 
-The `"🎨 Custom"` radio item uses the existing `selectPaletteItem` action (tag = 4). The separator and "Edit Custom Colors…" item are added after the Custom radio item, targeting `openCustomPaletteEditor(_:)`.
+The `"🎨 Custom"` radio item must be stored in `paletteMenuItems[.custom]`. The existing `selectPaletteItem` action does `paletteMenuItems.values.forEach { $0.state = .off }` before turning the sender on — if the Custom item is not in `paletteMenuItems`, it will remain visually `.on` after switching away from Custom. The separator and "Edit Custom Colors…" item are added after, targeting `openCustomPaletteEditor(_:)`.
 
 ```swift
 @objc private func openCustomPaletteEditor(_ sender: NSMenuItem) {
