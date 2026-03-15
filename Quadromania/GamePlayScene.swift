@@ -10,8 +10,9 @@ class GamePlayScene: SKScene {
     // MARK: - State
 
     private let model: GameModel
-    private let palette: TilePalette
+    private var palette: TilePalette
     private var tileGrid: TileGridNode!
+    private var colorSwatchNodes: [SKSpriteNode] = []
     private var turnsLabel: SKLabelNode!
     private var limitLabel: SKLabelNode!
     private var waitingForClick = false   // true after win/loss, before transition
@@ -67,6 +68,7 @@ class GamePlayScene: SKScene {
         let gridY: CGFloat = 50
         tileGrid.position = CGPoint(x: gridX, y: gridY)
         addChild(tileGrid)
+        buildColorStrip(gridX: gridX)
         if let appDelegate = NSApp.delegate as? AppDelegate {
             tileGrid.symbolOverlayEnabled = appDelegate.symbolOverlayEnabled
         }
@@ -90,6 +92,36 @@ class GamePlayScene: SKScene {
         versionLabel.position = CGPoint(x: 8, y: labelY)
         versionLabel.fontColor = SKColor(white: 0.4, alpha: 1)
         addChild(versionLabel)
+    }
+
+    private func buildColorStrip(gridX: CGFloat) {
+        let swatchSize: CGFloat = 28
+        let elementSpacing: CGFloat = 46   // 28 swatch + 18 gap
+        let count = model.maxColors + 1
+        let centerX = gridX + TileGridNode.gridPixelWidth / 2
+        let centerY = 50 + TileGridNode.gridPixelHeight + 10 + swatchSize / 2
+        // Centre the swatch midpoints over the grid centre; the trailing ↩ arrow extends slightly right
+        let startX  = centerX - CGFloat(count - 1) * elementSpacing / 2
+
+        colorSwatchNodes = []
+        for i in 0..<count {
+            let x = startX + CGFloat(i) * elementSpacing
+
+            let swatch = SKSpriteNode(color: palette.colors[i],
+                                      size: CGSize(width: swatchSize, height: swatchSize))
+            swatch.position = CGPoint(x: x, y: centerY)
+            addChild(swatch)
+            colorSwatchNodes.append(swatch)
+
+            let arrowText = (i < count - 1) ? "→" : "↩"
+            let arrow = SKLabelNode(text: arrowText)
+            arrow.fontName  = "Helvetica"
+            arrow.fontSize  = 16
+            arrow.fontColor = SKColor(white: 0.55, alpha: 1)
+            arrow.verticalAlignmentMode   = .center
+            arrow.position = CGPoint(x: x + swatchSize / 2 + 9, y: centerY)
+            addChild(arrow)
+        }
     }
 
     private func makeHudLabel(text: String) -> SKLabelNode {
@@ -208,8 +240,12 @@ class GamePlayScene: SKScene {
 
     @objc private func handlePaletteDidChange(_ notification: Notification) {
         guard let raw = notification.userInfo?["palette"] as? Int,
-              let palette = TilePalette(rawValue: raw) else { return }
-        tileGrid.applyPalette(palette)
+              let newPalette = TilePalette(rawValue: raw) else { return }
+        palette = newPalette
+        tileGrid.applyPalette(newPalette)
+        for (i, swatch) in colorSwatchNodes.enumerated() {
+            swatch.color = newPalette.colors[i]
+        }
     }
 
     @objc private func handleSymbolOverlayDidChange(_ notification: Notification) {
