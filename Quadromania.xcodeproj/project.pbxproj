@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		AA00000D000000000000AA0D /* libQuadroCore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AA000005000000000000AA05 /* libQuadroCore.a */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		1D1A658E2F65405A00A3467A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -14,12 +18,27 @@
 			remoteGlobalIDString = 1D550BCB2F634CF100BD8ED6;
 			remoteInfo = Quadromania;
 		};
+		AA000009000000000000AA09 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1D550BC42F634CF100BD8ED6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AA000002000000000000AA02;
+			remoteInfo = QuadroCore;
+		};
+		AA00000B000000000000AA0B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1D550BC42F634CF100BD8ED6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AA000002000000000000AA02;
+			remoteInfo = QuadroCore;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		1D1A658A2F65405A00A3467A /* QuadroTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = QuadroTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		1D550BCC2F634CF100BD8ED6 /* Quadromania.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Quadromania.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1D550C1C2F63E33800BD8ED6 /* Game purpose.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "Game purpose.md"; sourceTree = "<group>"; };
+		AA000005000000000000AA05 /* libQuadroCore.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libQuadroCore.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -31,6 +50,11 @@
 		1D550BCE2F634CF100BD8ED6 /* Quadromania */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Quadromania;
+			sourceTree = "<group>";
+		};
+		AA000001000000000000AA01 /* QuadroCore */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = QuadroCore;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -47,6 +71,14 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AA00000D000000000000AA0D /* libQuadroCore.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA000004000000000000AA04 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -58,6 +90,7 @@
 			children = (
 				1D550C1C2F63E33800BD8ED6 /* Game purpose.md */,
 				1D550BCE2F634CF100BD8ED6 /* Quadromania */,
+				AA000001000000000000AA01 /* QuadroCore */,
 				1D1A658B2F65405A00A3467A /* QuadroTests */,
 				1D550BCD2F634CF100BD8ED6 /* Products */,
 			);
@@ -68,6 +101,7 @@
 			children = (
 				1D550BCC2F634CF100BD8ED6 /* Quadromania.app */,
 				1D1A658A2F65405A00A3467A /* QuadroTests.xctest */,
+				AA000005000000000000AA05 /* libQuadroCore.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -87,6 +121,7 @@
 			);
 			dependencies = (
 				1D1A658F2F65405A00A3467A /* PBXTargetDependency */,
+				AA00000C000000000000AA0C /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				1D1A658B2F65405A00A3467A /* QuadroTests */,
@@ -109,6 +144,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				AA00000A000000000000AA0A /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				1D550BCE2F634CF100BD8ED6 /* Quadromania */,
@@ -119,6 +155,27 @@
 			productName = Quadromania;
 			productReference = 1D550BCC2F634CF100BD8ED6 /* Quadromania.app */;
 			productType = "com.apple.product-type.application";
+		};
+		AA000002000000000000AA02 /* QuadroCore */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AA000008000000000000AA08 /* Build configuration list for PBXNativeTarget "QuadroCore" */;
+			buildPhases = (
+				AA000003000000000000AA03 /* Sources */,
+				AA000004000000000000AA04 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				AA000001000000000000AA01 /* QuadroCore */,
+			);
+			name = QuadroCore;
+			packageProductDependencies = (
+			);
+			productName = QuadroCore;
+			productReference = AA000005000000000000AA05 /* libQuadroCore.a */;
+			productType = "com.apple.product-type.library.static";
 		};
 /* End PBXNativeTarget section */
 
@@ -135,6 +192,9 @@
 						TestTargetID = 1D550BCB2F634CF100BD8ED6;
 					};
 					1D550BCB2F634CF100BD8ED6 = {
+						CreatedOnToolsVersion = 26.3;
+					};
+					AA000002000000000000AA02 = {
 						CreatedOnToolsVersion = 26.3;
 					};
 				};
@@ -155,6 +215,7 @@
 			targets = (
 				1D550BCB2F634CF100BD8ED6 /* Quadromania */,
 				1D1A65892F65405A00A3467A /* QuadroTests */,
+				AA000002000000000000AA02 /* QuadroCore */,
 			);
 		};
 /* End PBXProject section */
@@ -191,6 +252,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		AA000003000000000000AA03 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -198,6 +266,16 @@
 			isa = PBXTargetDependency;
 			target = 1D550BCB2F634CF100BD8ED6 /* Quadromania */;
 			targetProxy = 1D1A658E2F65405A00A3467A /* PBXContainerItemProxy */;
+		};
+		AA00000A000000000000AA0A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AA000002000000000000AA02 /* QuadroCore */;
+			targetProxy = AA000009000000000000AA09 /* PBXContainerItemProxy */;
+		};
+		AA00000C000000000000AA0C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AA000002000000000000AA02 /* QuadroCore */;
+			targetProxy = AA00000B000000000000AA0B /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -438,6 +516,40 @@
 			};
 			name = Release;
 		};
+		AA000006000000000000AA06 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8J58VWJG83;
+				ENABLE_TESTABILITY = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_NAME = QuadroCore;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		AA000007000000000000AA07 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8J58VWJG83;
+				ENABLE_TESTABILITY = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_NAME = QuadroCore;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -464,6 +576,15 @@
 			buildConfigurations = (
 				1D550BE12F634CF200BD8ED6 /* Debug */,
 				1D550BE22F634CF200BD8ED6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AA000008000000000000AA08 /* Build configuration list for PBXNativeTarget "QuadroCore" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA000006000000000000AA06 /* Debug */,
+				AA000007000000000000AA07 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
