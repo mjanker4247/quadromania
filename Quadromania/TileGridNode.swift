@@ -7,6 +7,15 @@ import QuadroCore
 
 private let tileSymbols = ["●", "■", "▲", "◆", "★"]
 
+private func lerpColor(from: SKColor, to: SKColor, t: CGFloat) -> SKColor {
+    var r1: CGFloat = 0, g1: CGFloat = 0, b1: CGFloat = 0, a1: CGFloat = 0
+    var r2: CGFloat = 0, g2: CGFloat = 0, b2: CGFloat = 0, a2: CGFloat = 0
+    from.getRed(&r1, green: &g1, blue: &b1, alpha: &a1)
+    to.getRed(&r2, green: &g2, blue: &b2, alpha: &a2)
+    return SKColor(red: r1 + (r2-r1)*t, green: g1 + (g2-g1)*t,
+                   blue: b1 + (b2-b1)*t, alpha: 1)
+}
+
 class TileGridNode: SKNode {
 
     // MARK: - Layout
@@ -21,7 +30,7 @@ class TileGridNode: SKNode {
     // MARK: - State
 
     private var palette: TilePalette
-    private var tiles: [[SKSpriteNode]] = []
+    private var tiles: [[SKShapeNode]] = []
     private var colorIndices: [[Int]] = []
 
     // MARK: - Init
@@ -38,8 +47,7 @@ class TileGridNode: SKNode {
 
     private func buildGrid(playfield: [[Int]]) {
         let s = TileGridNode.tileSize
-        let gap: CGFloat = 2          // 2 px gap between tiles
-        let tileDrawSize = CGSize(width: s - gap, height: s - gap)
+        let radius = (s - 2) / 2
 
         tiles = Array(repeating: [], count: GameModel.gridWidth)
         colorIndices = Array(repeating: Array(repeating: 0, count: GameModel.gridHeight),
@@ -50,19 +58,22 @@ class TileGridNode: SKNode {
             tiles[col] = []
             for row in 0..<GameModel.gridHeight {
                 let colorIndex = playfield[col][row]
-                let sprite = SKSpriteNode(
-                    color: paletteColors[colorIndex],
-                    size: tileDrawSize
-                )
-                // Row 0 renders at the top (flip Y so row 0 is highest on screen)
-                sprite.position = CGPoint(
+
+                let circle = SKShapeNode(circleOfRadius: radius)
+                circle.fillColor   = paletteColors[colorIndex]
+                circle.strokeColor = .clear
+                circle.position = CGPoint(
                     x: CGFloat(col) * s + s / 2,
                     y: CGFloat(GameModel.gridHeight - 1 - row) * s + s / 2
                 )
-                addChild(sprite)
-                tiles[col].append(sprite)
-                colorIndices[col][row] = colorIndex
 
+                // Frosted highlight overlay (static, never coloured)
+                let highlight = SKShapeNode(ellipseIn: CGRect(x: -18, y: 2, width: 22, height: 18))
+                highlight.fillColor   = SKColor(white: 1, alpha: 0.42)
+                highlight.strokeColor = .clear
+                circle.addChild(highlight)
+
+                // Symbol overlay label
                 let symLabel = SKLabelNode(text: tileSymbols[colorIndex])
                 symLabel.name = "symbol"
                 symLabel.fontName = "Helvetica-Bold"
@@ -72,8 +83,22 @@ class TileGridNode: SKNode {
                 symLabel.horizontalAlignmentMode = .center
                 symLabel.position = .zero
                 symLabel.isHidden = true
-                sprite.addChild(symLabel)
+                circle.addChild(symLabel)
+
+                addChild(circle)
+                tiles[col].append(circle)
+                colorIndices[col][row] = colorIndex
             }
+        }
+    }
+
+    // MARK: - Animations
+
+    private func colorTransition(from oldColor: SKColor, to newColor: SKColor) -> SKAction {
+        SKAction.customAction(withDuration: 0.18) { node, elapsed in
+            guard let shape = node as? SKShapeNode else { return }
+            let t = min(elapsed / CGFloat(0.18), 1.0)
+            shape.fillColor = lerpColor(from: oldColor, to: newColor, t: t)
         }
     }
 
@@ -85,13 +110,10 @@ class TileGridNode: SKNode {
             for row in 0..<GameModel.gridHeight {
                 let newIndex = playfield[col][row]
                 guard newIndex != colorIndices[col][row] else { continue }
+                let oldColor = palette.colors[colorIndices[col][row]]
+                let newColor = palette.colors[newIndex]
                 colorIndices[col][row] = newIndex
-                let action = SKAction.colorize(
-                    with: palette.colors[newIndex],
-                    colorBlendFactor: 1.0,
-                    duration: 0.18
-                )
-                tiles[col][row].run(action)
+                tiles[col][row].run(colorTransition(from: oldColor, to: newColor))
                 if let sym = tiles[col][row].childNode(withName: "symbol") as? SKLabelNode {
                     sym.text = tileSymbols[newIndex]
                 }
@@ -106,10 +128,7 @@ class TileGridNode: SKNode {
         let colors = newPalette.colors
         for col in 0..<tiles.count {
             for row in 0..<tiles[col].count {
-                let idx = colorIndices[col][row]
-                tiles[col][row].run(SKAction.colorize(with: colors[idx],
-                                                       colorBlendFactor: 1.0,
-                                                       duration: 0.18))
+                tiles[col][row].fillColor = colors[colorIndices[col][row]]
             }
         }
     }
