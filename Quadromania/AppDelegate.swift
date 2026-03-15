@@ -24,11 +24,32 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.activate(ignoringOtherApps: true)
         SoundManager.shared.startMusic()
         updateMusicMenuItem()
+        buildGameMenu()
         buildPaletteMenu()
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         return true
+    }
+
+    // MARK: - Game menu
+
+    private func buildGameMenu() {
+        let menu = NSMenu(title: "Game")
+        let item = NSMenuItem(
+            title: "Instructions",
+            action: #selector(showInstructionsMenuAction(_:)),
+            keyEquivalent: ""
+        )
+        item.target = self
+        menu.addItem(item)
+        let menuItem = NSMenuItem(title: "Game", action: nil, keyEquivalent: "")
+        menuItem.submenu = menu
+        NSApp.mainMenu?.addItem(menuItem)
+    }
+
+    @objc private func showInstructionsMenuAction(_ sender: NSMenuItem) {
+        NotificationCenter.default.post(name: .showInstructions, object: nil)
     }
 
     // MARK: - Palette menu
@@ -120,4 +141,5 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 extension Notification.Name {
     static let paletteDidChange       = Notification.Name("paletteDidChange")
     static let symbolOverlayDidChange = Notification.Name("symbolOverlayDidChange")
+    static let showInstructions       = Notification.Name("showInstructions")
 }
