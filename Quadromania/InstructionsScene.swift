@@ -5,12 +5,16 @@ import SpriteKit
 
 class InstructionsScene: SKScene {
 
+    private var tutorialButtonLabel: SKLabelNode?
+
     override func didMove(to view: SKView) {
         backgroundColor = SKColor(red: 0.06, green: 0.08, blue: 0.14, alpha: 1)
         buildUI()
     }
 
     private func buildUI() {
+        backgroundColor = SKColor(red: 0.06, green: 0.08, blue: 0.14, alpha: 1)
+
         // Title
         let title = SKLabelNode(text: "HOW TO PLAY")
         title.fontName  = "Helvetica-Bold"
@@ -21,31 +25,29 @@ class InstructionsScene: SKScene {
         addChild(title)
 
         let lines: [(String, Bool)] = [
-            ("The Goal",                   true),
-            ("Return all 234 tiles (18×13 grid) to RED.", false),
+            ("Goal",                       true),
+            ("Return every tile to its lightest color (color 0) before you run out of turns.", false),
             ("",                           false),
-            ("How to rotate",              true),
-            ("Click any tile to rotate the 3×3 block around it.", false),
-            ("Each rotation increments every tile's colour by 1.", false),
-            ("Tiles cycle back to red after reaching the maximum colour.", false),
+            ("How to play",                true),
+            ("Click any tile to rotate the 3×3 block centered on it.", false),
+            ("Every tile in that block steps forward by one color.", false),
+            ("Tiles at the maximum color wrap back to 0.", false),
             ("",                           false),
-            ("Colours & Level",            true),
-            ("'Select colors' sets how many colour steps tiles cycle through (1–4).", false),
-            ("'Select level' controls how scrambled the board starts (1–10).", false),
-            ("",                           false),
-            ("Turn Limit",                 true),
-            ("You have  initial_rotations × colours  turns to solve the board.", false),
-            ("Exceeding the limit scores 0.", false),
+            ("Turn limit",                 true),
+            ("Your total turns are shown at the top of the screen.", false),
+            ("Each click costs one turn — plan carefully.", false),
             ("",                           false),
             ("Scoring",                    true),
-            ("Score = ((limit − turns) × 10 000) ÷ turns", false),
-            ("Fewer turns = higher score.", false),
+            ("Solve the board faster to score higher.", false),
+            ("Exceeding the turn limit ends the game with no score recorded.", false),
+            ("",                           false),
+            ("Tip",                        true),
+            ("Click tiles in the middle of large same-color regions to make progress efficiently.", false),
         ]
 
         var y: CGFloat = 790
         for (text, isHeader) in lines {
             guard !text.isEmpty else { y -= 16; continue }
-
             let label = SKLabelNode(text: text)
             label.fontName  = isHeader ? "Helvetica-Bold" : "Helvetica"
             label.fontSize  = isHeader ? 24 : 20
@@ -58,13 +60,23 @@ class InstructionsScene: SKScene {
             y -= isHeader ? 34 : 28
         }
 
+        // Tutorial button
+        let tutBtn = SKLabelNode(text: "▶  Start Tutorial")
+        tutBtn.fontName  = "Helvetica-Bold"
+        tutBtn.fontSize  = 26
+        tutBtn.fontColor = SKColor(red: 0.60, green: 0.85, blue: 1.0, alpha: 1)
+        tutBtn.horizontalAlignmentMode = .center
+        tutBtn.position = CGPoint(x: size.width / 2, y: 120)
+        addChild(tutBtn)
+        tutorialButtonLabel = tutBtn
+
         // Footer hint
-        let hint = SKLabelNode(text: "Click anywhere to return")
+        let hint = SKLabelNode(text: "Click anywhere else to return")
         hint.fontName  = "Helvetica"
-        hint.fontSize  = 20
+        hint.fontSize  = 18
         hint.fontColor = SKColor(white: 0.45, alpha: 1)
         hint.horizontalAlignmentMode = .center
-        hint.position = CGPoint(x: size.width / 2, y: 30)
+        hint.position = CGPoint(x: size.width / 2, y: 60)
         hint.run(.repeatForever(.sequence([
             .fadeAlpha(to: 0.2, duration: 0.9),
             .fadeAlpha(to: 1.0, duration: 0.9)
@@ -75,8 +87,16 @@ class InstructionsScene: SKScene {
     // MARK: - Input
 
     override func mouseDown(with event: NSEvent) {
-        let scene = TitleScene(size: size)
-        scene.scaleMode = scaleMode
-        view?.presentScene(scene, transition: .fade(withDuration: 0.2))
+        let point = event.location(in: self)
+        if let btn = tutorialButtonLabel, btn.frame.contains(point) {
+            SoundManager.shared.playEffect(.menu)
+            let scene = TutorialScene(size: size)
+            scene.scaleMode = scaleMode
+            view?.presentScene(scene, transition: .fade(withDuration: 0.3))
+        } else {
+            let scene = TitleScene(size: size)
+            scene.scaleMode = scaleMode
+            view?.presentScene(scene, transition: .fade(withDuration: 0.2))
+        }
     }
 }
