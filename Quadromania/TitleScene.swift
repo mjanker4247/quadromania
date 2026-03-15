@@ -12,14 +12,17 @@ class TitleScene: SKScene {
     }
 
     // MARK: - Game configuration
-    private var selectedColors = 1   // 1–4
-    private var selectedLevel  = 1   // 1–10
+    private var selectedColors  = 1              // 1–4
+    private var selectedLevel   = 1              // 1–10
+    private var selectedPalette: TilePalette = .spring
 
     // MARK: - UI nodes
-    private var menuLabels: [MenuItem: SKLabelNode] = [:]
+    private var menuLabels:    [MenuItem: SKLabelNode] = [:]
     private var colorDotNodes: [SKSpriteNode] = []
     private var rotationsValueLabel: SKLabelNode!
     private var highlightedItem: MenuItem? = nil
+    private var paletteContainerNodes: [TilePalette: SKNode]      = [:]
+    private var paletteBorderNodes:    [TilePalette: SKShapeNode] = [:]
 
     // MARK: - Layout constants
     private let menuX:       CGFloat = 110
@@ -44,6 +47,7 @@ class TitleScene: SKScene {
         addMenuLabels()
         addColorDots()
         updateDynamicLabels()
+        addPaletteGrid()
     }
 
     private func addTitleLabel() {
@@ -65,6 +69,17 @@ class TitleScene: SKScene {
     }
 
     private func addMenuLabels() {
+        // Items 0–2 keep uniform spacing.
+        // Items 3–5 are shifted down by 2 extra lineSpacings to make room for the palette grid.
+        let itemY: [MenuItem: CGFloat] = [
+            .startGame:    menuStartY,
+            .selectColors: menuStartY - lineSpacing,
+            .selectTurns:  menuStartY - 2 * lineSpacing,
+            .instructions: menuStartY - 5 * lineSpacing,
+            .highscores:   menuStartY - 6 * lineSpacing,
+            .quit:         menuStartY - 7 * lineSpacing,
+        ]
+
         let items: [(MenuItem, String)] = [
             (.startGame,    "Start the game"),
             (.selectColors, "Select colors:"),
@@ -74,13 +89,13 @@ class TitleScene: SKScene {
             (.quit,         "Quit"),
         ]
 
-        for (index, (item, text)) in items.enumerated() {
+        for (item, text) in items {
             let label = SKLabelNode(text: text)
             label.fontName  = "Helvetica-Bold"
             label.fontSize  = 32
             label.fontColor = normalColor
             label.horizontalAlignmentMode = .left
-            label.position = CGPoint(x: menuX, y: menuStartY - CGFloat(index) * lineSpacing)
+            label.position = CGPoint(x: menuX, y: itemY[item]!)
             addChild(label)
             menuLabels[item] = label
         }
@@ -98,7 +113,7 @@ class TitleScene: SKScene {
 
         for i in 0...selectedColors {
             let dot = SKSpriteNode(
-                color: TileGridNode.tileColors[i],
+                color: selectedPalette.colors[i],
                 size: CGSize(width: dotSize, height: dotSize)
             )
             dot.position = CGPoint(x: startX + CGFloat(i) * dotSpacing, y: y)
@@ -119,6 +134,79 @@ class TitleScene: SKScene {
         label.position = CGPoint(x: menuX + 240, y: menuStartY - 2 * lineSpacing + 4)
         addChild(label)
         rotationsValueLabel = label
+    }
+
+    private func addPaletteGrid() {
+        let swatchSize:  CGFloat = 18
+        let swatchGap:   CGFloat = 4
+        let stripWidth:  CGFloat = 5 * swatchSize + 4 * swatchGap   // = 106
+        let columnGap:   CGFloat = 12
+        let rowGap:      CGFloat = 8
+
+        // Vertically centred in the gap between "Select level:" (y=576) and "Instructions" (y=420)
+        let gridAnchorY: CGFloat = menuStartY - 3 * lineSpacing - 26  // = 498
+        let gridX:       CGFloat = menuX + 240                        // = 350
+
+        let positions: [(TilePalette, CGPoint)] = [
+            (.spring, CGPoint(x: gridX,                          y: gridAnchorY + rowGap / 2 + swatchSize / 2)),
+            (.ocean,  CGPoint(x: gridX + stripWidth + columnGap, y: gridAnchorY + rowGap / 2 + swatchSize / 2)),
+            (.sunset, CGPoint(x: gridX,                          y: gridAnchorY - rowGap / 2 - swatchSize / 2)),
+            (.forest, CGPoint(x: gridX + stripWidth + columnGap, y: gridAnchorY - rowGap / 2 - swatchSize / 2)),
+        ]
+
+        for (palette, centre) in positions {
+            let container = SKNode()
+            container.position = centre  // position in scene coords; frame used for hit-testing
+
+            // Five colour squares side by side
+            for i in 0..<5 {
+                let sq = SKSpriteNode(
+                    color: palette.colors[i],
+                    size: CGSize(width: swatchSize, height: swatchSize)
+                )
+                sq.position = CGPoint(
+                    x: CGFloat(i) * (swatchSize + swatchGap) - (stripWidth / 2 - swatchSize / 2),
+                    y: 0
+                )
+                container.addChild(sq)
+            }
+
+            // Selection border (SKShapeNode; SKSpriteNode has no strokeColor)
+            let borderRect = CGRect(
+                x: -(stripWidth / 2) - 2,
+                y: -(swatchSize / 2) - 2,
+                width: stripWidth + 4,
+                height: swatchSize + 4
+            )
+            let border = SKShapeNode(rect: borderRect, cornerRadius: 4)
+            border.strokeColor = SKColor(white: 1, alpha: 0.7)
+            border.lineWidth   = 1.5
+            border.fillColor   = .clear
+            border.isHidden    = (palette != selectedPalette)
+            container.addChild(border)
+
+            addChild(container)
+            paletteContainerNodes[palette] = container
+            paletteBorderNodes[palette]    = border
+        }
+    }
+
+    // MARK: - Palette selection
+
+    private func selectPalette(_ palette: TilePalette) {
+        selectedPalette = palette
+        for (p, border) in paletteBorderNodes {
+            border.isHidden = (p != palette)
+        }
+        addColorDots()   // refresh colour dots to reflect new palette
+    }
+
+    private func paletteHit(at point: CGPoint) -> TilePalette? {
+        // node.frame is in scene coordinates (containers are direct children of the scene)
+        for (palette, node) in paletteContainerNodes {
+            if node.frame.contains(point) { return palette }
+        }
+        return nil
     }
 
     // MARK: - Hit testing
@@ -154,13 +242,22 @@ class TitleScene: SKScene {
     }
 
     override func mouseDown(with event: NSEvent) {
-        guard let item = menuItem(at: event.location(in: self)) else { return }
+        let point = event.location(in: self)
+
+        // Palette grid is outside the MenuItem system — check it first.
+        if let palette = paletteHit(at: point) {
+            SoundManager.shared.playEffect(.menu)
+            selectPalette(palette)
+            return
+        }
+
+        guard let item = menuItem(at: point) else { return }
         SoundManager.shared.playEffect(.menu)
 
         switch item {
         case .startGame:
             let model = GameModel(level: selectedLevel, maxColors: selectedColors)
-            let scene = GamePlayScene(model: model, size: size)
+            let scene = GamePlayScene(model: model, palette: selectedPalette, size: size)
             scene.scaleMode = scaleMode
             view?.presentScene(scene, transition: .fade(withDuration: 0.3))
 

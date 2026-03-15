@@ -16,28 +16,21 @@ class TileGridNode: SKNode {
     /// Total pixel height of the grid.
     static var gridPixelHeight: CGFloat { CGFloat(GameModel.gridHeight) * tileSize }
 
-    // MARK: - Colors (index 0 = goal red, 1–4 = scramble colors)
-
-    static let tileColors: [SKColor] = [
-        SKColor(red: 0.85, green: 0.10, blue: 0.10, alpha: 1),  // 0 — red   (goal)
-        SKColor(red: 0.10, green: 0.75, blue: 0.15, alpha: 1),  // 1 — green
-        SKColor(red: 0.15, green: 0.40, blue: 0.90, alpha: 1),  // 2 — blue
-        SKColor(red: 0.92, green: 0.78, blue: 0.00, alpha: 1),  // 3 — yellow
-        SKColor(red: 0.68, green: 0.10, blue: 0.82, alpha: 1),  // 4 — purple
-    ]
-
     // MARK: - State
 
+    private let palette: TilePalette
     private var tiles: [[SKSpriteNode]] = []
+    private var colorIndices: [[Int]] = []
 
     // MARK: - Init
 
-    init(playfield: [[Int]]) {
+    init(playfield: [[Int]], palette: TilePalette) {
+        self.palette = palette
         super.init()
         buildGrid(playfield: playfield)
     }
 
-    required init?(coder: NSCoder) { fatalError("Use init(playfield:)") }
+    required init?(coder: NSCoder) { fatalError("Use init(playfield:palette:)") }
 
     // MARK: - Build
 
@@ -47,13 +40,15 @@ class TileGridNode: SKNode {
         let tileDrawSize = CGSize(width: s - gap, height: s - gap)
 
         tiles = Array(repeating: [], count: GameModel.gridWidth)
+        colorIndices = Array(repeating: Array(repeating: 0, count: GameModel.gridHeight),
+                             count: GameModel.gridWidth)
 
         for col in 0..<GameModel.gridWidth {
             tiles[col] = []
             for row in 0..<GameModel.gridHeight {
                 let colorIndex = playfield[col][row]
                 let sprite = SKSpriteNode(
-                    color: TileGridNode.tileColors[colorIndex],
+                    color: palette.colors[colorIndex],
                     size: tileDrawSize
                 )
                 // Row 0 renders at the top (flip Y so row 0 is highest on screen)
@@ -63,17 +58,26 @@ class TileGridNode: SKNode {
                 )
                 addChild(sprite)
                 tiles[col].append(sprite)
+                colorIndices[col][row] = colorIndex
             }
         }
     }
 
     // MARK: - Update
 
-    /// Refresh all tile colors from the current playfield state.
+    /// Refresh tile colors from the current playfield state, animating any changes.
     func updateAll(from playfield: [[Int]]) {
         for col in 0..<GameModel.gridWidth {
             for row in 0..<GameModel.gridHeight {
-                tiles[col][row].color = TileGridNode.tileColors[playfield[col][row]]
+                let newIndex = playfield[col][row]
+                guard newIndex != colorIndices[col][row] else { continue }
+                colorIndices[col][row] = newIndex
+                let action = SKAction.colorize(
+                    with: palette.colors[newIndex],
+                    colorBlendFactor: 1.0,
+                    duration: 0.18
+                )
+                tiles[col][row].run(action)
             }
         }
     }

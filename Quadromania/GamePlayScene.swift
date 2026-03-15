@@ -9,6 +9,7 @@ class GamePlayScene: SKScene {
     // MARK: - State
 
     private let model: GameModel
+    private let palette: TilePalette
     private var tileGrid: TileGridNode!
     private var turnsLabel: SKLabelNode!
     private var limitLabel: SKLabelNode!
@@ -16,12 +17,13 @@ class GamePlayScene: SKScene {
 
     // MARK: - Init
 
-    init(model: GameModel, size: CGSize) {
-        self.model = model
+    init(model: GameModel, palette: TilePalette, size: CGSize) {
+        self.model   = model
+        self.palette = palette
         super.init(size: size)
     }
 
-    required init?(coder: NSCoder) { fatalError("Use init(model:size:)") }
+    required init?(coder: NSCoder) { fatalError("Use init(model:palette:size:)") }
 
     // MARK: - Scene lifecycle
 
@@ -39,7 +41,7 @@ class GamePlayScene: SKScene {
 
     private func buildUI() {
         // --- Grid ---
-        tileGrid = TileGridNode(playfield: model.playfield)
+        tileGrid = TileGridNode(playfield: model.playfield, palette: palette)
 
         // Centre the grid horizontally; leave 50 px at the bottom for HUD.
         let gridX = (size.width  - TileGridNode.gridPixelWidth)  / 2
