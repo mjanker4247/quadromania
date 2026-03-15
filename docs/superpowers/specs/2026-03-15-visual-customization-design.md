@@ -38,6 +38,10 @@ Each tile has a static child `SKShapeNode` (an ellipse) representing the highlig
 
 All methods that reference `tiles[col][row]` update accordingly.
 
+#### Symbol overlay compatibility
+
+The existing symbol overlay adds an `SKLabelNode` (name `"symbol"`) as a child of each tile node. `SKLabelNode` can be a child of `SKShapeNode` exactly as it was a child of `SKSpriteNode` — no change to `updateAll` or `updateSymbols` is needed for symbol logic. Parenting and `childNode(withName: "symbol")` lookups continue to work unchanged.
+
 ### Colour transition
 
 `SKAction.colorize` is not available on `SKShapeNode`. Replace with `SKAction.customAction(withDuration: 0.18)` that linearly interpolates `fillColor` from old to new colour:
@@ -47,12 +51,12 @@ private func colorTransition(from oldColor: SKColor, to newColor: SKColor) -> SK
     SKAction.customAction(withDuration: 0.18) { node, elapsed in
         guard let shape = node as? SKShapeNode else { return }
         let t = min(elapsed / 0.18, 1.0)
-        shape.fillColor = SKColor.lerp(from: oldColor, to: newColor, t: t)
+        shape.fillColor = lerpColor(from: oldColor, to: newColor, t: t)
     }
 }
 ```
 
-A `SKColor.lerp` helper (file-level private function in `TileGridNode.swift`):
+A file-level private helper in `TileGridNode.swift` (not an extension on `SKColor`):
 ```swift
 private func lerpColor(from: SKColor, to: SKColor, t: CGFloat) -> SKColor {
     var r1: CGFloat = 0, g1: CGFloat = 0, b1: CGFloat = 0, a1: CGFloat = 0
@@ -88,7 +92,11 @@ func applyPalette(_ newPalette: TilePalette) {
 
 ### TutorialScene tiles
 
-`TutorialScene` has its own inline tile drawing (independent of `TileGridNode`). Update its tile creation to `SKShapeNode` circles with the same frosted highlight overlay for visual consistency.
+`TutorialScene` has its own inline tile drawing (independent of `TileGridNode`). Update its tile creation to `SKShapeNode` circles with the same frosted highlight overlay for visual consistency. `TutorialScene` retains its own inline grid — it does NOT use `TileGridNode` and does NOT gain transition animations (ring sweep, sequential, radial pulse). Only the visual appearance changes.
+
+### TitleScene colour dot strip
+
+`TitleScene.addColorDots()` creates `SKSpriteNode` dots in a horizontal strip above the palette grid. Migrate these to `SKShapeNode(circleOfRadius: dotRadius)` with `fillColor` set directly, matching the swatch style in `GamePlayScene`. `colorDotNodes` type changes from `[SKSpriteNode]` to `[SKShapeNode]`. `handleCustomPaletteDidChange` calls `addColorDots()` to rebuild the strip (same as for `handlePaletteDidChange`).
 
 ---
 
@@ -136,9 +144,10 @@ private var transitionMenuItems: [TransitionStyle: NSMenuItem] = [:]
 }
 ```
 
-New notification name in `AppDelegate.swift` extension:
+New notification names in `AppDelegate.swift` extension (all notification names live here):
 ```swift
 static let transitionStyleDidChange = Notification.Name("transitionStyleDidChange")
+static let customPaletteDidChange   = Notification.Name("customPaletteDidChange")
 ```
 
 ### TileGridNode changes
@@ -161,6 +170,8 @@ When `rotationCenter` is non-nil, use the current `transitionStyle`'s animation 
 5. After the arc completes, fade it out (`fadeOut(withDuration: 0.10)` then `removeFromParent`).
 6. Simultaneously, after `0.20` s delay, run the colour transitions on tiles.
 
+The arc node is added as a child of `TileGridNode` (`self`) at `zPosition = 5` (tiles are at zPosition 0). No coordinate conversion is required — the block centre is already in TileGridNode's local coordinate space.
+
 ```swift
 // Arc radius = distance from block centre to block corner
 let blockRadius = TileGridNode.tileSize * CGFloat(sqrt(2.0) * 1.5)
@@ -172,7 +183,7 @@ Clockwise ordering of the 8 outer tiles of the 3×3 (col offset, row offset from
 ```
 (-1,-1), (0,-1), (1,-1), (1,0), (1,1), (0,1), (-1,1), (-1,0)
 ```
-(Row offsets use SpriteKit's flipped Y — row -1 = visually above.)
+(In model/grid coordinates, row offset −1 is a lower row index, which renders higher on screen because SpriteKit's Y origin is at the bottom.)
 
 Each outer tile gets its colour transition delayed by `tileIndex * 0.035` s. Centre tile delayed by `8 * 0.035 = 0.280` s.
 
@@ -266,10 +277,7 @@ class CustomPaletteStore {
 }
 ```
 
-New notification name:
-```swift
-static let customPaletteDidChange = Notification.Name("customPaletteDidChange")
-```
+The `customPaletteDidChange` notification name is NOT declared in this file — see `AppDelegate.swift` extension below where all notification names are centralised.
 
 ### TilePalette.custom
 
@@ -284,24 +292,44 @@ enum TilePalette: Int, CaseIterable {
 
 `colors` for `.custom`: `CustomPaletteStore.shared.colors`
 
+**Note:** This introduces a singleton dependency from `TilePalette` to `CustomPaletteStore`. Both live in the `Quadromania` target, so there is no module boundary issue. `TilePalette` must remain in the `Quadromania` target — moving it to `QuadroCore` would break this dependency.
+
+### TitleScene palette grid with `.custom`
+
+`TitleScene.addPaletteGrid()` renders a 2×2 grid for the four built-in palettes. The `.custom` palette is **not** added to this grid (no fifth swatch in the 2×2 layout). Players select `.custom` exclusively from the macOS menu bar. As a result, the palette selection border in `TitleScene` will not be shown when `.custom` is active — this is acceptable and intentional.
+
+`TitleScene` only observes `.customPaletteDidChange` to refresh its colour dot strip when the custom palette is active. No changes to `addPaletteGrid()` or `paletteBorderNodes`.
+
 ### CustomPalettePanel
 
 New file `Quadromania/CustomPalettePanel.swift`. A floating `NSPanel` with:
-- Title: `"Edit Custom Colors"`
-- 5 `NSColorWell` objects in a horizontal `NSStackView`, labelled `"0"` through `"4"` below each well
-- Well size: 44 × 44 pt
-- OK and Cancel buttons
-- On `init`, populate wells from `CustomPaletteStore.shared.colors`
-- On OK: call `CustomPaletteStore.shared.save(colors)` then close
-- On Cancel: close without saving
+
+**Init style:** `NSPanel(contentRect: CGRect(x: 0, y: 0, width: 360, height: 160), styleMask: [.titled, .closable, .utilityWindow], backing: .buffered, defer: false)`
+
+**Layout (top-to-bottom inside `contentView`):**
+1. A horizontal `NSStackView` of 5 wells, each wrapped with a vertical sub-stack containing:
+   - `NSColorWell` (44×44 pt, fixed width and height constraints)
+   - `NSTextField` label (`"0"` through `"4"`, font size 11, centered, non-editable)
+   The outer stack has spacing 12 pt, centered horizontally with 20 pt left/right insets.
+2. A horizontal `NSStackView` of OK and Cancel buttons, right-aligned, 8 pt below the wells, 12 pt right inset.
+
+**Behaviour:**
+- On `init`: populate each `NSColorWell.color` from `CustomPaletteStore.shared.colors[i]`
+- On OK (`okClicked(_:)`): read `colorWells.map { $0.color }`, cast to `SKColor`, call `CustomPaletteStore.shared.save(colors)`, then `close()`
+- On Cancel (`cancelClicked(_:)`) and window close button: `close()` without saving (override `windowShouldClose` to return `true`)
+- `NSColorWell` activates the system `NSColorPanel` automatically on click — no additional setup needed. The panel uses `utilityWindow` style so it stays accessible alongside the color panel.
 
 ```swift
 class CustomPalettePanel: NSPanel {
     private var colorWells: [NSColorWell] = []
 
     convenience init() {
-        self.init(contentRect: CGRect(x: 0, y: 0, width: 360, height: 140), ...)
-        // build layout
+        self.init(contentRect: CGRect(x: 0, y: 0, width: 360, height: 160),
+                  styleMask: [.titled, .closable, .utilityWindow],
+                  backing: .buffered, defer: false)
+        title = "Edit Custom Colors"
+        isReleasedWhenClosed = false
+        buildLayout()
     }
 }
 ```
@@ -310,10 +338,21 @@ class CustomPalettePanel: NSPanel {
 
 ### AppDelegate Palette menu additions
 
-`buildPaletteMenu()` adds:
-- `"🎨 Custom"` as a fifth palette radio item (tag = 4, same `selectPaletteItem` action)
-- A separator
-- `"Edit Custom Colors…"` item targeting `openCustomPaletteEditor(_:)`
+`buildPaletteMenu()` currently iterates `TilePalette.allCases` to build the four radio items. With `.custom` now in `allCases`, the loop must skip `.custom` explicitly and instead add it manually after the loop:
+
+```swift
+// In buildPaletteMenu():
+for palette in TilePalette.allCases where palette != .custom {
+    // existing radio item creation
+}
+// Then manually:
+menu.addItem(.separator())
+// add "🎨 Custom" radio item (tag = 4, same selectPaletteItem action)
+menu.addItem(.separator())
+// add "Edit Custom Colors…" item
+```
+
+The `"🎨 Custom"` radio item uses the existing `selectPaletteItem` action (tag = 4). The separator and "Edit Custom Colors…" item are added after the Custom radio item, targeting `openCustomPaletteEditor(_:)`.
 
 ```swift
 @objc private func openCustomPaletteEditor(_ sender: NSMenuItem) {
@@ -349,7 +388,7 @@ Both register in `didMove(to:)` and deregister via `removeObserver(self)` in `wi
 |------|--------|
 | `Quadromania/TileGridNode.swift` | Tile type → `SKShapeNode`, highlight overlay, `lerpColor`, updated `updateAll(from:rotationCenter:)` with 3 animation modes |
 | `Quadromania/GamePlayScene.swift` | Pass `rotationCenter` to `updateAll`, observe `.transitionStyleDidChange`, observe `.customPaletteDidChange`, `colorSwatchNodes` → `[SKShapeNode]` |
-| `Quadromania/TitleScene.swift` | Observe `.customPaletteDidChange` |
+| `Quadromania/TitleScene.swift` | `colorDotNodes` → `[SKShapeNode]`, observe `.customPaletteDidChange` (no changes to palette grid or border nodes) |
 | `Quadromania/TutorialScene.swift` | Tile drawing → `SKShapeNode` circles with highlight |
 | `Quadromania/TilePalette.swift` | Add `case custom = 4` |
 | `Quadromania/AppDelegate.swift` | Add Transition submenu to Game menu, `transitionStyle` state, `openCustomPaletteEditor`, add Custom palette item + Edit item to Palette menu, `.transitionStyleDidChange` + `.customPaletteDidChange` notification names |
