@@ -1,5 +1,5 @@
 import XCTest
-@testable import Quadromania
+@testable import QuadroCore
 
 final class PuzzleGeneratorTests: XCTestCase {
 

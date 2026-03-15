@@ -1,7 +1,6 @@
 import XCTest
-@testable import Quadromania
+@testable import QuadroCore
 
-@MainActor
 final class GameModelIntegrationTests: XCTestCase {
 
     // MARK: - Board validity after init
