@@ -5,20 +5,20 @@
 
 import Foundation
 
-struct PuzzleGenerator {
+public struct PuzzleGenerator {
 
-    struct Result {
+    public struct Result {
         /// Scrambled playfield in [column][row] order (18 columns × 13 rows).
         /// Values are in 0...maxColors.
-        let playfield: [[Int]]
+        public let playfield: [[Int]]
 
         /// Total player presses in the known solution. Always ≥ 1 and ≤ limit.
-        let knownSolutionMoveCount: Int
+        public let knownSolutionMoveCount: Int
 
         /// Press counts per rotation center, indexed [column][row] over 18×13.
         /// Only positions in x ∈ 1...16, y ∈ 1...11 can be non-zero.
         /// f[x][y] presses at (x,y) will solve the board.
-        let solutionMap: [[Int]]
+        public let solutionMap: [[Int]]
     }
 
     /// Generate a solvable puzzle for the given level and color count.
@@ -27,7 +27,7 @@ struct PuzzleGenerator {
     ///   - level: Difficulty level. Clamped to 1...10.
     ///   - maxColors: Maximum color index. Clamped to 1...4.
     /// - Returns: A scrambled playfield, the known solution move count, and the solution map.
-    static func generate(level: Int, maxColors: Int) -> Result {
+    public static func generate(level: Int, maxColors: Int) -> Result {
         let level     = max(1, min(10, level))
         let maxColors = max(1, min(4, maxColors))
         let modulus   = maxColors + 1
