@@ -20,7 +20,7 @@ Quadromania is a puzzle game where players restore an **18×13 grid** of colored
 - **Colors**: 0 (red/base) up to 4 (configurable per game)
 - **Turn limit**: `initialRotations × maxColors`
 - **Score**: `((limit - turns) × 10000) / turns`, or 0 if limit exceeded
-- **Level rotations**: `56 + level × 13` initial scramble rotations
+- **Level rotations**: `56 + (11 − level) × 13` initial scramble rotations (level 1 = 186 rotations = most turns = easiest; level 10 = 69 rotations = fewest turns = hardest)
 
 ## Architecture
 

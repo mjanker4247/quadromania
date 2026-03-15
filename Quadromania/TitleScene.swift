@@ -2,6 +2,7 @@
 // Main menu scene — port of gui.c GUI_DrawMainmenu() + handle_title_state().
 
 import SpriteKit
+import QuadroCore
 
 class TitleScene: SKScene {
 

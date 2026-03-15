@@ -3,6 +3,7 @@
 // Tiles are drawn programmatically; no image assets required.
 
 import SpriteKit
+import QuadroCore
 
 class TileGridNode: SKNode {
 
