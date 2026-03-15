@@ -12,7 +12,7 @@ class GamePlayScene: SKScene {
     private let model: GameModel
     private var palette: TilePalette
     private var tileGrid: TileGridNode!
-    private var colorSwatchNodes: [SKSpriteNode] = []
+    private var colorSwatchNodes: [SKShapeNode] = []
     private var turnsLabel: SKLabelNode!
     private var limitLabel: SKLabelNode!
     private var waitingForClick = false   // true after win/loss, before transition
@@ -107,8 +107,9 @@ class GamePlayScene: SKScene {
         for i in 0..<count {
             let x = startX + CGFloat(i) * elementSpacing
 
-            let swatch = SKSpriteNode(color: palette.colors[i],
-                                      size: CGSize(width: swatchSize, height: swatchSize))
+            let swatch = SKShapeNode(circleOfRadius: swatchSize / 2)
+            swatch.fillColor = palette.colors[i]
+            swatch.strokeColor = .clear
             swatch.position = CGPoint(x: x, y: centerY)
             addChild(swatch)
             colorSwatchNodes.append(swatch)
@@ -244,7 +245,7 @@ class GamePlayScene: SKScene {
         palette = newPalette
         tileGrid.applyPalette(newPalette)
         for (i, swatch) in colorSwatchNodes.enumerated() {
-            swatch.color = newPalette.colors[i]
+            swatch.fillColor = newPalette.colors[i]
         }
     }
 
