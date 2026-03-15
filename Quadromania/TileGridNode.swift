@@ -43,12 +43,13 @@ class TileGridNode: SKNode {
         colorIndices = Array(repeating: Array(repeating: 0, count: GameModel.gridHeight),
                              count: GameModel.gridWidth)
 
+        let paletteColors = palette.colors
         for col in 0..<GameModel.gridWidth {
             tiles[col] = []
             for row in 0..<GameModel.gridHeight {
                 let colorIndex = playfield[col][row]
                 let sprite = SKSpriteNode(
-                    color: palette.colors[colorIndex],
+                    color: paletteColors[colorIndex],
                     size: tileDrawSize
                 )
                 // Row 0 renders at the top (flip Y so row 0 is highest on screen)
