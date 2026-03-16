@@ -174,6 +174,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         } else {
             sm.startMusic()
         }
+        sender.title = sm.isMusicPlaying ? "Stop Music" : "Start Music"
     }
 }
 
