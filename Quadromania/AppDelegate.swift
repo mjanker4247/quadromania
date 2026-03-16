@@ -86,21 +86,40 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: - Game menu
 
     /// Builds and appends the "Game" menu to the main menu bar.
-    /// Contains an "Instructions" item and a "Transition" submenu for animation style selection.
+    /// Structure: New Game / — / Colors ▶ / Transition ▶ / — / Difficulty ▶ / — / Instructions
     private func buildGameMenu() {
         let menu = NSMenu(title: "Game")
 
-        // Instructions item (existing)
-        let instrItem = NSMenuItem(
-            title: "Instructions",
-            action: #selector(showInstructionsMenuAction(_:)),
-            keyEquivalent: ""
+        // New Game (⌘N)
+        let newGameItem = NSMenuItem(
+            title: "New Game",
+            action: #selector(newGame(_:)),
+            keyEquivalent: "n"
         )
-        instrItem.target = self
-        menu.addItem(instrItem)
+        newGameItem.target = self
+        menu.addItem(newGameItem)
 
-        // Transition submenu — one item per TransitionStyle case
         menu.addItem(.separator())
+
+        // Colors submenu — radio group 2/3/4/5 Colors
+        let colorsMenu = NSMenu(title: "Colors")
+        for count in 2...5 {
+            let item = NSMenuItem(
+                title: "\(count) Colors",
+                action: #selector(selectColors(_:)),
+                keyEquivalent: ""
+            )
+            item.tag    = count
+            item.state  = (count == selectedColors) ? .on : .off
+            item.target = self
+            colorsMenu.addItem(item)
+            colorsMenuItems[count] = item
+        }
+        let colorsItem = NSMenuItem(title: "Colors", action: nil, keyEquivalent: "")
+        colorsItem.submenu = colorsMenu
+        menu.addItem(colorsItem)
+
+        // Transition submenu — existing, unchanged
         let transitionMenu = NSMenu(title: "Transition")
         for style in TransitionStyle.allCases {
             let item = NSMenuItem(
@@ -109,15 +128,50 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 keyEquivalent: ""
             )
             item.tag    = style.rawValue
-            item.state  = .off   // restore block below sets correct initial selection
+            item.state  = .off
             item.target = self
             transitionMenu.addItem(item)
-            // Store reference so checkmarks can be toggled without scanning the menu
             transitionMenuItems[style] = item
         }
         let transitionItem = NSMenuItem(title: "Transition", action: nil, keyEquivalent: "")
         transitionItem.submenu = transitionMenu
         menu.addItem(transitionItem)
+
+        menu.addItem(.separator())
+
+        // Difficulty submenu — radio group Beginner / Intermediate / Expert
+        let difficultyMenu = NSMenu(title: "Difficulty")
+        let difficultyOptions: [(String, Int)] = [
+            ("Beginner",     1),
+            ("Intermediate", 5),
+            ("Expert",      10)
+        ]
+        for (name, level) in difficultyOptions {
+            let item = NSMenuItem(
+                title: name,
+                action: #selector(selectDifficulty(_:)),
+                keyEquivalent: ""
+            )
+            item.tag    = level
+            item.state  = (level == selectedLevel) ? .on : .off
+            item.target = self
+            difficultyMenu.addItem(item)
+            difficultyMenuItems[level] = item
+        }
+        let difficultyItem = NSMenuItem(title: "Difficulty", action: nil, keyEquivalent: "")
+        difficultyItem.submenu = difficultyMenu
+        menu.addItem(difficultyItem)
+
+        menu.addItem(.separator())
+
+        // Instructions
+        let instrItem = NSMenuItem(
+            title: "Instructions",
+            action: #selector(showInstructionsMenuAction(_:)),
+            keyEquivalent: ""
+        )
+        instrItem.target = self
+        menu.addItem(instrItem)
 
         let menuItem = NSMenuItem(title: "Game", action: nil, keyEquivalent: "")
         menuItem.submenu = menu
@@ -138,6 +192,29 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         NotificationCenter.default.post(name: .transitionStyleDidChange,
                                         object: nil,
                                         userInfo: ["style": style.rawValue])
+    }
+
+    /// Posts `.newGameRequested` — handled by TitleScene (transitions) or GamePlayScene (alert).
+    @objc private func newGame(_ sender: NSMenuItem) {
+        NotificationCenter.default.post(name: .newGameRequested, object: nil)
+    }
+
+    /// Persists the chosen colour count and posts `.colorsDidChange`.
+    @objc private func selectColors(_ sender: NSMenuItem) {
+        let count = sender.tag  // 2–5
+        selectedColors = count
+        colorsMenuItems.values.forEach { $0.state = .off }
+        sender.state = .on
+        NotificationCenter.default.post(name: .colorsDidChange, object: nil)
+    }
+
+    /// Persists the chosen difficulty level and posts `.difficultyDidChange`.
+    @objc private func selectDifficulty(_ sender: NSMenuItem) {
+        let level = sender.tag  // 1, 5, or 10
+        selectedLevel = level
+        difficultyMenuItems.values.forEach { $0.state = .off }
+        sender.state = .on
+        NotificationCenter.default.post(name: .difficultyDidChange, object: nil)
     }
 
     /// Posts `.showInstructions` so whichever scene is active can navigate to InstructionsScene.
