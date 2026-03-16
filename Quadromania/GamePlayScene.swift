@@ -9,7 +9,7 @@ class GamePlayScene: SKScene {
 
     // MARK: - State
 
-    private let model: GameModel
+    private var model: GameModel
     /// The active colour palette; updated in-place when the user changes it via the Palette menu.
     private var palette: TilePalette
     private var tileGrid: TileGridNode!
@@ -69,6 +69,24 @@ class GamePlayScene: SKScene {
             self,
             selector: #selector(handleCustomPaletteDidChange(_:)),
             name: .customPaletteDidChange,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleNewGameRequested(_:)),
+            name: .newGameRequested,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleColorsDidChange(_:)),
+            name: .colorsDidChange,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleDifficultyDidChange(_:)),
+            name: .difficultyDidChange,
             object: nil
         )
     }
@@ -171,9 +189,9 @@ class GamePlayScene: SKScene {
     // MARK: - Input
 
     override func mouseDown(with event: NSEvent) {
-        // Any click after the overlay appears dismisses the scene
+        // Any click after the overlay appears restarts the game in-place
         if waitingForClick {
-            returnToTitle()
+            startNewGame()
             return
         }
 
@@ -252,7 +270,7 @@ class GamePlayScene: SKScene {
         subLabel.zPosition = 11
         addChild(subLabel)
 
-        let hint = SKLabelNode(text: "Click to continue")
+        let hint = SKLabelNode(text: "Click to play again")
         hint.fontName  = "Helvetica"
         hint.fontSize  = 16
         hint.fontColor = SKColor(white: 0.6, alpha: 1)
@@ -263,10 +281,48 @@ class GamePlayScene: SKScene {
 
     // MARK: - Navigation
 
-    private func returnToTitle() {
-        let scene = TitleScene(size: size)
-        scene.scaleMode = scaleMode
-        view?.presentScene(scene, transition: .fade(withDuration: 0.4))
+    /// Resets the game in-place with fresh settings from AppDelegate.
+    /// Called when the player clicks after win/loss, or confirms an NSAlert.
+    private func startNewGame() {
+        // Rebuild model from current AppDelegate settings
+        model = GameModel(
+            level:     AppDelegate.shared.selectedLevel,
+            maxColors: AppDelegate.shared.selectedColors - 1
+        )
+        // Sync palette in case it changed while the old game was running
+        palette = AppDelegate.shared.activePalette
+        // Vary background colour per new game for visual distinction
+        backgroundColor = SKColor(
+            red:   CGFloat(model.backgroundArtIndex) * 0.05 + 0.05,
+            green: 0.08,
+            blue:  CGFloat(model.backgroundArtIndex) * 0.03 + 0.06,
+            alpha: 1
+        )
+        waitingForClick  = false
+        colorSwatchNodes = []
+        removeAllChildren()
+        buildUI()
+        // Re-apply persisted overlay and transition settings
+        if let appDelegate = NSApp.delegate as? AppDelegate {
+            tileGrid.symbolOverlayEnabled = appDelegate.symbolOverlayEnabled
+            tileGrid.transitionStyle      = appDelegate.transitionStyle
+        }
+    }
+
+    /// Presents a non-blocking sheet asking whether to start a new game or continue.
+    /// Calls `startNewGame()` only if the user confirms.
+    private func showNewGameAlert(informative: String) {
+        let alert = NSAlert()
+        alert.messageText     = "Start a new game?"
+        alert.informativeText = informative
+        alert.addButton(withTitle: "New Game")
+        alert.addButton(withTitle: "Continue")
+        guard let window = view?.window else { return }
+        alert.beginSheetModal(for: window) { [weak self] response in
+            if response == .alertFirstButtonReturn {
+                self?.startNewGame()
+            }
+        }
     }
 
     // MARK: - Notification handlers
@@ -313,6 +369,33 @@ class GamePlayScene: SKScene {
         let scene = InstructionsScene(size: size, sourceGame: model, sourcePalette: palette)
         scene.scaleMode = scaleMode
         view?.presentScene(scene, transition: .fade(withDuration: 0.2))
+    }
+
+    /// Starts a new game immediately if the old one is over; shows an alert if a game is in progress.
+    @objc private func handleNewGameRequested(_ notification: Notification) {
+        if waitingForClick {
+            startNewGame()
+        } else {
+            showNewGameAlert(informative: "Your current game will be lost.")
+        }
+    }
+
+    /// Responds to a colour-count change: silent restart if game is over, alert if game is active.
+    @objc private func handleColorsDidChange(_ notification: Notification) {
+        if waitingForClick {
+            startNewGame()
+        } else {
+            showNewGameAlert(informative: "You changed the number of colors.")
+        }
+    }
+
+    /// Responds to a difficulty change: silent restart if game is over, alert if game is active.
+    @objc private func handleDifficultyDidChange(_ notification: Notification) {
+        if waitingForClick {
+            startNewGame()
+        } else {
+            showNewGameAlert(informative: "You changed the difficulty.")
+        }
     }
 
     override func willMove(from view: SKView) {
