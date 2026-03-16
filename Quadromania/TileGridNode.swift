@@ -32,6 +32,7 @@ class TileGridNode: SKNode {
     private var palette: TilePalette
     private var tiles: [[SKShapeNode]] = []
     private var colorIndices: [[Int]] = []
+    var transitionStyle: TransitionStyle = .ringSweep
 
     // MARK: - Init
 
@@ -107,11 +108,38 @@ class TileGridNode: SKNode {
     // MARK: - Update
 
     /// Refresh tile colors from the current playfield state, animating any changes.
-    func updateAll(from playfield: [[Int]]) {
+    func updateAll(from playfield: [[Int]], rotationCenter: (col: Int, row: Int)? = nil) {
+        if let center = rotationCenter {
+            animateBlock(from: playfield, center: center)
+        } else {
+            for col in 0..<GameModel.gridWidth {
+                for row in 0..<GameModel.gridHeight {
+                    let newIndex = playfield[col][row]
+                    guard newIndex != colorIndices[col][row] else { continue }
+                    let oldColor = palette.colors[colorIndices[col][row]]
+                    let newColor = palette.colors[newIndex]
+                    colorIndices[col][row] = newIndex
+                    let key = "colorTransition"
+                    tiles[col][row].removeAction(forKey: key)
+                    tiles[col][row].run(colorTransition(from: oldColor, to: newColor), withKey: key)
+                    if let sym = tiles[col][row].childNode(withName: "symbol") as? SKLabelNode {
+                        sym.text = newIndex < tileSymbols.count ? tileSymbols[newIndex] : ""
+                    }
+                }
+            }
+        }
+    }
+
+    private func animateBlock(from playfield: [[Int]], center: (col: Int, row: Int)) {
+        let blockCols = (center.col - 1)...(center.col + 1)
+        let blockRows = (center.row - 1)...(center.row + 1)
+
+        // Plain transition for tiles OUTSIDE the 3×3 block
         for col in 0..<GameModel.gridWidth {
             for row in 0..<GameModel.gridHeight {
                 let newIndex = playfield[col][row]
                 guard newIndex != colorIndices[col][row] else { continue }
+                if blockCols.contains(col) && blockRows.contains(row) { continue }
                 let oldColor = palette.colors[colorIndices[col][row]]
                 let newColor = palette.colors[newIndex]
                 colorIndices[col][row] = newIndex
@@ -122,6 +150,137 @@ class TileGridNode: SKNode {
                     sym.text = newIndex < tileSymbols.count ? tileSymbols[newIndex] : ""
                 }
             }
+        }
+
+        // Gather 3×3 block data (only tiles whose colour actually changes)
+        var blockTiles: [(tile: SKShapeNode, oldColor: SKColor, newColor: SKColor,
+                          colOffset: Int, rowOffset: Int, sym: SKLabelNode?, newSymText: String)] = []
+        for dc in -1...1 {
+            for dr in -1...1 {
+                let col = center.col + dc
+                let row = center.row + dr
+                guard col >= 0, col < GameModel.gridWidth,
+                      row >= 0, row < GameModel.gridHeight else { continue }
+                let newIndex = playfield[col][row]
+                let sym = tiles[col][row].childNode(withName: "symbol") as? SKLabelNode
+                let oldColor = palette.colors[colorIndices[col][row]]
+                let newColor = palette.colors[newIndex]
+                colorIndices[col][row] = newIndex
+                sym?.text = newIndex < tileSymbols.count ? tileSymbols[newIndex] : ""
+                guard oldColor != newColor else { continue }
+                blockTiles.append((
+                    tile: tiles[col][row],
+                    oldColor: oldColor,
+                    newColor: newColor,
+                    colOffset: dc,
+                    rowOffset: dr,
+                    sym: sym,
+                    newSymText: newIndex < tileSymbols.count ? tileSymbols[newIndex] : ""
+                ))
+            }
+        }
+
+        switch transitionStyle {
+        case .ringSweep:   animateRingSweep(blockTiles: blockTiles, center: center)
+        case .sequential:  animateSequential(blockTiles: blockTiles)
+        case .radialPulse: animateRadialPulse(blockTiles: blockTiles)
+        }
+    }
+
+    private func animateRingSweep(
+        blockTiles: [(tile: SKShapeNode, oldColor: SKColor, newColor: SKColor,
+                      colOffset: Int, rowOffset: Int, sym: SKLabelNode?, newSymText: String)],
+        center: (col: Int, row: Int)
+    ) {
+        let s = TileGridNode.tileSize
+        let centerX = CGFloat(center.col) * s + s / 2
+        let centerY = CGFloat(GameModel.gridHeight - 1 - center.row) * s + s / 2
+        let blockRadius = s * CGFloat(sqrt(2.0) * 1.5)
+
+        let arc = SKShapeNode()
+        arc.strokeColor = .white
+        arc.lineWidth   = 4
+        arc.fillColor   = .clear
+        arc.position    = CGPoint(x: centerX, y: centerY)
+        arc.zPosition   = 5
+        addChild(arc)
+
+        arc.run(SKAction.sequence([
+            SKAction.customAction(withDuration: 0.30) { node, elapsed in
+                guard let shape = node as? SKShapeNode else { return }
+                let progress = min(elapsed / 0.30, 1.0)
+                let endAngle = CGFloat(progress) * 2 * .pi
+                let path = CGMutablePath()
+                path.addArc(center: .zero, radius: blockRadius,
+                            startAngle: -.pi / 2, endAngle: -.pi / 2 - endAngle,
+                            clockwise: true)
+                shape.path = path
+            },
+            SKAction.fadeOut(withDuration: 0.10),
+            SKAction.removeFromParent()
+        ]))
+
+        for entry in blockTiles {
+            let action = SKAction.sequence([
+                SKAction.wait(forDuration: 0.20),
+                colorTransition(from: entry.oldColor, to: entry.newColor)
+            ])
+            entry.tile.run(action)
+        }
+    }
+
+    private func animateSequential(
+        blockTiles: [(tile: SKShapeNode, oldColor: SKColor, newColor: SKColor,
+                      colOffset: Int, rowOffset: Int, sym: SKLabelNode?, newSymText: String)]
+    ) {
+        let clockwiseOffsets: [(Int, Int)] = [
+            (-1,-1), (0,-1), (1,-1), (1,0), (1,1), (0,1), (-1,1), (-1,0)
+        ]
+        var offsetMap: [String: (tile: SKShapeNode, oldColor: SKColor, newColor: SKColor)] = [:]
+        var centerEntry: (tile: SKShapeNode, oldColor: SKColor, newColor: SKColor)?
+        for entry in blockTiles {
+            if entry.colOffset == 0 && entry.rowOffset == 0 {
+                centerEntry = (entry.tile, entry.oldColor, entry.newColor)
+            } else {
+                let key = "\(entry.colOffset),\(entry.rowOffset)"
+                offsetMap[key] = (entry.tile, entry.oldColor, entry.newColor)
+            }
+        }
+
+        for (index, (dc, dr)) in clockwiseOffsets.enumerated() {
+            let key = "\(dc),\(dr)"
+            guard let entry = offsetMap[key] else { continue }
+            let delay = Double(index) * 0.035
+            let action = SKAction.sequence([
+                SKAction.wait(forDuration: delay),
+                colorTransition(from: entry.oldColor, to: entry.newColor)
+            ])
+            entry.tile.run(action)
+        }
+
+        if let c = centerEntry {
+            let action = SKAction.sequence([
+                SKAction.wait(forDuration: Double(8) * 0.035),
+                colorTransition(from: c.oldColor, to: c.newColor)
+            ])
+            c.tile.run(action)
+        }
+    }
+
+    private func animateRadialPulse(
+        blockTiles: [(tile: SKShapeNode, oldColor: SKColor, newColor: SKColor,
+                      colOffset: Int, rowOffset: Int, sym: SKLabelNode?, newSymText: String)]
+    ) {
+        for entry in blockTiles {
+            let distance = abs(entry.colOffset) + abs(entry.rowOffset)
+            let delay = TimeInterval(distance) * 0.040
+            let scaleAction = SKAction.sequence([
+                SKAction.wait(forDuration: delay),
+                SKAction.scale(to: 1.12, duration: 0.08),
+                SKAction.scale(to: 1.00, duration: 0.10)
+            ])
+            let colourAction = colorTransition(from: entry.oldColor, to: entry.newColor)
+            entry.tile.run(SKAction.group([scaleAction, colourAction]))
         }
     }
 
