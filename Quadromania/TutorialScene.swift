@@ -224,30 +224,83 @@ class TutorialScene: SKScene {
 
     // MARK: - Rotation
 
-    /// Increments every tile in the 3×3 neighbourhood centred on (col, row), wrapping at `tutorialMaxColors`.
+    /// Increments every tile in the 3×3 neighbourhood centred on (col, row), wrapping at
+    /// `tutorialMaxColors`, then plays a slow ring-sweep colour transition on the block.
     private func applyRotation(col: Int, row: Int) {
+        let paletteColors = palette.colors
+
+        // Snapshot old colours before mutating the playfield
+        var oldColors: [[SKColor]] = Array(
+            repeating: Array(repeating: SKColor.white, count: rows), count: cols)
+        for c in 0..<cols {
+            for r in 0..<rows { oldColors[c][r] = tileSprites[c][r].fillColor }
+        }
+
         for dc in -1...1 {
             for dr in -1...1 {
                 let c = col + dc, r = row + dr
-                // Clamp to grid bounds — edge tiles have smaller neighbourhoods
                 guard c >= 0, c < cols, r >= 0, r < rows else { continue }
-                tutorialPlayfield[c][r] += 1
-                if tutorialPlayfield[c][r] > tutorialMaxColors {
-                    tutorialPlayfield[c][r] = 0
-                }
+                tutorialPlayfield[c][r] = (tutorialPlayfield[c][r] + 1) % (tutorialMaxColors + 1)
             }
         }
-        refreshTileColors()
+
+        // Ring-sweep animation — identical angle formula to TileGridNode but 2× slower
+        let sweepDuration: TimeInterval = 0.65
+        let fadeDuration:  TimeInterval = 0.38
+        let twoPi = CGFloat.pi * 2
+
+        for dc in -1...1 {
+            for dr in -1...1 {
+                let c = col + dc, r = row + dr
+                guard c >= 0, c < cols, r >= 0, r < rows else { continue }
+                let oldColor = oldColors[c][r]
+                let newColor = paletteColors[tutorialPlayfield[c][r]]
+                guard oldColor != newColor else { continue }
+
+                // Delay based on clockwise angular position, centre tile fires at midpoint
+                let delay: TimeInterval
+                if dc == 0 && dr == 0 {
+                    delay = sweepDuration * 0.5
+                } else {
+                    let angle = atan2(CGFloat(-dr), CGFloat(dc))
+                    var dist  = (-.pi / 2) - angle
+                    dist = ((dist.truncatingRemainder(dividingBy: twoPi)) + twoPi)
+                              .truncatingRemainder(dividingBy: twoPi)
+                    delay = TimeInterval(dist / twoPi) * sweepDuration
+                }
+
+                let tile = tileSprites[c][r]
+                tile.removeAllActions()
+                tile.run(.sequence([
+                    .wait(forDuration: delay),
+                    .group([
+                        .sequence([.scale(to: 1.20, duration: 0.12),
+                                   .scale(to: 1.00, duration: 0.16)]),
+                        TutorialScene.colorFade(from: oldColor, to: newColor,
+                                                duration: fadeDuration)
+                    ])
+                ]))
+            }
+        }
     }
 
-    /// Repaints every tile sprite to match the current `tutorialPlayfield` state.
-    private func refreshTileColors() {
-        let colors = palette.colors
-        for col in 0..<cols {
-            for row in 0..<rows {
-                tileSprites[col][row].fillColor = colors[tutorialPlayfield[col][row]]
-            }
+    // MARK: - Animation helpers
+
+    private static func colorFade(from: SKColor, to: SKColor,
+                                   duration: TimeInterval) -> SKAction {
+        let d = CGFloat(duration)
+        return SKAction.customAction(withDuration: duration) { node, elapsed in
+            guard let shape = node as? SKShapeNode else { return }
+            shape.fillColor = lerpColor(from: from, to: to, t: min(elapsed / d, 1.0))
         }
+    }
+
+    private static func lerpColor(from: SKColor, to: SKColor, t: CGFloat) -> SKColor {
+        var r1: CGFloat = 0, g1: CGFloat = 0, b1: CGFloat = 0, a1: CGFloat = 0
+        var r2: CGFloat = 0, g2: CGFloat = 0, b2: CGFloat = 0, a2: CGFloat = 0
+        from.getRed(&r1, green: &g1, blue: &b1, alpha: &a1)
+        to.getRed  (&r2, green: &g2, blue: &b2, alpha: &a2)
+        return SKColor(red: r1+(r2-r1)*t, green: g1+(g2-g1)*t, blue: b1+(b2-b1)*t, alpha: 1)
     }
 
     // MARK: - Wrong-tile flash
