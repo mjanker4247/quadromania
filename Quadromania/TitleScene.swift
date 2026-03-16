@@ -1,5 +1,6 @@
 // TitleScene.swift
-// Main menu scene — port of gui.c GUI_DrawMainmenu() + handle_title_state().
+// Animated title screen — displays "QUADROMANIA" above a decorative colour-wave grid.
+// All game controls live in the Game menu (AppDelegate). This scene is purely visual.
 
 import SpriteKit
 import QuadroCore
@@ -7,94 +8,60 @@ import Cocoa
 
 class TitleScene: SKScene {
 
-    // MARK: - Menu item enum
-    private enum MenuItem: CaseIterable {
-        case startGame, selectColors, selectTurns, instructions, quit
-    }
+    // MARK: - Decorative grid dimensions
 
-    // MARK: - Game configuration
+    /// Number of tile columns in the decorative background grid.
+    private let gridCols = 16
+    /// Number of tile rows in the decorative background grid.
+    private let gridRows = 8
+    /// Center-to-center distance between adjacent tiles (px).
+    private let cellPitch: CGFloat = 50
+    /// Radius of each frosted gem circle (px).
+    private let tileRadius: CGFloat = 22
 
-    /// Number of extra tile colours in play (1 = 2 colours total including colour 0).
-    private var selectedColors  = 1              // 1–4
-    /// Index into `difficultyLevels`; controls the number of scramble rotations.
-    private var selectedLevel   = 1              // restricted to difficultyLevels
-    /// The three supported difficulty tiers, each mapping to a distinct scramble-rotation count.
-    private let difficultyLevels = [1, 5, 10]
-    private let difficultyNames: [Int: String] = [1: "Beginner", 5: "Intermediate", 10: "Expert"]
-    /// The colour palette currently shown in the title-screen swatch grid and passed to GamePlayScene.
-    private var selectedPalette: TilePalette = .spring
+    // MARK: - Grid state
 
-    // MARK: - UI nodes
-    private var menuLabels:    [MenuItem: SKLabelNode] = [:]
-    /// Small circles next to "Select colors:" showing the active colour values for the current palette.
-    private var colorDotNodes: [SKShapeNode] = []
-    /// Inline label showing the difficulty name next to "Select difficulty:"; replaced on each change.
-    private var rotationsValueLabel: SKLabelNode!
-    private var highlightedItem: MenuItem? = nil
-    /// Root node for each 5-swatch palette strip; used for hit-testing clicks.
-    private var paletteContainerNodes: [TilePalette: SKNode]      = [:]
-    /// Selection border drawn around the currently active palette strip.
-    private var paletteBorderNodes:    [TilePalette: SKShapeNode] = [:]
+    /// All SKShapeNode tiles indexed as [row][col].
+    private var gridTiles: [[SKShapeNode]] = []
+    /// Current displayed colour index per tile; -1 means unset (force redraw on first tick).
+    private var colorIndices: [[Int]] = []
 
-    // MARK: - Layout constants
-    private let menuX:       CGFloat = 110
-    private let menuStartY:  CGFloat = 680
-    private let lineSpacing: CGFloat = 52
-    /// Total pixel width of one 5-swatch palette strip: 5 × 18 px tiles + 4 × 4 px gaps.
-    private let stripWidth:  CGFloat = 106   // 5 * 18 + 4 * 4
-    private let swatchSize:  CGFloat = 18
+    // MARK: - Wave animation state
 
-    // MARK: - Colors
-    private let normalColor:    SKColor = .white
-    private let highlightColor: SKColor = SKColor(red: 1.0, green: 0.9, blue: 0.0, alpha: 1)
+    /// Monotonically increasing phase counter (units/sec × time = phase units).
+    /// `Int(wavePhase) - (col + row)` gives each tile's target palette index.
+    private var wavePhase: Double = 0
+    /// Timestamp of the previous `update` call; 0 before the first frame.
+    private var lastUpdateTime: TimeInterval = 0
+
+    // MARK: - Palette
+
+    /// Active colour palette — kept in sync with AppDelegate and the Palette menu.
+    private var currentPalette: TilePalette = .spring
 
     // MARK: - Scene lifecycle
 
     override func didMove(to view: SKView) {
         backgroundColor = SKColor(red: 0.10, green: 0.08, blue: 0.15, alpha: 1)
-        buildUI()
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(handlePaletteDidChange(_:)),
-            name: .paletteDidChange,
-            object: nil
-        )
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(handleShowInstructions(_:)),
-            name: .showInstructions,
-            object: nil
-        )
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(handleCustomPaletteDidChange(_:)),
-            name: .customPaletteDidChange,
-            object: nil
-        )
-        // Sync with whatever palette the menu bar currently has selected
-        if let appDelegate = NSApp.delegate as? AppDelegate {
-            selectPalette(appDelegate.activePalette)
+        buildTitleText()
+        buildDecorativeGrid()
+        registerObservers()
+        // Sync with the palette that is already active in AppDelegate
+        if let appDelegate = AppDelegate.shared {
+            currentPalette = appDelegate.activePalette
         }
     }
 
     // MARK: - Build UI
 
-    /// Constructs all static and dynamic UI elements for the title screen.
-    private func buildUI() {
-        addTitleLabel()
-        addMenuLabels()
-        addColorDots()
-        updateDynamicLabels()
-        addPaletteGrid()
-    }
-
-    private func addTitleLabel() {
+    /// Adds the "QUADROMANIA" heading and "Puzzle Game" subtitle near the top of the scene.
+    private func buildTitleText() {
         let title = SKLabelNode(text: "QUADROMANIA")
         title.fontName  = "Helvetica-Bold"
         title.fontSize  = 72
         title.fontColor = SKColor(red: 0.95, green: 0.85, blue: 0.30, alpha: 1)
         title.horizontalAlignmentMode = .center
-        title.position  = CGPoint(x: size.width / 2, y: 840)
+        title.position  = CGPoint(x: size.width / 2, y: 700)
         addChild(title)
 
         let sub = SKLabelNode(text: "Puzzle Game")
@@ -102,251 +69,153 @@ class TitleScene: SKScene {
         sub.fontSize  = 22
         sub.fontColor = SKColor(white: 0.55, alpha: 1)
         sub.horizontalAlignmentMode = .center
-        sub.position  = CGPoint(x: size.width / 2, y: 800)
+        sub.position  = CGPoint(x: size.width / 2, y: 650)
         addChild(sub)
     }
 
-    /// Creates the five clickable menu labels and positions them on screen.
-    /// Items 0–2 keep uniform spacing; items 3–4 are shifted down by 2 extra line spacings
-    /// to leave room for the 2×2 palette-swatch grid inserted between them.
-    private func addMenuLabels() {
-        // Items 0–2 keep uniform spacing.
-        // Items 3–5 are shifted down by 2 extra lineSpacings to make room for the palette grid.
-        let itemY: [MenuItem: CGFloat] = [
-            .startGame:    menuStartY,
-            .selectColors: menuStartY - lineSpacing,
-            .selectTurns:  menuStartY - 2 * lineSpacing,
-            .instructions: menuStartY - 5 * lineSpacing,
-            .quit:         menuStartY - 6 * lineSpacing,
-        ]
+    /// Creates a 16×8 grid of frosted gem circles centred at (640, 300).
+    /// Tiles start at colour 0; the wave animation fills them in on the first update tick.
+    private func buildDecorativeGrid() {
+        // Total span from first to last tile center
+        let gridWidth  = CGFloat(gridCols - 1) * cellPitch  // 750 px
+        let gridHeight = CGFloat(gridRows - 1) * cellPitch  // 350 px
+        // Bottom-left origin so the grid is centred at (640, 300)
+        let originX = size.width  / 2 - gridWidth  / 2  // = 265
+        let originY = 300         - gridHeight / 2       // = 125
 
-        let items: [(MenuItem, String)] = [
-            (.startGame,    "Start the game"),
-            (.selectColors, "Select colors:"),
-            (.selectTurns,  "Select difficulty:"),
-            (.instructions, "Instructions"),
-            (.quit,         "Quit"),
-        ]
+        // Initialise tracking arrays (-1 = unset, forces colour assignment on first tick)
+        colorIndices = Array(repeating: Array(repeating: -1, count: gridCols), count: gridRows)
+        gridTiles    = []
 
-        for (item, text) in items {
-            let label = SKLabelNode(text: text)
-            label.fontName  = "Helvetica-Bold"
-            label.fontSize  = 32
-            label.fontColor = normalColor
-            label.horizontalAlignmentMode = .left
-            label.position = CGPoint(x: menuX, y: itemY[item]!)
-            addChild(label)
-            menuLabels[item] = label
-        }
-    }
-
-    /// Redraws the colour-dot row next to "Select colors:".
-    /// Called on first build and whenever `selectedColors` or `selectedPalette` changes.
-    private func addColorDots() {
-        // Remove any dots from a previous call before recreating them
-        colorDotNodes.forEach { $0.removeFromParent() }
-        colorDotNodes = []
-
-        let dotSize: CGFloat = 24
-        let dotSpacing: CGFloat = 30
-        let startX = menuX + 240
-        let y = menuStartY - lineSpacing + dotSize / 2 - 8   // align with selectColors row
-
-        // Draw one dot per active colour level (0 through selectedColors inclusive)
-        for i in 0...selectedColors {
-            let dot = SKShapeNode(circleOfRadius: dotSize / 2)
-            dot.fillColor   = selectedPalette.colors[i]
-            dot.strokeColor = .clear
-            dot.position = CGPoint(x: startX + CGFloat(i) * dotSpacing, y: y)
-            addChild(dot)
-            colorDotNodes.append(dot)
-        }
-    }
-
-    private func updateDynamicLabels() {
-        rotationsValueLabel?.removeFromParent()
-        let name = difficultyNames[selectedLevel] ?? "Beginner"
-        let label = SKLabelNode(text: name)
-        label.fontName  = "Helvetica"
-        label.fontSize  = 24
-        label.fontColor = SKColor(white: 0.75, alpha: 1)
-        label.horizontalAlignmentMode = .left
-        label.position = CGPoint(x: menuX + 240, y: menuStartY - 2 * lineSpacing + 4)
-        addChild(label)
-        rotationsValueLabel = label
-    }
-
-    /// Builds the 2×2 grid of palette strips used to visually select a colour theme.
-    /// Each strip shows all 5 colours of its palette as small squares with a border
-    /// that highlights when that palette is currently active.
-    private func addPaletteGrid() {
-        let swatchGap:   CGFloat = 4    // gap between squares within one strip
-        let columnGap:   CGFloat = 12   // horizontal gap between the two strip columns
-        let rowGap:      CGFloat = 8    // vertical gap between the two strip rows
-
-        // Vertically centred in the gap between "Select level:" (y=576) and "Instructions" (y=420)
-        let gridAnchorY: CGFloat = menuStartY - 3 * lineSpacing - 26  // = 498
-        let gridX:       CGFloat = menuX + 240                        // = 350
-
-        // 2×2 layout: spring/ocean on top, sunset/forest on bottom
-        let positions: [(TilePalette, CGPoint)] = [
-            (.spring, CGPoint(x: gridX,                          y: gridAnchorY + rowGap / 2 + swatchSize / 2)),
-            (.ocean,  CGPoint(x: gridX + stripWidth + columnGap, y: gridAnchorY + rowGap / 2 + swatchSize / 2)),
-            (.sunset, CGPoint(x: gridX,                          y: gridAnchorY - rowGap / 2 - swatchSize / 2)),
-            (.forest, CGPoint(x: gridX + stripWidth + columnGap, y: gridAnchorY - rowGap / 2 - swatchSize / 2)),
-        ]
-
-        for (palette, centre) in positions {
-            let container = SKNode()
-            container.position = centre  // position in scene coords; frame used for hit-testing
-
-            // Five colour squares side by side
-            for i in 0..<5 {
-                let sq = SKSpriteNode(
-                    color: palette.colors[i],
-                    size: CGSize(width: swatchSize, height: swatchSize)
+        for row in 0..<gridRows {
+            var rowTiles: [SKShapeNode] = []
+            for col in 0..<gridCols {
+                let tile = SKShapeNode(circleOfRadius: tileRadius)
+                tile.strokeColor = .clear
+                tile.fillColor   = currentPalette.colors[0]
+                tile.position    = CGPoint(
+                    x: originX + CGFloat(col) * cellPitch,
+                    y: originY + CGFloat(row) * cellPitch
                 )
-                // Offset each square relative to the container's centre so the strip is centred
-                sq.position = CGPoint(
-                    x: CGFloat(i) * (swatchSize + swatchGap) - (stripWidth / 2 - swatchSize / 2),
-                    y: 0
-                )
-                container.addChild(sq)
+
+                // Frosted highlight: small white ellipse in the upper-left of the circle,
+                // matching the style used in TileGridNode.
+                let hl = SKShapeNode(ellipseOf: CGSize(
+                    width:  tileRadius * 0.84,
+                    height: tileRadius * 0.70
+                ))
+                hl.fillColor   = SKColor(white: 1, alpha: 0.42)
+                hl.strokeColor = .clear
+                hl.position    = CGPoint(x: -tileRadius * 0.2, y: tileRadius * 0.25)
+                tile.addChild(hl)
+
+                addChild(tile)
+                rowTiles.append(tile)
             }
-
-            // Selection border (SKShapeNode; SKSpriteNode has no strokeColor)
-            let borderRect = CGRect(
-                x: -(stripWidth / 2) - 2,
-                y: -(swatchSize / 2) - 2,
-                width: stripWidth + 4,
-                height: swatchSize + 4
-            )
-            let border = SKShapeNode(rect: borderRect, cornerRadius: 4)
-            border.strokeColor = SKColor(white: 1, alpha: 0.7)
-            border.lineWidth   = 1.5
-            border.fillColor   = .clear
-            // Only show the border on the palette that is currently selected
-            border.isHidden    = (palette != selectedPalette)
-            container.addChild(border)
-
-            addChild(container)
-            paletteContainerNodes[palette] = container
-            paletteBorderNodes[palette]    = border
+            gridTiles.append(rowTiles)
         }
     }
 
-    // MARK: - Palette selection
+    // MARK: - Wave animation
 
-    /// Updates the active palette, repositions the selection border, and refreshes the colour dots.
-    private func selectPalette(_ palette: TilePalette) {
-        selectedPalette = palette
-        for (p, border) in paletteBorderNodes {
-            border.isHidden = (p != palette)
-        }
-        addColorDots()   // refresh colour dots to reflect new palette
-    }
+    /// Advances the wave and recolours any tile whose target index has changed.
+    override func update(_ currentTime: TimeInterval) {
+        // Compute delta; clamp to 0.1 s to avoid a large jump on the very first frame.
+        let delta = lastUpdateTime == 0 ? 0.0 : min(currentTime - lastUpdateTime, 0.1)
+        lastUpdateTime = currentTime
+        wavePhase += delta * 0.8  // 0.8 phase units per second
 
-    /// Returns the palette whose swatch strip contains `point`, or `nil` if none.
-    private func paletteHit(at point: CGPoint) -> TilePalette? {
-        // Expand the hit area slightly beyond the visual strip bounds for easier clicking
-        let halfW = stripWidth / 2 + 4
-        let halfH = swatchSize / 2 + 4
-        for (palette, node) in paletteContainerNodes {
-            let rect = CGRect(
-                x: node.position.x - halfW, y: node.position.y - halfH,
-                width: halfW * 2,           height: halfH * 2
-            )
-            if rect.contains(point) { return palette }
-        }
-        return nil
-    }
+        let n = currentPalette.colors.count  // always 5
 
-    // MARK: - Hit testing
+        for row in 0..<gridRows {
+            for col in 0..<gridCols {
+                // Diagonal wave: (col + row) shifts each tile's phase along the diagonal.
+                // Double-modulo ensures the result is always non-negative even when
+                // Int(wavePhase) < (col + row).
+                let raw         = Int(wavePhase) - (col + row)
+                let targetIndex = ((raw % n) + n) % n
 
-    /// Returns the menu item whose label row the point falls within.
-    private func menuItem(at point: CGPoint) -> MenuItem? {
-        let hitHeight: CGFloat = lineSpacing * 0.85
-        for (item, label) in menuLabels {
-            let labelY = label.position.y
-            if point.x >= menuX - 10 && point.x <= size.width - 60 &&
-               point.y >= labelY - hitHeight / 2 &&
-               point.y <= labelY + hitHeight / 2 {
-                return item
+                guard targetIndex != colorIndices[row][col] else { continue }
+                colorIndices[row][col] = targetIndex
+
+                let tile = gridTiles[row][col]
+                let from = tile.fillColor
+                let to   = currentPalette.colors[targetIndex]
+                // Cancel any in-flight transition before starting a new one
+                tile.removeAction(forKey: "colorTransition")
+                tile.run(colorTransition(from: from, to: to), withKey: "colorTransition")
             }
         }
-        return nil
     }
 
-    // MARK: - Hover
+    // MARK: - Colour transition helpers
 
-    private func setHighlight(_ item: MenuItem?) {
-        guard item != highlightedItem else { return }
-        highlightedItem = item
-        for (menuItem, label) in menuLabels {
-            label.fontColor = (menuItem == item) ? highlightColor : normalColor
+    /// Returns an SKAction that smoothly blends a tile's fillColor from `from` to `to`.
+    private func colorTransition(from: SKColor, to: SKColor) -> SKAction {
+        let duration: TimeInterval = 0.35
+        return SKAction.customAction(withDuration: duration) { [weak self] node, elapsed in
+            guard let tile = node as? SKShapeNode, let self else { return }
+            let t = CGFloat(elapsed) / CGFloat(duration)
+            tile.fillColor = self.lerpColor(from: from, to: to, t: t)
         }
     }
 
-    // MARK: - Input
-
-    override func mouseMoved(with event: NSEvent) {
-        setHighlight(menuItem(at: event.location(in: self)))
+    /// Linearly interpolates between two SKColors component-wise.
+    private func lerpColor(from: SKColor, to: SKColor, t: CGFloat) -> SKColor {
+        var r1: CGFloat = 0, g1: CGFloat = 0, b1: CGFloat = 0, a1: CGFloat = 0
+        var r2: CGFloat = 0, g2: CGFloat = 0, b2: CGFloat = 0, a2: CGFloat = 0
+        from.getRed(&r1, green: &g1, blue: &b1, alpha: &a1)
+        to.getRed  (&r2, green: &g2, blue: &b2, alpha: &a2)
+        return SKColor(
+            red:   r1 + (r2 - r1) * t,
+            green: g1 + (g2 - g1) * t,
+            blue:  b1 + (b2 - b1) * t,
+            alpha: a1 + (a2 - a1) * t
+        )
     }
 
-    override func mouseDown(with event: NSEvent) {
-        let point = event.location(in: self)
+    // MARK: - Notification observers
 
-        // Palette grid is outside the MenuItem system — check it first.
-        if let palette = paletteHit(at: point) {
-            SoundManager.shared.playEffect(.menu)
-            selectPalette(palette)
-            return
-        }
-
-        guard let item = menuItem(at: point) else { return }
-        SoundManager.shared.playEffect(.menu)
-
-        switch item {
-        case .startGame:
-            let model = GameModel(level: selectedLevel, maxColors: selectedColors)
-            let scene = GamePlayScene(model: model, palette: selectedPalette, size: size)
-            scene.scaleMode = scaleMode
-            view?.presentScene(scene, transition: .fade(withDuration: 0.3))
-
-        case .selectColors:
-            // Cycle through 1–4 extra colours; wraps from 4 back to 1
-            selectedColors = (selectedColors % 4) + 1
-            addColorDots()
-
-        case .selectTurns:
-            // Advance to the next difficulty tier, wrapping from Expert back to Beginner
-            let idx = ((difficultyLevels.firstIndex(of: selectedLevel) ?? 0) + 1) % 3
-            selectedLevel = difficultyLevels[idx]
-            updateDynamicLabels()
-
-        case .instructions:
-            let scene = InstructionsScene(size: size)
-            scene.scaleMode = scaleMode
-            view?.presentScene(scene, transition: .fade(withDuration: 0.2))
-
-        case .quit:
-            NSApp.terminate(nil)
-        }
+    private func registerObservers() {
+        let nc = NotificationCenter.default
+        // New game requested from menu bar — transition to GamePlayScene
+        nc.addObserver(self, selector: #selector(handleNewGameRequested(_:)),
+                       name: .newGameRequested, object: nil)
+        // Palette changed — refresh grid on next update tick
+        nc.addObserver(self, selector: #selector(handlePaletteDidChange(_:)),
+                       name: .paletteDidChange, object: nil)
+        // Custom palette colours edited — refresh grid if .custom is active
+        nc.addObserver(self, selector: #selector(handleCustomPaletteDidChange(_:)),
+                       name: .customPaletteDidChange, object: nil)
+        // Instructions menu item — navigate to InstructionsScene
+        nc.addObserver(self, selector: #selector(handleShowInstructions(_:)),
+                       name: .showInstructions, object: nil)
     }
 
-    // MARK: - Notification handlers
+    /// Constructs a GameModel from AppDelegate settings and transitions to GamePlayScene.
+    @objc private func handleNewGameRequested(_ notification: Notification) {
+        let model = GameModel(
+            level:     AppDelegate.shared.selectedLevel,
+            maxColors: AppDelegate.shared.selectedColors - 1
+        )
+        let scene = GamePlayScene(model: model, palette: currentPalette, size: size)
+        scene.scaleMode = scaleMode
+        view?.presentScene(scene, transition: .fade(withDuration: 0.3))
+    }
 
-    /// Syncs the on-screen palette selection when the user changes the palette via the menu bar.
+    /// Applies a new palette and resets `colorIndices` so all tiles re-animate on the next tick.
     @objc private func handlePaletteDidChange(_ notification: Notification) {
         guard let raw = notification.userInfo?["palette"] as? Int,
               let palette = TilePalette(rawValue: raw) else { return }
-        selectPalette(palette)
+        currentPalette = palette
+        // -1 forces every tile to recompute its colour on the next update tick
+        colorIndices = Array(repeating: Array(repeating: -1, count: gridCols), count: gridRows)
     }
 
-    /// Refreshes colour dots when the custom palette colours change while `.custom` is active.
+    /// Resets `colorIndices` when the custom palette colours are edited while `.custom` is active.
     @objc private func handleCustomPaletteDidChange(_ notification: Notification) {
-        guard selectedPalette == .custom else { return }
-        addColorDots()
+        guard currentPalette == .custom else { return }
+        colorIndices = Array(repeating: Array(repeating: -1, count: gridCols), count: gridRows)
     }
 
     @objc private func handleShowInstructions(_ notification: Notification) {
