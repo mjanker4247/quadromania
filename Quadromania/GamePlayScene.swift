@@ -61,6 +61,12 @@ class GamePlayScene: SKScene {
             name: .transitionStyleDidChange,
             object: nil
         )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleCustomPaletteDidChange(_:)),
+            name: .customPaletteDidChange,
+            object: nil
+        )
     }
 
     // MARK: - UI
@@ -265,6 +271,14 @@ class GamePlayScene: SKScene {
         guard let raw = notification.userInfo?["style"] as? Int,
               let style = TransitionStyle(rawValue: raw) else { return }
         tileGrid.transitionStyle = style
+    }
+
+    @objc private func handleCustomPaletteDidChange(_ notification: Notification) {
+        guard palette == .custom else { return }
+        tileGrid.applyPalette(.custom)
+        for (i, swatch) in colorSwatchNodes.enumerated() {
+            swatch.fillColor = TilePalette.custom.colors[i]
+        }
     }
 
     @objc private func handleShowInstructions(_ notification: Notification) {

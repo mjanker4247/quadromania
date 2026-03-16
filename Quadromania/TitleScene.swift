@@ -55,6 +55,12 @@ class TitleScene: SKScene {
             name: .showInstructions,
             object: nil
         )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleCustomPaletteDidChange(_:)),
+            name: .customPaletteDidChange,
+            object: nil
+        )
         // Sync with whatever palette the menu bar currently has selected
         if let appDelegate = NSApp.delegate as? AppDelegate {
             selectPalette(appDelegate.activePalette)
@@ -304,6 +310,11 @@ class TitleScene: SKScene {
         guard let raw = notification.userInfo?["palette"] as? Int,
               let palette = TilePalette(rawValue: raw) else { return }
         selectPalette(palette)
+    }
+
+    @objc private func handleCustomPaletteDidChange(_ notification: Notification) {
+        guard selectedPalette == .custom else { return }
+        addColorDots()
     }
 
     @objc private func handleShowInstructions(_ notification: Notification) {
