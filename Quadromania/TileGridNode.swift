@@ -5,8 +5,11 @@
 import SpriteKit
 import QuadroCore
 
+/// One symbol per color index (0–4), shown when the accessibility symbol overlay is enabled.
 private let tileSymbols = ["●", "■", "▲", "◆", "★"]
 
+/// Linearly interpolates between two SKColors by blending each RGB channel separately.
+/// `t` should be in 0…1; values outside that range are not clamped here.
 private func lerpColor(from: SKColor, to: SKColor, t: CGFloat) -> SKColor {
     var r1: CGFloat = 0, g1: CGFloat = 0, b1: CGFloat = 0, a1: CGFloat = 0
     var r2: CGFloat = 0, g2: CGFloat = 0, b2: CGFloat = 0, a2: CGFloat = 0
@@ -30,8 +33,9 @@ class TileGridNode: SKNode {
     // MARK: - State
 
     private var palette: TilePalette
-    private var tiles: [[SKShapeNode]] = []
-    private var colorIndices: [[Int]] = []
+    private var tiles: [[SKShapeNode]] = []       // [col][row] — SKShapeNode circles
+    private var colorIndices: [[Int]] = []        // mirrors playfield color values for change detection
+    /// Which rotation animation plays when the player clicks a 3×3 block.
     var transitionStyle: TransitionStyle = .ringSweep
 
     // MARK: - Init
@@ -95,12 +99,17 @@ class TileGridNode: SKNode {
 
     // MARK: - Animations
 
+    /// Duration shared by every color-fade animation (seconds).
     private static let colorTransitionDuration: TimeInterval = 0.18
 
+    /// Returns an SKAction that smoothly fades a tile's fillColor from `oldColor` to `newColor`
+    /// over `colorTransitionDuration` seconds using per-frame RGB interpolation via `lerpColor`.
+    /// SKAction.colorize is unavailable on SKShapeNode, so customAction is used instead.
     private func colorTransition(from oldColor: SKColor, to newColor: SKColor) -> SKAction {
         let d = CGFloat(Self.colorTransitionDuration)
         return SKAction.customAction(withDuration: Self.colorTransitionDuration) { node, elapsed in
             guard let shape = node as? SKShapeNode else { return }
+            // Clamp t to 1.0 — the final callback can fire slightly past duration due to frame timing
             shape.fillColor = lerpColor(from: oldColor, to: newColor, t: min(elapsed / d, 1.0))
         }
     }
@@ -130,6 +139,9 @@ class TileGridNode: SKNode {
         }
     }
 
+    /// Dispatches the selected rotation animation for the 3×3 block at `center`.
+    /// Tiles outside the block receive a plain color transition immediately.
+    /// Tiles inside the block are handled by the style-specific animation method.
     private func animateBlock(from playfield: [[Int]], center: (col: Int, row: Int)) {
         let blockCols = (center.col - 1)...(center.col + 1)
         let blockRows = (center.row - 1)...(center.row + 1)
@@ -185,6 +197,8 @@ class TileGridNode: SKNode {
         }
     }
 
+    /// Ring Sweep animation: a white arc sweeps clockwise around the block over 0.30 s,
+    /// then all 9 block tiles color-transition simultaneously after a 0.20 s delay.
     private func animateRingSweep(
         blockTiles: [(tile: SKShapeNode, oldColor: SKColor, newColor: SKColor,
                       colOffset: Int, rowOffset: Int)],
@@ -193,6 +207,7 @@ class TileGridNode: SKNode {
         let s = TileGridNode.tileSize
         let centerX = CGFloat(center.col) * s + s / 2
         let centerY = CGFloat(GameModel.gridHeight - 1 - center.row) * s + s / 2
+        // Radius large enough to encircle the full 3×3 block (corner distance = √2 × 1.5 tiles)
         let blockRadius = s * CGFloat(sqrt(2.0) * 1.5)
 
         let arc = SKShapeNode()
@@ -204,6 +219,8 @@ class TileGridNode: SKNode {
         addChild(arc)
 
         arc.run(SKAction.sequence([
+            // Each frame: rebuild the arc path to cover `progress` × 360°, starting at the top (−π/2).
+            // Subtracting endAngle keeps the sweep clockwise in SpriteKit's flipped-Y coordinate system.
             SKAction.customAction(withDuration: 0.30) { node, elapsed in
                 guard let shape = node as? SKShapeNode else { return }
                 let progress = min(elapsed / 0.30, 1.0)
@@ -227,13 +244,17 @@ class TileGridNode: SKNode {
         }
     }
 
+    /// Sequential animation: the 8 outer tiles color-transition one by one in clockwise order
+    /// (35 ms apart), with the center tile firing last after all ring tiles have started.
     private func animateSequential(
         blockTiles: [(tile: SKShapeNode, oldColor: SKColor, newColor: SKColor,
                       colOffset: Int, rowOffset: Int)]
     ) {
+        // Clockwise ring order starting top-left: top row L→R, right col T→B, bottom row R→L, left col B→T
         let clockwiseOffsets: [(Int, Int)] = [
             (-1,-1), (0,-1), (1,-1), (1,0), (1,1), (0,1), (-1,1), (-1,0)
         ]
+        // Index changed tiles by their (colOffset, rowOffset) string key for O(1) lookup
         var offsetMap: [String: (tile: SKShapeNode, oldColor: SKColor, newColor: SKColor)] = [:]
         var centerEntry: (tile: SKShapeNode, oldColor: SKColor, newColor: SKColor)?
         for entry in blockTiles {
@@ -265,11 +286,15 @@ class TileGridNode: SKNode {
         }
     }
 
+    /// Radial Pulse animation: tiles scale outward and color-transition in rings expanding from
+    /// the center. Delay is proportional to Manhattan distance so the center fires first,
+    /// the 4 edge-adjacent tiles next, and the 4 corner tiles last.
     private func animateRadialPulse(
         blockTiles: [(tile: SKShapeNode, oldColor: SKColor, newColor: SKColor,
                       colOffset: Int, rowOffset: Int)]
     ) {
         for entry in blockTiles {
+            // Manhattan distance: 0 = center, 1 = edge-adjacent, 2 = corner
             let distance = abs(entry.colOffset) + abs(entry.rowOffset)
             let delay = TimeInterval(distance) * 0.040
             let scaleAction = SKAction.sequence([
