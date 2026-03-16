@@ -43,13 +43,11 @@ class TitleScene: SKScene {
 
     override func didMove(to view: SKView) {
         backgroundColor = SKColor(red: 0.10, green: 0.08, blue: 0.15, alpha: 1)
+        // Sync palette before building the grid so tiles start with the correct colours
+        currentPalette = AppDelegate.shared.activePalette
         buildTitleText()
         buildDecorativeGrid()
         registerObservers()
-        // Sync with the palette that is already active in AppDelegate
-        if let appDelegate = AppDelegate.shared {
-            currentPalette = appDelegate.activePalette
-        }
     }
 
     // MARK: - Build UI
@@ -153,15 +151,16 @@ class TitleScene: SKScene {
     /// Returns an SKAction that smoothly blends a tile's fillColor from `from` to `to`.
     private func colorTransition(from: SKColor, to: SKColor) -> SKAction {
         let duration: TimeInterval = 0.35
-        return SKAction.customAction(withDuration: duration) { [weak self] node, elapsed in
-            guard let tile = node as? SKShapeNode, let self else { return }
+        return SKAction.customAction(withDuration: duration) { node, elapsed in
+            guard let tile = node as? SKShapeNode else { return }
             let t = CGFloat(elapsed) / CGFloat(duration)
-            tile.fillColor = self.lerpColor(from: from, to: to, t: t)
+            tile.fillColor = TitleScene.lerpColor(from: from, to: to, t: t)
         }
     }
 
-    /// Linearly interpolates between two SKColors component-wise.
-    private func lerpColor(from: SKColor, to: SKColor, t: CGFloat) -> SKColor {
+    /// Linearly interpolates between two SKColors component-wise (alpha always 1).
+    /// Matches the TileGridNode.lerpColor pattern.
+    private static func lerpColor(from: SKColor, to: SKColor, t: CGFloat) -> SKColor {
         var r1: CGFloat = 0, g1: CGFloat = 0, b1: CGFloat = 0, a1: CGFloat = 0
         var r2: CGFloat = 0, g2: CGFloat = 0, b2: CGFloat = 0, a2: CGFloat = 0
         from.getRed(&r1, green: &g1, blue: &b1, alpha: &a1)
@@ -170,7 +169,7 @@ class TitleScene: SKScene {
             red:   r1 + (r2 - r1) * t,
             green: g1 + (g2 - g1) * t,
             blue:  b1 + (b2 - b1) * t,
-            alpha: a1 + (a2 - a1) * t
+            alpha: 1
         )
     }
 
