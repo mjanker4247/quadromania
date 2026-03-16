@@ -79,6 +79,15 @@ class CustomPalettePanel: NSPanel, NSWindowDelegate {
         ])
     }
 
+    /// Refreshes all colour wells from the current persisted palette.
+    /// Call this before showing the panel so a reused instance reflects the latest saved colours.
+    func reloadColorWells() {
+        let current = CustomPaletteStore.shared.colors
+        for (i, well) in colorWells.enumerated() {
+            well.color = current[i]
+        }
+    }
+
     /// Saves the current well colours to CustomPaletteStore (posts .customPaletteDidChange) and closes.
     @objc private func okClicked(_ sender: NSButton) {
         // SKColor is a typealias for NSColor on macOS — no cast needed
