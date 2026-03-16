@@ -67,15 +67,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.activate(ignoringOtherApps: true)
         SoundManager.shared.startMusic()
         updateMusicMenuItem()
-        buildGameMenu()
-        // Restore the previously chosen transition style from UserDefaults
+        // Restore the previously chosen transition style from UserDefaults BEFORE building the menu
         let savedStyle = UserDefaults.standard.integer(forKey: "transitionStyle")
         if let style = TransitionStyle(rawValue: savedStyle) {
             transitionStyle = style
-            // Clear all checkmarks before re-marking the restored style
-            transitionMenuItems.values.forEach { $0.state = .off }
-            transitionMenuItems[style]?.state = .on
         }
+        buildGameMenu()
         buildPaletteMenu()
     }
 
@@ -128,7 +125,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 keyEquivalent: ""
             )
             item.tag    = style.rawValue
-            item.state  = .off
+            item.state  = (style == transitionStyle) ? .on : .off
             item.target = self
             transitionMenu.addItem(item)
             transitionMenuItems[style] = item
