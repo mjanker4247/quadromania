@@ -1,0 +1,94 @@
+<h2>Proposed Game menu structure</h2>
+<p class="subtitle">All title-screen controls move here. Does this look right?</p>
+
+<style>
+  .menu-mock {
+    background: #2a2a2a;
+    border-radius: 8px;
+    padding: 6px 0;
+    width: 240px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    font-family: -apple-system, sans-serif;
+    font-size: 13px;
+    color: #fff;
+  }
+  .menu-item {
+    padding: 4px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    white-space: nowrap;
+  }
+  .menu-item:hover { background: #4a90d9; border-radius: 4px; }
+  .menu-sep { height: 1px; background: rgba(255,255,255,0.15); margin: 4px 0; }
+  .checkmark { color: #4a90d9; font-size: 12px; width: 14px; flex-shrink: 0; }
+  .arrow { color: rgba(255,255,255,0.5); font-size: 11px; }
+  .kbd { color: rgba(255,255,255,0.45); font-size: 11px; font-family: monospace; }
+  .submenu-label { color: rgba(255,255,255,0.55); font-size: 11px; padding: 2px 16px 1px; text-transform: uppercase; letter-spacing: 0.08em; }
+  .indent { padding-left: 30px; }
+  .new-badge { background: #4a90d9; color: #fff; font-size: 10px; border-radius: 3px; padding: 1px 5px; }
+</style>
+
+<div style="display:flex;gap:32px;align-items:flex-start;flex-wrap:wrap;justify-content:center;margin-top:8px">
+
+  <div>
+    <p class="label" style="text-align:center;margin-bottom:8px">BEFORE (current Game menu)</p>
+    <div class="menu-mock">
+      <div class="menu-item"><span>Instructions</span></div>
+      <div class="menu-sep"></div>
+      <div class="menu-item"><span>Transition</span><span class="arrow">▶</span></div>
+    </div>
+  </div>
+
+  <div>
+    <p class="label" style="text-align:center;margin-bottom:8px">AFTER (proposed Game menu)</p>
+    <div class="menu-mock">
+      <div class="menu-item">
+        <span>New Game</span>
+        <span class="kbd">⌘N</span>
+      </div>
+      <div class="menu-sep"></div>
+      <div class="menu-item"><span>Colors</span><span class="arrow">▶</span></div>
+      <div class="menu-item"><span>Difficulty</span><span class="arrow">▶</span></div>
+      <div class="menu-sep"></div>
+      <div class="menu-item"><span>Instructions</span></div>
+      <div class="menu-sep"></div>
+      <div class="menu-item"><span>Transition</span><span class="arrow">▶</span></div>
+    </div>
+  </div>
+
+  <div>
+    <p class="label" style="text-align:center;margin-bottom:8px">Colors submenu</p>
+    <div class="menu-mock">
+      <div class="menu-item"><span class="checkmark">✓</span><span>2 Colors</span></div>
+      <div class="menu-item"><span class="checkmark"> </span><span>3 Colors</span></div>
+      <div class="menu-item"><span class="checkmark"> </span><span>4 Colors</span></div>
+      <div class="menu-item"><span class="checkmark"> </span><span>5 Colors</span></div>
+    </div>
+  </div>
+
+  <div>
+    <p class="label" style="text-align:center;margin-bottom:8px">Difficulty submenu</p>
+    <div class="menu-mock">
+      <div class="menu-item"><span class="checkmark">✓</span><span>Beginner</span></div>
+      <div class="menu-item"><span class="checkmark"> </span><span>Intermediate</span></div>
+      <div class="menu-item"><span class="checkmark"> </span><span>Expert</span></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="section" style="margin-top:24px;max-width:520px;margin-left:auto;margin-right:auto">
+  <h3>Mid-game settings change</h3>
+  <p>Changing Colors or Difficulty while a game is in progress shows:</p>
+  <div style="background:#3a3a3a;border-radius:8px;padding:16px;font-family:-apple-system,sans-serif;font-size:13px;color:#fff;max-width:320px;margin:8px auto">
+    <div style="font-weight:600;margin-bottom:6px">Start a new game?</div>
+    <div style="color:rgba(255,255,255,0.65);margin-bottom:14px;font-size:12px">You changed the difficulty to Expert. Start a new game now, or continue with the current one?</div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <div style="background:rgba(255,255,255,0.12);border-radius:5px;padding:5px 12px;cursor:pointer">Continue</div>
+      <div style="background:#4a90d9;border-radius:5px;padding:5px 12px;cursor:pointer">New Game</div>
+    </div>
+  </div>
+  <p style="margin-top:10px;color:rgba(255,255,255,0.55);font-size:12px">Settings are always saved regardless of the choice. New Game starts immediately with the new settings applied.</p>
+</div>

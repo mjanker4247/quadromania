@@ -1,0 +1,12 @@
+{"type":"server-started","port":52743,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:52743","screen_dir":"/Users/marcojanker/development/quadromania/.superpowers/brainstorm/16293-1773644103"}
+{"type":"screen-added","file":"/Users/marcojanker/development/quadromania/.superpowers/brainstorm/16293-1773644103/title-concept.html"}
+{"source":"user-event","type":"click","text":"QUADROMANIA\n          Puzzle Game\n        \n        \n        \n      \n    \n    \n      B — Title above, grid below\n      Title stacked above a smaller decorative grid. Clean separation, grid is clearly ornamental.","choice":"b","id":null,"timestamp":1773644202650}
+{"source":"user-event","type":"click","text":"QUADROMANIA\n          Puzzle Game\n        \n        \n        \n      \n    \n    \n      B — Title above, grid below\n      Title stacked above a smaller decorative grid. Clean separation, grid is clearly ornamental.","choice":"b","id":null,"timestamp":1773644228201}
+{"source":"user-event","type":"click","text":"QUADROMANIA\n          Puzzle Game\n        \n        \n        \n      \n    \n    \n      B — Title above, grid below\n      Title stacked above a smaller decorative grid. Clean separation, grid is clearly ornamental.","choice":"b","id":null,"timestamp":1773644228367}
+{"type":"screen-added","file":"/Users/marcojanker/development/quadromania/.superpowers/brainstorm/16293-1773644103/animation-style.html"}
+{"source":"user-event","type":"click","text":"B — Colour wave\n      A slow ripple of colour cycles diagonally across the grid. Each tile shifts to the next palette colour with a staggered delay based on its distance from the origin.","choice":"b","id":null,"timestamp":1773644717156}
+{"type":"screen-added","file":"/Users/marcojanker/development/quadromania/.superpowers/brainstorm/16293-1773644103/waiting-1.html"}
+{"type":"screen-added","file":"/Users/marcojanker/development/quadromania/.superpowers/brainstorm/16293-1773644103/menu-layout.html"}
+{"type":"screen-added","file":"/Users/marcojanker/development/quadromania/.superpowers/brainstorm/16293-1773644103/menu-layout-v2.html"}
+{"type":"screen-added","file":"/Users/marcojanker/development/quadromania/.superpowers/brainstorm/16293-1773644103/waiting-2.html"}
+{"type":"server-stopped","reason":"idle timeout"}

@@ -60,13 +60,97 @@
                                     <items>
                                         <menuItem title="New Game" keyEquivalent="n" id="Gm3-xQ-7aD">
                                             <connections>
-                                                <action selector="newGame:" target="Ady-hI-5gd" id="Gm4-xQ-7aE"/>
+                                                <action selector="newGame:" target="Voe-Tx-rLC" id="Gm4-xQ-7aE"/>
                                             </connections>
                                         </menuItem>
                                         <menuItem isSeparatorItem="YES" id="Gm5-xQ-7aF"/>
-                                        <menuItem title="Instructions" keyEquivalent="i" id="Gm6-xQ-7aG">
+                                        <menuItem title="Colors" id="ClM-mn-001">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <menu key="submenu" title="Colors" id="ClM-mn-002">
+                                                <items>
+                                                    <menuItem title="2 Colors" tag="2" id="ClM-c2-001">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="selectColors:" target="Voe-Tx-rLC" id="ClM-c2-002"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="3 Colors" tag="3" id="ClM-c3-001">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="selectColors:" target="Voe-Tx-rLC" id="ClM-c3-002"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="4 Colors" tag="4" id="ClM-c4-001">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="selectColors:" target="Voe-Tx-rLC" id="ClM-c4-002"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="5 Colors" tag="5" id="ClM-c5-001">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="selectColors:" target="Voe-Tx-rLC" id="ClM-c5-002"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                </items>
+                                            </menu>
+                                        </menuItem>
+                                        <menuItem title="Transition" id="TrM-mn-001">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <menu key="submenu" title="Transition" id="TrM-mn-002">
+                                                <items>
+                                                    <menuItem title="Ring Sweep" id="TrM-r0-001">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="selectTransitionStyle:" target="Voe-Tx-rLC" id="TrM-r0-002"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="Sequential" tag="1" id="TrM-r1-001">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="selectTransitionStyle:" target="Voe-Tx-rLC" id="TrM-r1-002"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="Radial Pulse" tag="2" id="TrM-r2-001">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="selectTransitionStyle:" target="Voe-Tx-rLC" id="TrM-r2-002"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                </items>
+                                            </menu>
+                                        </menuItem>
+                                        <menuItem isSeparatorItem="YES" id="Gm8-xQ-7aI"/>
+                                        <menuItem title="Difficulty" id="DfM-mn-001">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <menu key="submenu" title="Difficulty" id="DfM-mn-002">
+                                                <items>
+                                                    <menuItem title="Beginner" tag="1" id="DfM-d1-001">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="selectDifficulty:" target="Voe-Tx-rLC" id="DfM-d1-002"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="Intermediate" tag="5" id="DfM-d5-001">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="selectDifficulty:" target="Voe-Tx-rLC" id="DfM-d5-002"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="Expert" tag="10" id="DfM-da-001">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="selectDifficulty:" target="Voe-Tx-rLC" id="DfM-da-002"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                </items>
+                                            </menu>
+                                        </menuItem>
+                                        <menuItem isSeparatorItem="YES" id="Gm9-xQ-7aJ"/>
+                                        <menuItem title="Instructions" id="Gm6-xQ-7aG">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
                                             <connections>
-                                                <action selector="showInstructions:" target="Ady-hI-5gd" id="Gm7-xQ-7aH"/>
+                                                <action selector="showInstructionsMenuAction:" target="Voe-Tx-rLC" id="Gm7-xQ-7aH"/>
                                             </connections>
                                         </menuItem>
                                     </items>
@@ -79,7 +163,59 @@
                                         <menuItem title="Stop Music" keyEquivalent="m" id="Snd-xQ-1aD">
                                             <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES"/>
                                             <connections>
-                                                <action selector="toggleMusic:" target="Ady-hI-5gd" id="Snd-xQ-1aE"/>
+                                                <action selector="toggleMusic:" target="Voe-Tx-rLC" id="Snd-xQ-1aE"/>
+                                            </connections>
+                                        </menuItem>
+                                    </items>
+                                </menu>
+                            </menuItem>
+                            <menuItem title="Palette" id="PlM-mn-001">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <menu key="submenu" title="Palette" id="PlM-mn-002">
+                                    <items>
+                                        <menuItem title="🌸 Spring" id="PlM-p0-001">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="selectPaletteItem:" target="Voe-Tx-rLC" id="PlM-p0-002"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="🌊 Ocean" tag="1" id="PlM-p1-001">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="selectPaletteItem:" target="Voe-Tx-rLC" id="PlM-p1-002"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="🌅 Sunset" tag="2" id="PlM-p2-001">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="selectPaletteItem:" target="Voe-Tx-rLC" id="PlM-p2-002"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="🌿 Forest" tag="3" id="PlM-p3-001">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="selectPaletteItem:" target="Voe-Tx-rLC" id="PlM-p3-002"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem isSeparatorItem="YES" id="PlM-s1-001"/>
+                                        <menuItem title="🎨 Custom" tag="4" id="PlM-p4-001">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="selectPaletteItem:" target="Voe-Tx-rLC" id="PlM-p4-002"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem isSeparatorItem="YES" id="PlM-s2-001"/>
+                                        <menuItem title="Edit Custom Colors…" id="PlM-ec-001">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="openCustomPaletteEditor:" target="Voe-Tx-rLC" id="PlM-ec-002"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem isSeparatorItem="YES" id="PlM-s3-001"/>
+                                        <menuItem title="Color Symbols" id="PlM-cs-001">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="toggleSymbolOverlay:" target="Voe-Tx-rLC" id="PlM-cs-002"/>
                                             </connections>
                                         </menuItem>
                                     </items>

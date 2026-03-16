@@ -1,0 +1,142 @@
+<h2>Title screen concept</h2>
+<p class="subtitle">All UI is gone — just the game title and an animated playfield. Which layout feels right?</p>
+
+<style>
+  .screen-mock {
+    background: #1a1a2e;
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    aspect-ratio: 4/3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .mock-grid {
+    display: grid;
+    gap: 3px;
+    border-radius: 4px;
+  }
+  .mock-tile {
+    border-radius: 50%;
+  }
+  .mock-title {
+    font-family: 'Helvetica Neue', sans-serif;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #fff;
+    text-shadow: 0 2px 16px rgba(0,0,0,0.7);
+  }
+  .mock-sub {
+    font-family: 'Helvetica Neue', sans-serif;
+    color: rgba(255,255,255,0.45);
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    font-size: 0.65em;
+  }
+  /* spring palette */
+  .p0{background:#f9ccd5} .p1{background:#84e0ab} .p2{background:#c2a9f0} .p3{background:#fceb6b} .p4{background:#80c7f8}
+</style>
+
+<div class="cards">
+
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:0">
+      <div class="screen-mock">
+        <!-- Full-bleed grid fills the whole background -->
+        <div style="position:absolute;inset:0;display:grid;grid-template-columns:repeat(18,1fr);grid-template-rows:repeat(13,1fr);gap:2px;padding:4px;opacity:0.55" id="grid-a"></div>
+        <!-- Title centered on top -->
+        <div style="position:relative;text-align:center;">
+          <div class="mock-title" style="font-size:2em">QUADROMANIA</div>
+          <div class="mock-sub" style="margin-top:4px">Puzzle Game</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Full-bleed grid</h3>
+      <p>Animated 18×13 grid fills the entire background. Title floats centered over it. No other UI elements.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:0">
+      <div class="screen-mock" style="gap:16px;">
+        <div style="text-align:center">
+          <div class="mock-title" style="font-size:2em">QUADROMANIA</div>
+          <div class="mock-sub" style="margin-top:4px">Puzzle Game</div>
+        </div>
+        <!-- Smaller centered grid below title -->
+        <div style="display:grid;grid-template-columns:repeat(18,12px);grid-template-rows:repeat(9,12px);gap:2px" id="grid-b"></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Title above, grid below</h3>
+      <p>Title stacked above a smaller decorative grid. Clean separation, grid is clearly ornamental.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:0">
+      <div class="screen-mock" style="flex-direction:row;justify-content:space-around;align-items:center;padding:12px">
+        <!-- Grid on left -->
+        <div style="display:grid;grid-template-columns:repeat(9,14px);grid-template-rows:repeat(9,14px);gap:2px;flex-shrink:0" id="grid-c"></div>
+        <!-- Title on right -->
+        <div style="text-align:center;padding:8px">
+          <div class="mock-title" style="font-size:1.6em;writing-mode:horizontal-tb">QUADRO<br>MANIA</div>
+          <div class="mock-sub" style="margin-top:6px">Puzzle Game</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Side by side</h3>
+      <p>Grid on the left, title on the right. Asymmetric, game-forward layout.</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const colors = ['#f9ccd5','#84e0ab','#c2a9f0','#fceb6b','#80c7f8'];
+function randomColor() { return colors[Math.floor(Math.random()*colors.length)]; }
+
+function makeGrid(el, cols, rows, size) {
+  el.style.gridTemplateColumns = `repeat(${cols},${size}px)`;
+  el.style.gridTemplateRows = `repeat(${rows},${size}px)`;
+  const tiles = [];
+  for(let i=0;i<cols*rows;i++){
+    const d=document.createElement('div');
+    d.style.cssText=`border-radius:50%;background:${randomColor()};width:${size}px;height:${size}px`;
+    el.appendChild(d);
+    tiles.push(d);
+  }
+  return tiles;
+}
+
+const tilesA = makeGrid(document.getElementById('grid-a'),18,13,0); // filled by CSS grid
+document.getElementById('grid-a').querySelectorAll('div').forEach(d=>{
+  d.style.borderRadius='50%';
+  d.style.background=colors[Math.floor(Math.random()*colors.length)];
+});
+
+const tilesB = makeGrid(document.getElementById('grid-b'),18,9,12);
+const tilesC = makeGrid(document.getElementById('grid-c'),9,9,14);
+
+function animateTiles(tiles) {
+  tiles.forEach(t=>{
+    const delay=Math.random()*4000;
+    setInterval(()=>{
+      t.style.transition='background 0.4s';
+      t.style.background=randomColor();
+    }, 1500+Math.random()*3000);
+  });
+}
+// Slight init stagger for full-bleed grid
+document.getElementById('grid-a').querySelectorAll('div').forEach((d,i)=>{
+  setTimeout(()=>{ setInterval(()=>{ d.style.transition='background 0.4s'; d.style.background=colors[Math.floor(Math.random()*colors.length)]; }, 1500+Math.random()*3000); }, Math.random()*2000);
+});
+animateTiles(tilesB);
+animateTiles(tilesC);
+</script>

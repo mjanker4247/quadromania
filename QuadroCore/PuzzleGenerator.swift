@@ -39,42 +39,48 @@ public struct PuzzleGenerator {
 
         // Step 1: Sample S positions, accumulate counts mod modulus.
         var f = Array(repeating: Array(repeating: 0, count: 13), count: 18)
+
+        // Sample solution presses
         for _ in 0..<S {
             let x = Int.random(in: 1...16)
             let y = Int.random(in: 1...11)
             f[x][y] = (f[x][y] + 1) % modulus
         }
 
-        // Step 2: Guard against the astronomically rare all-zero edge case.
-        let total = (1...16).flatMap { x in (1...11).map { y in f[x][y] } }.reduce(0, +)
-        if total == 0 {
-            f[8][6] = 1
+        // Ensure non-zero solution
+        var moveCount = 0
+        for x in 1...16 {
+            for y in 1...11 {
+                moveCount += f[x][y]
+            }
         }
 
-        // Step 3: Compute knownSolutionMoveCount = Σ_{P} f[x][y].
-        let knownSolutionMoveCount = (1...16)
-            .flatMap { x in (1...11).map { y in f[x][y] } }
-            .reduce(0, +)
+        if moveCount == 0 {
+            f[8][6] = 1
+            moveCount = 1
+        }
 
-        // Step 4: Build the scrambled board analytically.
-        // board[i][j] = (modulus − coverSum % modulus) % modulus
-        // where coverSum = Σ_{(x,y)∈P : |x−i|≤1 ∧ |y−j|≤1} f[x][y].
+        // Build board analytically
         var board = Array(repeating: Array(repeating: 0, count: 13), count: 18)
-        for i in 0...17 {
-            for j in 0...12 {
-                var coverSum = 0
-                for x in max(1, i - 1)...min(16, i + 1) {
-                    for y in max(1, j - 1)...min(11, j + 1) {
-                        coverSum += f[x][y]
+
+        for i in 0..<18 {
+            for j in 0..<13 {
+
+                var cover = 0
+
+                for x in max(1, i-1)...min(16, i+1) {
+                    for y in max(1, j-1)...min(11, j+1) {
+                        cover += f[x][y]
                     }
                 }
-                board[i][j] = (modulus - coverSum % modulus) % modulus
+
+                board[i][j] = (modulus - cover % modulus) % modulus
             }
         }
 
         return Result(
             playfield: board,
-            knownSolutionMoveCount: knownSolutionMoveCount,
+            knownSolutionMoveCount: moveCount,
             solutionMap: f
         )
     }

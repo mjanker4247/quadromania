@@ -206,6 +206,6 @@ The current `mouseDown` handler in `GamePlayScene` calls `returnToTitle()` when 
 
 ## Out of Scope
 
-- **Highscore scene**: no longer directly reachable from the title screen in this iteration. Will be addressed in a follow-up.
+- **Highscore scene**: Will not be used any longer. Remove reference and code completely.
 - **Tutorial**: remains accessible via Instructions → Start Tutorial (preserved).
 - Any changes to `GamePlayScene` gameplay logic, `TileGridNode`, scoring, or the Palette/Sound menus.

@@ -1,0 +1,148 @@
+<h2>Animated playfield — what does it do?</h2>
+<p class="subtitle">All three use the frosted gem circles and active palette. Pick the motion that fits.</p>
+
+<style>
+  .demo-wrap {
+    background: #1a1a2e;
+    border-radius: 6px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 140px;
+    overflow: hidden;
+  }
+  .gem-grid { display: grid; gap: 3px; }
+  .gem {
+    border-radius: 50%;
+    position: relative;
+    transition: background 0.35s, transform 0.15s;
+  }
+  .gem::after {
+    content: '';
+    position: absolute;
+    top: 15%; left: 20%;
+    width: 42%; height: 35%;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.42);
+    pointer-events: none;
+  }
+</style>
+
+<div class="cards">
+
+  <!-- Option A: simulated game play — random 3×3 rotations -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:8px 0 4px">
+      <div class="demo-wrap">
+        <div class="gem-grid" id="demo-a" style="grid-template-columns:repeat(14,18px);grid-template-rows:repeat(7,18px)"></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Auto-play</h3>
+      <p>The grid plays itself. A random 3×3 block rotates every second or so using the selected transition animation. Looks like a game in progress.</p>
+    </div>
+  </div>
+
+  <!-- Option B: slow colour wave rippling across the whole grid -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:8px 0 4px">
+      <div class="demo-wrap">
+        <div class="gem-grid" id="demo-b" style="grid-template-columns:repeat(14,18px);grid-template-rows:repeat(7,18px)"></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Colour wave</h3>
+      <p>A slow ripple of colour cycles diagonally across the grid. Each tile shifts to the next palette colour with a staggered delay based on its distance from the origin.</p>
+    </div>
+  </div>
+
+  <!-- Option C: idle shimmer — random individual tiles quietly pulse -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:8px 0 4px">
+      <div class="demo-wrap">
+        <div class="gem-grid" id="demo-c" style="grid-template-columns:repeat(14,18px);grid-template-rows:repeat(7,18px)"></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Idle shimmer</h3>
+      <p>Individual tiles randomly scale up and glow, then settle back. Calm ambient motion — grid looks alive but not busy.</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const COLS = 14, ROWS = 7;
+const palette = ['#f9ccd5','#84e0ab','#c2a9f0','#fceb6b','#80c7f8'];
+
+function buildGrid(id) {
+  const el = document.getElementById(id);
+  const gems = [];
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const d = document.createElement('div');
+      d.className = 'gem';
+      d.style.width = '18px';
+      d.style.height = '18px';
+      const ci = Math.floor(Math.random() * palette.length);
+      d.style.background = palette[ci];
+      d.dataset.ci = ci;
+      el.appendChild(d);
+      gems.push({ el: d, col: c, row: r, ci });
+    }
+  }
+  return gems;
+}
+
+// --- Demo A: auto-play rotations ---
+const gemsA = buildGrid('demo-a');
+function rotateBlock(gems, cx, cy) {
+  for (let dr = -1; dr <= 1; dr++) {
+    for (let dc = -1; dc <= 1; dc++) {
+      const col = cx + dc, row = cy + dr;
+      if (col < 0 || col >= COLS || row < 0 || row >= ROWS) continue;
+      const g = gems[row * COLS + col];
+      const newCi = (g.ci + 1) % palette.length;
+      g.ci = newCi;
+      g.el.style.background = palette[newCi];
+      g.el.style.transform = 'scale(1.15)';
+      setTimeout(() => g.el.style.transform = 'scale(1)', 120);
+    }
+  }
+}
+setInterval(() => {
+  const cx = 1 + Math.floor(Math.random() * (COLS - 2));
+  const cy = 1 + Math.floor(Math.random() * (ROWS - 2));
+  rotateBlock(gemsA, cx, cy);
+}, 900);
+
+// --- Demo B: colour wave ---
+const gemsB = buildGrid('demo-b');
+let wavePhase = 0;
+setInterval(() => {
+  wavePhase += 0.18;
+  gemsB.forEach(g => {
+    const dist = (g.col + g.row) * 0.5;
+    const phase = (dist * 0.6 + wavePhase) % palette.length;
+    const ci = Math.floor(phase) % palette.length;
+    if (ci !== g.ci) {
+      g.ci = ci;
+      g.el.style.background = palette[ci];
+    }
+  });
+}, 80);
+
+// --- Demo C: idle shimmer ---
+const gemsC = buildGrid('demo-c');
+function shimmerOne() {
+  const g = gemsC[Math.floor(Math.random() * gemsC.length)];
+  g.el.style.transform = 'scale(1.22)';
+  g.el.style.filter = 'brightness(1.4)';
+  setTimeout(() => {
+    g.el.style.transform = 'scale(1)';
+    g.el.style.filter = '';
+  }, 280);
+}
+setInterval(shimmerOne, 120);
+</script>
