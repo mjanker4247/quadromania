@@ -55,6 +55,12 @@ class GamePlayScene: SKScene {
             name: .showInstructions,
             object: nil
         )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleTransitionStyleDidChange(_:)),
+            name: .transitionStyleDidChange,
+            object: nil
+        )
     }
 
     // MARK: - UI
@@ -71,6 +77,7 @@ class GamePlayScene: SKScene {
         buildColorStrip(gridX: gridX)
         if let appDelegate = NSApp.delegate as? AppDelegate {
             tileGrid.symbolOverlayEnabled = appDelegate.symbolOverlayEnabled
+            tileGrid.transitionStyle = appDelegate.transitionStyle
         }
 
         // --- HUD labels ---
@@ -159,7 +166,7 @@ class GamePlayScene: SKScene {
         guard col >= 1, col <= 16, row >= 1, row <= 11 else { return }
 
         model.rotate(x: col, y: row)
-        tileGrid.updateAll(from: model.playfield)
+        tileGrid.updateAll(from: model.playfield, rotationCenter: (col, row))
         updateHUD()
         SoundManager.shared.playEffect(.turn)
 
@@ -252,6 +259,12 @@ class GamePlayScene: SKScene {
     @objc private func handleSymbolOverlayDidChange(_ notification: Notification) {
         guard let enabled = notification.userInfo?["enabled"] as? Bool else { return }
         tileGrid.symbolOverlayEnabled = enabled
+    }
+
+    @objc private func handleTransitionStyleDidChange(_ notification: Notification) {
+        guard let raw = notification.userInfo?["style"] as? Int,
+              let style = TransitionStyle(rawValue: raw) else { return }
+        tileGrid.transitionStyle = style
     }
 
     @objc private func handleShowInstructions(_ notification: Notification) {
