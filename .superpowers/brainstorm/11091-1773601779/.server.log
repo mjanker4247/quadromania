@@ -1,0 +1,6 @@
+{"type":"server-started","port":51975,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:51975","screen_dir":"/Users/marcojanker/development/quadromania/.superpowers/brainstorm/11091-1773601779"}
+{"type":"screen-added","file":"/Users/marcojanker/development/quadromania/.superpowers/brainstorm/11091-1773601779/tile-style.html"}
+{"source":"user-event","type":"click","text":"B — Frosted gem\n      Soft, wide highlight. Like a gem or frosted glass bead. Subtle rim gives translucency. Gentler than A.","choice":"b","id":null,"timestamp":1773601915856}
+{"type":"screen-added","file":"/Users/marcojanker/development/quadromania/.superpowers/brainstorm/11091-1773601779/waiting.html"}
+{"type":"screen-added","file":"/Users/marcojanker/development/quadromania/.superpowers/brainstorm/11091-1773601779/waiting-2.html"}
+{"type":"server-stopped","reason":"idle timeout"}

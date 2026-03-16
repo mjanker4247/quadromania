@@ -1,0 +1,100 @@
+<h2>Tile appearance — "transparent ball" style</h2>
+<p class="subtitle">All three are circles. Which highlight style fits the look you have in mind?</p>
+
+<style>
+  .tile-demo {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+    padding: 10px;
+    background: #1a1a2e;
+    border-radius: 6px;
+    width: 220px;
+    margin: 0 auto 10px;
+  }
+  .tile {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    position: relative;
+    display: inline-block;
+  }
+
+  /* Option A: Glossy ball — sharp specular dot */
+  .tile-a {
+    background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0) 45%),
+                radial-gradient(circle at 50% 50%, var(--c) 40%, color-mix(in srgb, var(--c) 55%, #000) 100%);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.45), inset 0 -2px 4px rgba(0,0,0,0.25);
+  }
+
+  /* Option B: Frosted/gem — large diffuse highlight + rim */
+  .tile-b {
+    background: radial-gradient(ellipse 55% 45% at 38% 28%, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 70%),
+                radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--c) 85%, #fff) 0%, var(--c) 60%, color-mix(in srgb, var(--c) 70%, #000) 100%);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.35), inset 0 0 0 1px rgba(255,255,255,0.15);
+  }
+
+  /* Option C: Minimal circle — no highlight */
+  .tile-c {
+    background: var(--c);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  }
+
+  /* demo colours: spring palette */
+  .c0 { --c: #f9ccd5; }
+  .c1 { --c: #84e0ab; }
+  .c2 { --c: #c2a9f0; }
+  .c3 { --c: #fceb6b; }
+  .c4 { --c: #80c7f8; }
+</style>
+
+<div class="cards">
+
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:20px 0 10px;">
+      <div class="tile-demo">
+        <div class="tile tile-a c0"></div><div class="tile tile-a c1"></div><div class="tile tile-a c2"></div><div class="tile tile-a c1"></div><div class="tile tile-a c0"></div>
+        <div class="tile tile-a c1"></div><div class="tile tile-a c3"></div><div class="tile tile-a c2"></div><div class="tile tile-a c0"></div><div class="tile tile-a c4"></div>
+        <div class="tile tile-a c2"></div><div class="tile tile-a c0"></div><div class="tile tile-a c4"></div><div class="tile tile-a c3"></div><div class="tile tile-a c1"></div>
+        <div class="tile tile-a c3"></div><div class="tile tile-a c4"></div><div class="tile tile-a c1"></div><div class="tile tile-a c2"></div><div class="tile tile-a c0"></div>
+        <div class="tile tile-a c0"></div><div class="tile tile-a c2"></div><div class="tile tile-a c3"></div><div class="tile tile-a c1"></div><div class="tile tile-a c4"></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Glossy ball</h3>
+      <p>Sharp specular dot top-left. Like a shiny plastic marble. High contrast highlight gives clear 3D depth.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:20px 0 10px;">
+      <div class="tile-demo">
+        <div class="tile tile-b c0"></div><div class="tile tile-b c1"></div><div class="tile tile-b c2"></div><div class="tile tile-b c1"></div><div class="tile tile-b c0"></div>
+        <div class="tile tile-b c1"></div><div class="tile tile-b c3"></div><div class="tile tile-b c2"></div><div class="tile tile-b c0"></div><div class="tile tile-b c4"></div>
+        <div class="tile tile-b c2"></div><div class="tile tile-b c0"></div><div class="tile tile-b c4"></div><div class="tile tile-b c3"></div><div class="tile tile-b c1"></div>
+        <div class="tile tile-b c3"></div><div class="tile tile-b c4"></div><div class="tile tile-b c1"></div><div class="tile tile-b c2"></div><div class="tile tile-b c0"></div>
+        <div class="tile tile-b c0"></div><div class="tile tile-b c2"></div><div class="tile tile-b c3"></div><div class="tile tile-b c1"></div><div class="tile tile-b c4"></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Frosted gem</h3>
+      <p>Soft, wide highlight. Like a gem or frosted glass bead. Subtle rim gives translucency. Gentler than A.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:20px 0 10px;">
+      <div class="tile-demo">
+        <div class="tile tile-c c0"></div><div class="tile tile-c c1"></div><div class="tile tile-c c2"></div><div class="tile tile-c c1"></div><div class="tile tile-c c0"></div>
+        <div class="tile tile-c c1"></div><div class="tile tile-c c3"></div><div class="tile tile-c c2"></div><div class="tile tile-c c0"></div><div class="tile tile-c c4"></div>
+        <div class="tile tile-c c2"></div><div class="tile tile-c c0"></div><div class="tile tile-c c4"></div><div class="tile tile-c c3"></div><div class="tile tile-c c1"></div>
+        <div class="tile tile-c c3"></div><div class="tile tile-c c4"></div><div class="tile tile-c c1"></div><div class="tile tile-c c2"></div><div class="tile tile-c c0"></div>
+        <div class="tile tile-c c0"></div><div class="tile tile-c c2"></div><div class="tile tile-c c3"></div><div class="tile tile-c c1"></div><div class="tile tile-c c4"></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Flat circle</h3>
+      <p>Plain circle, no highlight. Minimal change from current squares — just the shape changes.</p>
+    </div>
+  </div>
+
+</div>

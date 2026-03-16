@@ -27,16 +27,7 @@ class SoundManager {
         turnPlayer  = makePlayer(resource: "turn",  ext: "wav")
         winPlayer   = makePlayer(resource: "win",   ext: "wav")
         loosePlayer = makePlayer(resource: "loose", ext: "wav")
-
-        // Music: try m4a first (converted from ogg), fall back to ogg
-        if let mp = makePlayer(resource: "music", ext: "m4a") {
-            musicPlayer = mp
-        } else if let mp = makePlayer(resource: "music", ext: "mp3") {
-            musicPlayer = mp
-        } else {
-            musicPlayer = makePlayer(resource: "music", ext: "ogg")
-        }
-
+        musicPlayer = makePlayer(resource: "music", ext: "m4a")
         musicPlayer?.numberOfLoops = -1   // loop forever
         startMusic()
     }

@@ -1,0 +1,17 @@
+{"type":"server-started","port":49784,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:49784","screen_dir":"/Users/marcojanker/development/quadromania/.superpowers/brainstorm/4822-1773559510"}
+{"type":"screen-added","file":"/Users/marcojanker/development/quadromania/.superpowers/brainstorm/4822-1773559510/palettes.html"}
+{"source":"user-event","type":"click","text":"🌸 Spring\n    Soft pastels — cherry blossom, mint, lilac\n    \n      \n        goal","choice":"spring","id":null,"timestamp":1773559714493}
+{"source":"user-event","type":"click","text":"🌅 Sunset\n    Warm golds — coral, rose, violet, amber\n    \n      \n        goal","choice":"sunset","id":null,"timestamp":1773559715658}
+{"source":"user-event","type":"click","text":"🌊 Ocean\n    Cool blues and teals — seafoam, deep blue, coral\n    \n      \n        goal","choice":"ocean","id":null,"timestamp":1773559716708}
+{"source":"user-event","type":"click","text":"🌿 Forest\n    Earthy greens — moss, pine, amber, bark\n    \n      \n        goal","choice":"forest","id":null,"timestamp":1773559717424}
+{"source":"user-event","type":"click","text":"🌸 Spring\n    Soft pastels — cherry blossom, mint, lilac\n    \n      \n        goal","choice":"spring","id":null,"timestamp":1773559740241}
+{"source":"user-event","type":"click","text":"🌸 Spring\n    Soft pastels — cherry blossom, mint, lilac\n    \n      \n        goal","choice":"spring","id":null,"timestamp":1773559741991}
+{"source":"user-event","type":"click","text":"🌸 Spring\n    Soft pastels — cherry blossom, mint, lilac\n    \n      \n        goal","choice":"spring","id":null,"timestamp":1773559743608}
+{"source":"user-event","type":"click","text":"🌊 Ocean\n    Cool blues and teals — seafoam, deep blue, coral\n    \n      \n        goal","choice":"ocean","id":null,"timestamp":1773559744543}
+{"type":"screen-added","file":"/Users/marcojanker/development/quadromania/.superpowers/brainstorm/4822-1773559510/waiting.html"}
+{"type":"screen-added","file":"/Users/marcojanker/development/quadromania/.superpowers/brainstorm/4822-1773559510/palette-picker-layout.html"}
+{"source":"user-event","type":"click","text":"B\n    2×2 gridCompact, takes less vertical space","choice":"b","id":null,"timestamp":1773560125762}
+{"source":"user-event","type":"click","text":"B\n    2×2 gridCompact, takes less vertical space","choice":"b","id":null,"timestamp":1773560142027}
+{"source":"user-event","type":"click","text":"B\n    2×2 gridCompact, takes less vertical space","choice":"b","id":null,"timestamp":1773560142224}
+{"type":"screen-added","file":"/Users/marcojanker/development/quadromania/.superpowers/brainstorm/4822-1773559510/waiting-2.html"}
+{"type":"server-stopped","reason":"idle timeout"}

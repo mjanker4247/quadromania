@@ -1,0 +1,202 @@
+<h2>Color order indicator</h2>
+<p class="subtitle">Where and how should the rotation colour sequence appear above the game field? (5 colours shown as example)</p>
+
+<div style="margin-bottom: 32px;">
+
+  <!-- Shared game field mockup styles -->
+  <style>
+    .game-frame {
+      background: #1a1a2e;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 12px;
+      font-family: Helvetica, sans-serif;
+    }
+    .grid-area {
+      background: #0d0d1a;
+      border-radius: 4px;
+      display: grid;
+      grid-template-columns: repeat(18, 1fr);
+      gap: 2px;
+      padding: 4px;
+    }
+    .tile {
+      aspect-ratio: 1;
+      border-radius: 2px;
+    }
+    .t0 { background: #e8e4d0; }
+    .t1 { background: #f2a65a; }
+    .t2 { background: #e05c5c; }
+    .t3 { background: #5c8de0; }
+    .t4 { background: #3cb371; }
+    .hud {
+      display: flex;
+      justify-content: space-between;
+      color: #aaa;
+      font-size: 11px;
+      margin-top: 6px;
+    }
+
+    /* Option A: Labelled swatches strip above grid */
+    .color-strip-a {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px;
+      font-size: 11px;
+      color: #888;
+      font-family: Helvetica, sans-serif;
+    }
+    .swatch-a {
+      width: 26px; height: 26px;
+      border-radius: 4px;
+      border: 1px solid rgba(255,255,255,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      color: rgba(0,0,0,0.5);
+      font-weight: bold;
+      position: relative;
+    }
+    .arrow-a {
+      color: #555;
+      font-size: 14px;
+    }
+    .loop-a {
+      color: #555;
+      font-size: 13px;
+    }
+
+    /* Option B: Thin bar in the header row */
+    .color-bar-b {
+      display: flex;
+      align-items: stretch;
+      height: 10px;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 6px;
+      gap: 2px;
+    }
+    .seg-b {
+      flex: 1;
+      border-radius: 1px;
+    }
+
+    /* Option C: Inline in HUD at the bottom */
+    .hud-c {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #aaa;
+      font-size: 11px;
+      margin-top: 6px;
+      font-family: Helvetica, sans-serif;
+    }
+    .color-row-c {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .dot-c {
+      width: 14px; height: 14px;
+      border-radius: 3px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .arr-c { color: #444; font-size: 10px; }
+  </style>
+
+  <div class="cards">
+
+    <!-- Option A: Swatch strip above grid with arrows -->
+    <div class="card" data-choice="a" onclick="toggleSelect(this)">
+      <div class="card-image">
+        <div class="game-frame">
+          <div class="color-strip-a">
+            <span style="color:#666; font-size:10px; text-transform:uppercase; letter-spacing:.5px;">Cycle:</span>
+            <div class="swatch-a" style="background:#e8e4d0;">0</div>
+            <span class="arrow-a">→</span>
+            <div class="swatch-a" style="background:#f2a65a;">1</div>
+            <span class="arrow-a">→</span>
+            <div class="swatch-a" style="background:#e05c5c;">2</div>
+            <span class="arrow-a">→</span>
+            <div class="swatch-a" style="background:#5c8de0;">3</div>
+            <span class="arrow-a">→</span>
+            <div class="swatch-a" style="background:#3cb371;">4</div>
+            <span class="loop-a">↩</span>
+          </div>
+          <div class="grid-area">
+            <div class="tile t0"></div><div class="tile t1"></div><div class="tile t2"></div><div class="tile t0"></div><div class="tile t3"></div><div class="tile t1"></div><div class="tile t0"></div><div class="tile t2"></div><div class="tile t1"></div><div class="tile t0"></div><div class="tile t3"></div><div class="tile t2"></div><div class="tile t0"></div><div class="tile t1"></div><div class="tile t0"></div><div class="tile t3"></div><div class="tile t2"></div><div class="tile t1"></div>
+            <div class="tile t1"></div><div class="tile t0"></div><div class="tile t3"></div><div class="tile t2"></div><div class="tile t1"></div><div class="tile t0"></div><div class="tile t2"></div><div class="tile t3"></div><div class="tile t0"></div><div class="tile t2"></div><div class="tile t1"></div><div class="tile t0"></div><div class="tile t3"></div><div class="tile t0"></div><div class="tile t2"></div><div class="tile t1"></div><div class="tile t0"></div><div class="tile t3"></div>
+            <div class="tile t2"></div><div class="tile t3"></div><div class="tile t0"></div><div class="tile t1"></div><div class="tile t0"></div><div class="tile t3"></div><div class="tile t1"></div><div class="tile t0"></div><div class="tile t2"></div><div class="tile t1"></div><div class="tile t0"></div><div class="tile t3"></div><div class="tile t1"></div><div class="tile t2"></div><div class="tile t3"></div><div class="tile t0"></div><div class="tile t1"></div><div class="tile t2"></div>
+          </div>
+          <div class="hud"><span>Turns: 0</span><span>Limit: 180</span></div>
+        </div>
+      </div>
+      <div class="card-body">
+        <h3>A — Swatch strip with arrows</h3>
+        <p>Labelled coloured squares above the grid showing cycle order. Clear and educational, takes ~30px of vertical space.</p>
+      </div>
+    </div>
+
+    <!-- Option B: Thin colour bar -->
+    <div class="card" data-choice="b" onclick="toggleSelect(this)">
+      <div class="card-image">
+        <div class="game-frame">
+          <div style="font-size:9px; color:#555; text-transform:uppercase; letter-spacing:.5px; margin-bottom:3px; font-family:Helvetica;">Colour cycle</div>
+          <div class="color-bar-b">
+            <div class="seg-b" style="background:#e8e4d0;"></div>
+            <div class="seg-b" style="background:#f2a65a;"></div>
+            <div class="seg-b" style="background:#e05c5c;"></div>
+            <div class="seg-b" style="background:#5c8de0;"></div>
+            <div class="seg-b" style="background:#3cb371;"></div>
+          </div>
+          <div class="grid-area">
+            <div class="tile t0"></div><div class="tile t1"></div><div class="tile t2"></div><div class="tile t0"></div><div class="tile t3"></div><div class="tile t1"></div><div class="tile t0"></div><div class="tile t2"></div><div class="tile t1"></div><div class="tile t0"></div><div class="tile t3"></div><div class="tile t2"></div><div class="tile t0"></div><div class="tile t1"></div><div class="tile t0"></div><div class="tile t3"></div><div class="tile t2"></div><div class="tile t1"></div>
+            <div class="tile t1"></div><div class="tile t0"></div><div class="tile t3"></div><div class="tile t2"></div><div class="tile t1"></div><div class="tile t0"></div><div class="tile t2"></div><div class="tile t3"></div><div class="tile t0"></div><div class="tile t2"></div><div class="tile t1"></div><div class="tile t0"></div><div class="tile t3"></div><div class="tile t0"></div><div class="tile t2"></div><div class="tile t1"></div><div class="tile t0"></div><div class="tile t3"></div>
+            <div class="tile t2"></div><div class="tile t3"></div><div class="tile t0"></div><div class="tile t1"></div><div class="tile t0"></div><div class="tile t3"></div><div class="tile t1"></div><div class="tile t0"></div><div class="tile t2"></div><div class="tile t1"></div><div class="tile t0"></div><div class="tile t3"></div><div class="tile t1"></div><div class="tile t2"></div><div class="tile t3"></div><div class="tile t0"></div><div class="tile t1"></div><div class="tile t2"></div>
+          </div>
+          <div class="hud"><span>Turns: 0</span><span>Limit: 180</span></div>
+        </div>
+      </div>
+      <div class="card-body">
+        <h3>B — Thin colour bar</h3>
+        <p>A narrow gradient-like bar showing all colours left-to-right. Minimal, barely uses space, but doesn't show the cycle direction explicitly.</p>
+      </div>
+    </div>
+
+    <!-- Option C: In the HUD row at the bottom -->
+    <div class="card" data-choice="c" onclick="toggleSelect(this)">
+      <div class="card-image">
+        <div class="game-frame">
+          <div class="grid-area">
+            <div class="tile t0"></div><div class="tile t1"></div><div class="tile t2"></div><div class="tile t0"></div><div class="tile t3"></div><div class="tile t1"></div><div class="tile t0"></div><div class="tile t2"></div><div class="tile t1"></div><div class="tile t0"></div><div class="tile t3"></div><div class="tile t2"></div><div class="tile t0"></div><div class="tile t1"></div><div class="tile t0"></div><div class="tile t3"></div><div class="tile t2"></div><div class="tile t1"></div>
+            <div class="tile t1"></div><div class="tile t0"></div><div class="tile t3"></div><div class="tile t2"></div><div class="tile t1"></div><div class="tile t0"></div><div class="tile t2"></div><div class="tile t3"></div><div class="tile t0"></div><div class="tile t2"></div><div class="tile t1"></div><div class="tile t0"></div><div class="tile t3"></div><div class="tile t0"></div><div class="tile t2"></div><div class="tile t1"></div><div class="tile t0"></div><div class="tile t3"></div>
+            <div class="tile t2"></div><div class="tile t3"></div><div class="tile t0"></div><div class="tile t1"></div><div class="tile t0"></div><div class="tile t3"></div><div class="tile t1"></div><div class="tile t0"></div><div class="tile t2"></div><div class="tile t1"></div><div class="tile t0"></div><div class="tile t3"></div><div class="tile t1"></div><div class="tile t2"></div><div class="tile t3"></div><div class="tile t0"></div><div class="tile t1"></div><div class="tile t2"></div>
+          </div>
+          <div class="hud-c">
+            <span>Turns: 0</span>
+            <div class="color-row-c">
+              <div class="dot-c" style="background:#e8e4d0;"></div>
+              <span class="arr-c">›</span>
+              <div class="dot-c" style="background:#f2a65a;"></div>
+              <span class="arr-c">›</span>
+              <div class="dot-c" style="background:#e05c5c;"></div>
+              <span class="arr-c">›</span>
+              <div class="dot-c" style="background:#5c8de0;"></div>
+              <span class="arr-c">›</span>
+              <div class="dot-c" style="background:#3cb371;"></div>
+              <span class="arr-c">↩</span>
+            </div>
+            <span>Limit: 180</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <h3>C — In the HUD (bottom)</h3>
+        <p>Compact dots with arrows centred in the existing HUD row. No extra vertical space needed; stays close to the "Turns / Limit" info.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
