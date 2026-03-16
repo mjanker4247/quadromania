@@ -10,12 +10,15 @@ class GamePlayScene: SKScene {
     // MARK: - State
 
     private let model: GameModel
+    /// The active colour palette; updated in-place when the user changes it via the Palette menu.
     private var palette: TilePalette
     private var tileGrid: TileGridNode!
+    /// One circular swatch per colour level (0…maxColors), shown in the strip above the grid.
     private var colorSwatchNodes: [SKShapeNode] = []
     private var turnsLabel: SKLabelNode!
     private var limitLabel: SKLabelNode!
-    private var waitingForClick = false   // true after win/loss, before transition
+    /// Set to `true` after win/loss overlay is shown; the next click then returns to TitleScene.
+    private var waitingForClick = false
 
     // MARK: - Init
 
@@ -30,6 +33,7 @@ class GamePlayScene: SKScene {
     // MARK: - Scene lifecycle
 
     override func didMove(to view: SKView) {
+        // Vary the background colour slightly per game so consecutive games look distinct.
         backgroundColor = SKColor(
             red: CGFloat(model.backgroundArtIndex) * 0.05 + 0.05,
             green: 0.08,
@@ -71,6 +75,7 @@ class GamePlayScene: SKScene {
 
     // MARK: - UI
 
+    /// Constructs all visual elements: the tile grid, the colour-cycle strip, and the HUD labels.
     private func buildUI() {
         // --- Grid ---
         tileGrid = TileGridNode(playfield: model.playfield, palette: palette)
@@ -81,6 +86,7 @@ class GamePlayScene: SKScene {
         tileGrid.position = CGPoint(x: gridX, y: gridY)
         addChild(tileGrid)
         buildColorStrip(gridX: gridX)
+        // Sync symbol overlay and transition style from AppDelegate's persisted state
         if let appDelegate = NSApp.delegate as? AppDelegate {
             tileGrid.symbolOverlayEnabled = appDelegate.symbolOverlayEnabled
             tileGrid.transitionStyle = appDelegate.transitionStyle
@@ -107,11 +113,16 @@ class GamePlayScene: SKScene {
         addChild(versionLabel)
     }
 
+    /// Builds the colour-cycle indicator strip above the tile grid.
+    /// Shows one circle per colour level with arrows between them, ending with a wrap-around ↩ arrow
+    /// to illustrate that the last colour cycles back to colour 0.
     private func buildColorStrip(gridX: CGFloat) {
         let swatchSize: CGFloat = 28
         let elementSpacing: CGFloat = 46   // 28 swatch + 18 gap
+        // +1 because colour values range 0…maxColors (inclusive)
         let count = model.maxColors + 1
         let centerX = gridX + TileGridNode.gridPixelWidth / 2
+        // Position the strip 10 px above the top edge of the tile grid
         let centerY = 50 + TileGridNode.gridPixelHeight + 10 + swatchSize / 2
         // Centre the swatch midpoints over the grid centre; the trailing ↩ arrow extends slightly right
         let startX  = centerX - CGFloat(count - 1) * elementSpacing / 2
@@ -127,6 +138,7 @@ class GamePlayScene: SKScene {
             addChild(swatch)
             colorSwatchNodes.append(swatch)
 
+            // → between colours; ↩ after the last colour to show the wrap-around
             let arrowText = (i < count - 1) ? "→" : "↩"
             let arrow = SKLabelNode(text: arrowText)
             arrow.fontName  = "Helvetica"
@@ -159,19 +171,24 @@ class GamePlayScene: SKScene {
     // MARK: - Input
 
     override func mouseDown(with event: NSEvent) {
+        // Any click after the overlay appears dismisses the scene
         if waitingForClick {
             returnToTitle()
             return
         }
 
         let scenePoint = event.location(in: self)
+        // Convert from scene coords to TileGridNode's local coordinate space for hit-testing
         let localPoint = tileGrid.convert(scenePoint, from: self)
         guard let (col, row) = tileGrid.gridCoordinates(for: localPoint) else { return }
 
         // Valid interior click: same bounds as original (col 1–16, row 1–11)
+        // The outer ring of tiles cannot be a rotation center because the 3×3 block would extend
+        // outside the 18×13 grid boundary.
         guard col >= 1, col <= 16, row >= 1, row <= 11 else { return }
 
         model.rotate(x: col, y: row)
+        // Pass the rotation center so TileGridNode can stagger the tile animations outward from it
         tileGrid.updateAll(from: model.playfield, rotationCenter: (col, row))
         updateHUD()
         SoundManager.shared.playEffect(.turn)
@@ -252,36 +269,46 @@ class GamePlayScene: SKScene {
         view?.presentScene(scene, transition: .fade(withDuration: 0.4))
     }
 
+    // MARK: - Notification handlers
+
+    /// Applies the new palette to the tile grid and refreshes the colour-strip swatches.
     @objc private func handlePaletteDidChange(_ notification: Notification) {
         guard let raw = notification.userInfo?["palette"] as? Int,
               let newPalette = TilePalette(rawValue: raw) else { return }
         palette = newPalette
         tileGrid.applyPalette(newPalette)
+        // Update each swatch circle to the corresponding colour in the new palette
         for (i, swatch) in colorSwatchNodes.enumerated() {
             swatch.fillColor = newPalette.colors[i]
         }
     }
 
+    /// Forwards the symbol-overlay toggle to the tile grid.
     @objc private func handleSymbolOverlayDidChange(_ notification: Notification) {
         guard let enabled = notification.userInfo?["enabled"] as? Bool else { return }
         tileGrid.symbolOverlayEnabled = enabled
     }
 
+    /// Forwards the new transition animation style to the tile grid.
     @objc private func handleTransitionStyleDidChange(_ notification: Notification) {
         guard let raw = notification.userInfo?["style"] as? Int,
               let style = TransitionStyle(rawValue: raw) else { return }
         tileGrid.transitionStyle = style
     }
 
+    /// Re-applies the custom palette when its colours are edited via the Custom Palette panel.
+    /// Only acts when `.custom` is the currently active palette to avoid unnecessary redraws.
     @objc private func handleCustomPaletteDidChange(_ notification: Notification) {
         guard palette == .custom else { return }
         tileGrid.applyPalette(.custom)
+        // Refresh swatch colours to match the newly saved custom values
         for (i, swatch) in colorSwatchNodes.enumerated() {
             swatch.fillColor = TilePalette.custom.colors[i]
         }
     }
 
     @objc private func handleShowInstructions(_ notification: Notification) {
+        // Ignore the menu action while a win/loss overlay is waiting for dismissal
         guard !waitingForClick else { return }
         let scene = InstructionsScene(size: size, sourceGame: model, sourcePalette: palette)
         scene.scaleMode = scaleMode

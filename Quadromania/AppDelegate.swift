@@ -12,14 +12,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     // MARK: - Palette & accessibility state
 
+    /// The currently active colour palette, kept in sync with the Palette menu checkmark.
     var activePalette: TilePalette = .spring
+    /// Whether shape symbols are drawn on top of tiles for colour-blind accessibility.
     var symbolOverlayEnabled: Bool = false
 
+    /// Lookup table so `selectPaletteItem` can toggle checkmarks without iterating the whole menu.
     private var paletteMenuItems: [TilePalette: NSMenuItem] = [:]
     private var symbolMenuItem: NSMenuItem?
+    /// Retained so the panel can be reused without recreating it on every open.
     private var customPalettePanel: CustomPalettePanel?
 
+    /// The currently active tile-rotation animation style.
     var transitionStyle: TransitionStyle = .ringSweep
+    /// Lookup table used to toggle checkmarks when the transition style changes.
     private var transitionMenuItems: [TransitionStyle: NSMenuItem] = [:]
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
@@ -29,9 +35,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         SoundManager.shared.startMusic()
         updateMusicMenuItem()
         buildGameMenu()
+        // Restore the previously chosen transition style from UserDefaults
         let savedStyle = UserDefaults.standard.integer(forKey: "transitionStyle")
         if let style = TransitionStyle(rawValue: savedStyle) {
             transitionStyle = style
+            // Clear all checkmarks before re-marking the restored style
             transitionMenuItems.values.forEach { $0.state = .off }
             transitionMenuItems[style]?.state = .on
         }
@@ -44,6 +52,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     // MARK: - Game menu
 
+    /// Builds and appends the "Game" menu to the main menu bar.
+    /// Contains an "Instructions" item and a "Transition" submenu for animation style selection.
     private func buildGameMenu() {
         let menu = NSMenu(title: "Game")
 
@@ -56,7 +66,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         instrItem.target = self
         menu.addItem(instrItem)
 
-        // Transition submenu
+        // Transition submenu — one item per TransitionStyle case
         menu.addItem(.separator())
         let transitionMenu = NSMenu(title: "Transition")
         for style in TransitionStyle.allCases {
@@ -69,6 +79,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             item.state  = .off   // restore block below sets correct initial selection
             item.target = self
             transitionMenu.addItem(item)
+            // Store reference so checkmarks can be toggled without scanning the menu
             transitionMenuItems[style] = item
         }
         let transitionItem = NSMenuItem(title: "Transition", action: nil, keyEquivalent: "")
@@ -80,10 +91,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.mainMenu?.addItem(menuItem)
     }
 
+    /// Handles a tap on one of the Transition submenu items.
+    /// Persists the new style in UserDefaults and posts `.transitionStyleDidChange`
+    /// so live scenes can update their `TileGridNode` without a restart.
     @objc private func selectTransitionStyle(_ sender: NSMenuItem) {
         guard let style = TransitionStyle(rawValue: sender.tag) else { return }
         transitionStyle = style
+        // Persist choice so it survives app restarts
         UserDefaults.standard.set(style.rawValue, forKey: "transitionStyle")
+        // Update checkmarks: clear all, then re-mark the selected item
         transitionMenuItems.values.forEach { $0.state = .off }
         sender.state = .on
         NotificationCenter.default.post(name: .transitionStyleDidChange,
@@ -91,15 +107,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                                         userInfo: ["style": style.rawValue])
     }
 
+    /// Posts `.showInstructions` so whichever scene is active can navigate to InstructionsScene.
     @objc private func showInstructionsMenuAction(_ sender: NSMenuItem) {
         NotificationCenter.default.post(name: .showInstructions, object: nil)
     }
 
     // MARK: - Palette menu
 
+    /// Builds and appends the "Palette" menu to the main menu bar.
+    /// Includes one item per built-in palette, a custom palette entry, an edit action,
+    /// and the "Color Symbols" accessibility toggle.
     private func buildPaletteMenu() {
         let menu = NSMenu(title: "Palette")
 
+        // Built-in palettes — .custom is added separately with a preceding separator
         for palette in TilePalette.allCases where palette != .custom {
             let item = NSMenuItem(
                 title: palette.displayName,
@@ -107,6 +128,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 keyEquivalent: ""
             )
             item.tag = palette.rawValue
+            // Reflect the current active palette at menu-build time
             item.state = (palette == activePalette) ? .on : .off
             item.target = self
             menu.addItem(item)
@@ -122,7 +144,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         customItem.tag    = TilePalette.custom.rawValue  // 4
         customItem.state  = (activePalette == .custom) ? .on : .off
         customItem.target = self
-        paletteMenuItems[.custom] = customItem  // must be in paletteMenuItems so toggle-off works when switching away
+        // Must be in paletteMenuItems so toggle-off works when switching away from .custom
+        paletteMenuItems[.custom] = customItem
         menu.addItem(customItem)
 
         menu.addItem(.separator())
@@ -151,9 +174,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.mainMenu?.addItem(paletteMenuItem)
     }
 
+    /// Handles a tap on a palette menu item.
+    /// Updates `activePalette`, refreshes checkmarks, and posts `.paletteDidChange`
+    /// so live scenes can swap colours without restarting.
     @objc private func selectPaletteItem(_ sender: NSMenuItem) {
         guard let palette = TilePalette(rawValue: sender.tag) else { return }
         activePalette = palette
+        // Toggle checkmarks: clear all, then mark the selected item
         paletteMenuItems.values.forEach { $0.state = .off }
         sender.state = .on
         NotificationCenter.default.post(
@@ -163,6 +190,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         )
     }
 
+    /// Opens (or re-focuses) the floating custom palette editor panel.
+    /// The panel is lazily created on first use and reused on subsequent opens.
     @objc private func openCustomPaletteEditor(_ sender: NSMenuItem) {
         if customPalettePanel == nil {
             customPalettePanel = CustomPalettePanel()
@@ -173,6 +202,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         customPalettePanel?.makeKeyAndOrderFront(nil)
     }
 
+    /// Toggles the shape-symbol accessibility overlay on all tiles and posts `.symbolOverlayDidChange`.
     @objc private func toggleSymbolOverlay(_ sender: NSMenuItem) {
         symbolOverlayEnabled.toggle()
         sender.state = symbolOverlayEnabled ? .on : .off
@@ -195,11 +225,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         updateMusicMenuItem()
     }
 
+    /// Flips the Sound menu item title between "Start Music" and "Stop Music" to reflect playback state.
     private func updateMusicMenuItem() {
         guard let item = musicMenuItem else { return }
         item.title = SoundManager.shared.isMusicPlaying ? "Stop Music" : "Start Music"
     }
 
+    /// Locates the music toggle item regardless of whether it currently reads "Start" or "Stop".
     private var musicMenuItem: NSMenuItem? {
         NSApp.mainMenu?
             .item(withTitle: "Sound")?
@@ -212,10 +244,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 }
 
+// MARK: - Notification names
+
 extension Notification.Name {
+    /// Posted when the user selects a new colour palette from the Palette menu.
     static let paletteDidChange          = Notification.Name("paletteDidChange")
+    /// Posted when the "Color Symbols" accessibility toggle is flipped.
     static let symbolOverlayDidChange    = Notification.Name("symbolOverlayDidChange")
+    /// Posted when the user taps "Instructions" in the Game menu.
     static let showInstructions          = Notification.Name("showInstructions")
+    /// Posted when the user selects a new tile-rotation animation style.
     static let transitionStyleDidChange  = Notification.Name("transitionStyleDidChange")
+    /// Posted when the user confirms edits in the Custom Palette editor panel.
     static let customPaletteDidChange    = Notification.Name("customPaletteDidChange")
 }

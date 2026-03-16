@@ -8,6 +8,7 @@ class TutorialScene: SKScene {
 
     // MARK: - Types
 
+    /// One scripted move in the tutorial walkthrough.
     private struct TutorialStep {
         let message: String
         let targetCol: Int   // valid range 1–3 for 5-wide grid
@@ -19,12 +20,16 @@ class TutorialScene: SKScene {
     private let cols = 5
     private let rows = 4
     private let tileSize: CGFloat = 60
+    /// Tutorial uses only 2 colour values (0 and 1) to keep the walkthrough simple.
     private let tutorialMaxColors = 1
+    /// Always use the Spring palette for a bright, welcoming tutorial appearance.
     private let palette = TilePalette.spring
 
     // MARK: - Tutorial data
+
     // Scrambled board that is solved by executing the steps in order.
     // Verified: applying steps (1,1), (3,1), (2,2) to this board produces all zeros.
+    // Layout: tutorialPlayfield[col][row], with row 0 at the top.
     private let initialPlayfield: [[Int]] = [
         [1, 1, 1, 0],  // col 0
         [1, 0, 0, 1],  // col 1
@@ -50,23 +55,31 @@ class TutorialScene: SKScene {
 
     // MARK: - State
 
+    /// Live copy of the board state; updated after each tutorial step rotation.
     private var tutorialPlayfield: [[Int]] = []
+    /// Sprite references indexed as tileSprites[col][row] for fast colour updates.
     private var tileSprites: [[SKShapeNode]] = []
+    /// Index of the step the player must complete next (0-based).
     private var currentStepIndex = 0
+    /// Animated ring shown over the target tile; replaced on each step advance.
     private var pulseRing: SKShapeNode?
     private var messageLabel: SKLabelNode!
     private var messagePanel: SKShapeNode!
+    /// Nil until all steps are complete; click navigates back to TitleScene.
     private var backButton: SKLabelNode?
     private var skipButton: SKLabelNode!
 
     // MARK: - Layout helpers
 
+    /// X origin of the leftmost tile column, computed to centre the grid horizontally.
     private var gridOriginX: CGFloat {
         let gridW = CGFloat(cols) * tileSize
         return (size.width - gridW) / 2
     }
+    /// Y coordinate of the bottom edge of the lowest tile row in scene space.
     private let gridBottomY: CGFloat = 580
 
+    /// Returns the scene-space centre point of the tile at the given grid position.
     private func tilePosition(col: Int, row: Int) -> CGPoint {
         // row 0 at the top; flip Y so row 0 renders highest
         let x = gridOriginX + CGFloat(col) * tileSize + tileSize / 2
@@ -78,6 +91,7 @@ class TutorialScene: SKScene {
 
     override func didMove(to view: SKView) {
         backgroundColor = SKColor(red: 0.10, green: 0.08, blue: 0.15, alpha: 1)
+        // Deep-copy the initial playfield so edits don't mutate the constant
         tutorialPlayfield = initialPlayfield.map { $0 }
         buildUI()
         showStep(0)
@@ -131,9 +145,11 @@ class TutorialScene: SKScene {
         skipButton = skip
     }
 
+    /// Creates the 5×4 grid of circular tile sprites and populates `tileSprites`.
+    /// Each sprite's fill colour is set from the palette using the initial playfield values.
     private func buildTutorialGrid() {
         let colors = palette.colors
-        let radius = (tileSize - 2) / 2
+        let radius = (tileSize - 2) / 2   // 1 px inset so adjacent circles don't visually merge
         tileSprites = Array(repeating: [], count: cols)
         for col in 0..<cols {
             tileSprites[col] = []
@@ -143,7 +159,7 @@ class TutorialScene: SKScene {
                 circle.strokeColor = .clear
                 circle.position = tilePosition(col: col, row: row)
 
-                // Frosted highlight overlay
+                // Frosted highlight overlay gives tiles a subtle three-dimensional sheen
                 let highlight = SKShapeNode(ellipseIn: CGRect(x: -18, y: 2, width: 22, height: 18))
                 highlight.fillColor   = SKColor(white: 1, alpha: 0.42)
                 highlight.strokeColor = .clear
@@ -164,6 +180,7 @@ class TutorialScene: SKScene {
         placePulseRing(col: step.targetCol, row: step.targetRow)
     }
 
+    /// Replaces the pulse ring with a new one centred on the target tile for the given step.
     private func placePulseRing(col: Int, row: Int) {
         pulseRing?.removeFromParent()
         let ring = SKShapeNode(circleOfRadius: tileSize * 0.52)
@@ -171,7 +188,8 @@ class TutorialScene: SKScene {
         ring.lineWidth   = 3
         ring.fillColor   = .clear
         ring.position    = tilePosition(col: col, row: row)
-        ring.zPosition   = 5
+        ring.zPosition   = 5   // above tiles, below any overlay
+        // Repeating scale oscillation draws the player's eye to the target tile
         ring.run(.repeatForever(.sequence([
             .scale(to: 1.15, duration: 0.4),
             .scale(to: 1.00, duration: 0.4)
@@ -185,7 +203,7 @@ class TutorialScene: SKScene {
         if currentStepIndex < steps.count {
             showStep(currentStepIndex)
         } else {
-            // All steps complete
+            // All steps complete — remove the guide ring and show a completion message
             pulseRing?.removeFromParent()
             pulseRing = nil
             messageLabel.text = "You're ready to play! Good luck."
@@ -206,10 +224,12 @@ class TutorialScene: SKScene {
 
     // MARK: - Rotation
 
+    /// Increments every tile in the 3×3 neighbourhood centred on (col, row), wrapping at `tutorialMaxColors`.
     private func applyRotation(col: Int, row: Int) {
         for dc in -1...1 {
             for dr in -1...1 {
                 let c = col + dc, r = row + dr
+                // Clamp to grid bounds — edge tiles have smaller neighbourhoods
                 guard c >= 0, c < cols, r >= 0, r < rows else { continue }
                 tutorialPlayfield[c][r] += 1
                 if tutorialPlayfield[c][r] > tutorialMaxColors {
@@ -220,6 +240,7 @@ class TutorialScene: SKScene {
         refreshTileColors()
     }
 
+    /// Repaints every tile sprite to match the current `tutorialPlayfield` state.
     private func refreshTileColors() {
         let colors = palette.colors
         for col in 0..<cols {
@@ -231,9 +252,11 @@ class TutorialScene: SKScene {
 
     // MARK: - Wrong-tile flash
 
+    /// Briefly tints the message panel red to signal that the player clicked the wrong tile.
     private func flashWrongTile() {
         messagePanel.run(SKAction.customAction(withDuration: 0.35) { node, t in
             guard let panel = node as? SKShapeNode else { return }
+            // First half of the duration: red tint; second half: fade back to normal
             panel.fillColor = t < 0.17
                 ? SKColor.red.withAlphaComponent(0.35)
                 : SKColor(white: 0.12, alpha: 0.95)
@@ -260,8 +283,9 @@ class TutorialScene: SKScene {
         // Ignore clicks after completion
         guard currentStepIndex < steps.count else { return }
 
-        // Convert point to grid col/row
+        // Convert scene point to grid indices
         let col = Int((point.x - gridOriginX) / tileSize)
+        // screenRow 0 = bottom row in scene space; invert to get row 0 at top
         let screenRow = Int((point.y - gridBottomY) / tileSize)
         let row = (rows - 1) - screenRow
 

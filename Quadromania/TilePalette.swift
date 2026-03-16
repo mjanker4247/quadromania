@@ -4,9 +4,21 @@
 
 import SpriteKit
 
+/// Identifies one of the built-in colour themes or the user-defined custom palette.
+/// Stored as an Int raw value so the active selection can be persisted in UserDefaults.
 enum TilePalette: Int, CaseIterable {
-    case spring, ocean, sunset, forest, custom
+    /// Pastel spring tones: cherry blossom, mint, lilac, buttercup, sky blue.
+    case spring
+    /// Coastal tones: seafoam, ocean blue, deep teal, coral, sandy gold.
+    case ocean
+    /// Warm evening tones: golden, coral orange, rose, violet, warm red.
+    case sunset
+    /// Woodland tones: moss, forest green, mushroom, autumn orange, bark brown.
+    case forest
+    /// Five colours freely chosen by the user and persisted via CustomPaletteStore.
+    case custom
 
+    /// Human-readable name shown in the Palette menu and any UI labels.
     var displayName: String {
         switch self {
         case .spring: return "🌸 Spring"
@@ -17,7 +29,9 @@ enum TilePalette: Int, CaseIterable {
         }
     }
 
-    /// Five colours: index 0 = goal state, 1–4 = scramble colours.
+    /// Five colours: index 0 = goal state (all tiles solved), 1–4 = in-play tile colours.
+    /// The `.custom` case delegates entirely to `CustomPaletteStore.shared.colors`,
+    /// so any scene that reads this property will automatically use the latest saved values.
     var colors: [SKColor] {
         switch self {
         case .spring: return [
@@ -48,6 +62,7 @@ enum TilePalette: Int, CaseIterable {
             SKColor(red: 0.83, green: 0.45, blue: 0.12, alpha: 1),  // 3 autumn orange
             SKColor(red: 0.55, green: 0.37, blue: 0.24, alpha: 1),  // 4 bark brown
         ]
+        // Delegates to CustomPaletteStore so callers always see the latest user-edited colours.
         case .custom: return CustomPaletteStore.shared.colors
         }
     }
