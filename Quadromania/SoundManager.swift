@@ -63,7 +63,8 @@ class SoundManager {
 
     private func fire(_ player: AVAudioPlayer?) {
         guard let p = player else { return }
-        if p.isPlaying { p.currentTime = 0 }
+        p.stop()
+        p.currentTime = 0
         p.play()
     }
 }

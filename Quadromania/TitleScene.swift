@@ -11,13 +11,13 @@ class TitleScene: SKScene {
     // MARK: - Decorative grid dimensions
 
     /// Number of tile columns in the decorative background grid.
-    private let gridCols = 16
+    private let gridCols = 5
     /// Number of tile rows in the decorative background grid.
-    private let gridRows = 8
+    private let gridRows = 5
     /// Center-to-center distance between adjacent tiles (px).
-    private let cellPitch: CGFloat = 50
+    private let cellPitch: CGFloat = 90
     /// Radius of each frosted gem circle (px).
-    private let tileRadius: CGFloat = 22
+    private let tileRadius: CGFloat = 38
 
     // MARK: - Grid state
 
@@ -72,15 +72,17 @@ class TitleScene: SKScene {
         addChild(sub)
     }
 
-    /// Creates a 16×8 grid of frosted gem circles centred at (640, 300).
+    /// Creates a 5×5 grid of frosted gem circles centred in the canvas.
     /// Tiles start at colour 0; the wave animation fills them in on the first update tick.
     private func buildDecorativeGrid() {
         // Total span from first to last tile center
-        let gridWidth  = CGFloat(gridCols - 1) * cellPitch  // 750 px
-        let gridHeight = CGFloat(gridRows - 1) * cellPitch  // 350 px
-        // Bottom-left origin so the grid is centred at (640, 300)
-        let originX = size.width  / 2 - gridWidth  / 2  // = 265
-        let originY = 300         - gridHeight / 2       // = 125
+        let gridWidth  = CGFloat(gridCols - 1) * cellPitch  // 360 px
+        let gridHeight = CGFloat(gridRows - 1) * cellPitch  // 360 px
+        // Centre the grid horizontally and in the space below the subtitle (~y=620) to the bottom
+        let centerX = size.width  / 2
+        let centerY: CGFloat = 310       // midpoint of the area below the subtitle (~y=620) to bottom
+        let originX = centerX - gridWidth  / 2
+        let originY = centerY - gridHeight / 2
 
         // Initialise tracking arrays (-1 = unset, forces colour assignment on first tick)
         colorIndices = Array(repeating: Array(repeating: -1, count: gridCols), count: gridRows)
