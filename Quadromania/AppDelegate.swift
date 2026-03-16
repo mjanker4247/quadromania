@@ -54,7 +54,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Skip app initialization when running under XCTest.
         guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return }
         AppDelegate.shared = self
-        NSApp.activate(ignoringOtherApps: true)
+        NSApp.activate()
         SoundManager.shared.startMusic()
         // Restore the previously chosen transition style from UserDefaults
         let savedStyle = UserDefaults.standard.integer(forKey: "transitionStyle")
@@ -64,6 +64,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        return true
+    }
+
+    /// Ensures the game window is always restorable from the Dock.
+    /// Without this, clicking the Dock icon while the window is miniaturised
+    /// activates the app but leaves the window hidden in the Dock.
+    func applicationShouldHandleReopen(_ sender: NSApplication,
+                                       hasVisibleWindows: Bool) -> Bool {
+        if !hasVisibleWindows {
+            sender.windows.forEach { $0.makeKeyAndOrderFront(self) }
+        }
         return true
     }
 
