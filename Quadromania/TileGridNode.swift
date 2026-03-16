@@ -197,71 +197,49 @@ class TileGridNode: SKNode {
         }
     }
 
-    /// Duration of the ring sweep arc animation (seconds). Tiles change as the arc passes over them.
+    /// Total time for the ring sweep wave to travel around all 8 ring positions (seconds).
     private static let ringSweepDuration: TimeInterval = 0.30
 
-    /// Ring Sweep animation: a white arc sweeps clockwise around the 3×3 block. Each tile
-    /// transitions exactly when the arc geometrically passes over it, creating a "reveal" effect.
+    /// Ring Sweep animation: tiles flash and color-transition in clockwise circular order.
+    /// Each tile scales up briefly when it fires, creating a visible wave around the block.
+    /// No overlay node is used — the effect lives entirely on the tiles themselves.
+    ///
+    /// Ordering: the sweep starts at angle −π/2 (bottom tile in SpriteKit Y-up coords) and
+    /// advances clockwise. A tile at offset (dc, dr) has SpriteKit angle atan2(−dr, dc);
+    /// its delay = (angular distance from −π/2 clockwise to that angle) / 2π × sweepDuration.
+    /// The centre tile (no angular position) fires at the midpoint of the sweep.
     private func animateRingSweep(
         blockTiles: [(tile: SKShapeNode, oldColor: SKColor, newColor: SKColor,
                       colOffset: Int, rowOffset: Int)],
         center: (col: Int, row: Int)
     ) {
-        let s = TileGridNode.tileSize
-        let centerX = CGFloat(center.col) * s + s / 2
-        let centerY = CGFloat(GameModel.gridHeight - 1 - center.row) * s + s / 2
-        // Radius large enough to encircle the full 3×3 block (corner distance = √2 × 1.5 tiles)
-        let blockRadius = s * CGFloat(sqrt(2.0) * 1.5)
         let sweepDuration = Self.ringSweepDuration
-
-        // Arc sweep node — grows from a point to a full circle over sweepDuration seconds
-        let arc = SKShapeNode()
-        arc.strokeColor = .white
-        arc.lineWidth   = 4
-        arc.fillColor   = .clear
-        arc.position    = CGPoint(x: centerX, y: centerY)
-        arc.zPosition   = 5
-        addChild(arc)
-
-        arc.run(SKAction.sequence([
-            // Each frame: rebuild the arc path to cover `progress` × 360°.
-            // Arc starts at −π/2 (bottom of block in SpriteKit Y-up coords) and sweeps
-            // clockwise (decreasing angle). `clockwise: true` in CG with Y-up = visually clockwise.
-            SKAction.customAction(withDuration: sweepDuration) { node, elapsed in
-                guard let shape = node as? SKShapeNode else { return }
-                let progress = min(elapsed / CGFloat(sweepDuration), 1.0)
-                let endAngle = CGFloat(progress) * 2 * .pi
-                let path = CGMutablePath()
-                path.addArc(center: .zero, radius: blockRadius,
-                            startAngle: -.pi / 2, endAngle: -.pi / 2 - endAngle,
-                            clockwise: true)
-                shape.path = path
-            },
-            SKAction.fadeOut(withDuration: 0.10),
-            SKAction.removeFromParent()
-        ]))
-
-        // Each tile triggers its color transition the moment the arc reaches its position.
-        // Arc starts at −π/2 and sweeps clockwise (angle decreasing).
-        // A tile at (dc, dr) sits at SpriteKit angle atan2(−dr, dc) relative to the block center.
-        // Angular distance from arc start to that angle (clockwise) = ((−π/2 − θ) mod 2π).
         let twoPi = CGFloat.pi * 2
+
         for entry in blockTiles {
+            // Compute when this tile's position is reached by the clockwise sweep
             let delay: TimeInterval
             if entry.colOffset == 0 && entry.rowOffset == 0 {
-                // Centre tile has no angular position; trigger at the midpoint of the sweep
                 delay = sweepDuration * 0.5
             } else {
                 let tileAngle = atan2(CGFloat(-entry.rowOffset), CGFloat(entry.colOffset))
-                // Normalize angular distance to [0, 2π) so it maps to a delay in [0, sweepDuration)
+                // Normalize angular distance from sweep start (−π/2) clockwise to this tile → [0, 2π)
                 var angDist = (-.pi / 2) - tileAngle
                 angDist = ((angDist.truncatingRemainder(dividingBy: twoPi)) + twoPi)
                               .truncatingRemainder(dividingBy: twoPi)
                 delay = TimeInterval(angDist / twoPi) * sweepDuration
             }
+
+            // Each tile: wait until the sweep reaches it, then flash (scale up + back) while
+            // simultaneously transitioning to the new colour
+            let scaleAction = SKAction.sequence([
+                SKAction.scale(to: 1.18, duration: 0.07),
+                SKAction.scale(to: 1.00, duration: 0.09)
+            ])
+            let colourAction = colorTransition(from: entry.oldColor, to: entry.newColor)
             entry.tile.run(SKAction.sequence([
                 SKAction.wait(forDuration: delay),
-                colorTransition(from: entry.oldColor, to: entry.newColor)
+                SKAction.group([scaleAction, colourAction])
             ]))
         }
     }
