@@ -17,7 +17,7 @@ class GamePlayScene: SKScene {
     private var colorSwatchNodes: [SKShapeNode] = []
     private var turnsLabel: SKLabelNode!
     private var limitLabel: SKLabelNode!
-    /// Set to `true` after win/loss overlay is shown; the next click then returns to TitleScene.
+    /// Set to `true` after win/loss overlay is shown; the next click calls `startNewGame()`.
     private var waitingForClick = false
 
     // MARK: - Init
@@ -284,7 +284,8 @@ class GamePlayScene: SKScene {
     /// Resets the game in-place with fresh settings from AppDelegate.
     /// Called when the player clicks after win/loss, or confirms an NSAlert.
     private func startNewGame() {
-        // Rebuild model from current AppDelegate settings
+        // Rebuild model from current AppDelegate settings.
+        // AppDelegate.shared is a strong IUO set before any scene is presented; safe to force-access here.
         model = GameModel(
             level:     AppDelegate.shared.selectedLevel,
             maxColors: AppDelegate.shared.selectedColors - 1

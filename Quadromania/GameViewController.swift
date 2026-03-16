@@ -24,22 +24,4 @@ class GameViewController: NSViewController {
         view.window?.acceptsMouseMovedEvents = true
     }
 
-    // MARK: - Game menu actions
-
-    @objc func newGame(_ sender: Any?) {
-        guard let skView = view as? SKView else { return }
-        SoundManager.shared.playEffect(.menu)
-        let scene = TitleScene(size: CGSize(width: 1280, height: 960))
-        scene.scaleMode = .aspectFit
-        skView.presentScene(scene, transition: .fade(withDuration: 0.3))
-    }
-
-    @objc func showInstructions(_ sender: Any?) {
-        guard let skView = view as? SKView else { return }
-        SoundManager.shared.playEffect(.menu)
-        let scene = InstructionsScene(size: CGSize(width: 1280, height: 960))
-        scene.scaleMode = .aspectFit
-        skView.presentScene(scene, transition: .fade(withDuration: 0.2))
-    }
-
 }
