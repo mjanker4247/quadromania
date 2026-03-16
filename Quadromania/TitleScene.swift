@@ -3,7 +3,6 @@
 // All game controls live in the Game menu (AppDelegate). This scene is purely visual.
 
 import SpriteKit
-import QuadroCore
 import Cocoa
 
 class TitleScene: SKScene {

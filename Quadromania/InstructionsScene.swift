@@ -2,7 +2,6 @@
 // How-to-play screen — port of Graphics_DrawInstructions().
 
 import SpriteKit
-import QuadroCore
 
 class InstructionsScene: SKScene {
 

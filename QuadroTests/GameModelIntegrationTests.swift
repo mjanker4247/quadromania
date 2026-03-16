@@ -1,5 +1,5 @@
 import XCTest
-@testable import QuadroCore
+@testable import Quadromania
 
 final class GameModelIntegrationTests: XCTestCase {
 

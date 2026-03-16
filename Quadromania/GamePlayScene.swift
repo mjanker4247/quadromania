@@ -2,7 +2,6 @@
 // Active gameplay scene — port of state_manager handle_game_state() + Quadromania_DrawPlayfield().
 
 import SpriteKit
-import QuadroCore
 import Cocoa
 
 class GamePlayScene: SKScene {

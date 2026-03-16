@@ -3,7 +3,6 @@
 // Tiles are drawn programmatically; no image assets required.
 
 import SpriteKit
-import QuadroCore
 
 /// One symbol per color index (0–4), shown when the accessibility symbol overlay is enabled.
 private let tileSymbols = ["●", "■", "▲", "◆", "★"]
