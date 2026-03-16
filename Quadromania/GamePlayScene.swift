@@ -302,11 +302,7 @@ class GamePlayScene: SKScene {
         colorSwatchNodes = []
         removeAllChildren()
         buildUI()
-        // Re-apply persisted overlay and transition settings
-        if let appDelegate = NSApp.delegate as? AppDelegate {
-            tileGrid.symbolOverlayEnabled = appDelegate.symbolOverlayEnabled
-            tileGrid.transitionStyle      = appDelegate.transitionStyle
-        }
+        // buildUI() already applies symbolOverlayEnabled and transitionStyle from NSApp.delegate
     }
 
     /// Presents a non-blocking sheet asking whether to start a new game or continue.
