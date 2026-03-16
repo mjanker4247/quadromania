@@ -28,9 +28,42 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     /// Lookup table used to toggle checkmarks when the transition style changes.
     private var transitionMenuItems: [TransitionStyle: NSMenuItem] = [:]
 
+    // MARK: - Shared accessor
+    /// Strong IUO reference set in applicationDidFinishLaunching.
+    /// AppDelegate is owned by the Cocoa app object and lives the full app lifetime.
+    static var shared: AppDelegate!
+
+    // MARK: - Game settings (UserDefaults-backed)
+
+    /// User-facing colour count (2–5). Stored in UserDefaults key "selectedColors".
+    /// Subtract 1 before passing to GameModel(level:maxColors:) to get the internal 1–4 range.
+    var selectedColors: Int {
+        get {
+            let saved = UserDefaults.standard.integer(forKey: "selectedColors")
+            return saved >= 2 && saved <= 5 ? saved : 2
+        }
+        set { UserDefaults.standard.set(newValue, forKey: "selectedColors") }
+    }
+
+    /// Difficulty level (1 = Beginner, 5 = Intermediate, 10 = Expert).
+    /// Stored in UserDefaults key "selectedLevel".
+    var selectedLevel: Int {
+        get {
+            let saved = UserDefaults.standard.integer(forKey: "selectedLevel")
+            return [1, 5, 10].contains(saved) ? saved : 5
+        }
+        set { UserDefaults.standard.set(newValue, forKey: "selectedLevel") }
+    }
+
+    /// Lookup table for Colors submenu checkmarks; keyed by user-facing colour count (2–5).
+    private var colorsMenuItems: [Int: NSMenuItem] = [:]
+    /// Lookup table for Difficulty submenu checkmarks; keyed by level value (1, 5, 10).
+    private var difficultyMenuItems: [Int: NSMenuItem] = [:]
+
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         // Skip app initialization when running under XCTest.
         guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return }
+        AppDelegate.shared = self
         NSApp.activate(ignoringOtherApps: true)
         SoundManager.shared.startMusic()
         updateMusicMenuItem()
@@ -257,4 +290,10 @@ extension Notification.Name {
     static let transitionStyleDidChange  = Notification.Name("transitionStyleDidChange")
     /// Posted when the user confirms edits in the Custom Palette editor panel.
     static let customPaletteDidChange    = Notification.Name("customPaletteDidChange")
+    /// Posted when the user selects "New Game" from the Game menu.
+    static let newGameRequested          = Notification.Name("newGameRequested")
+    /// Posted when the user changes the colour count from the Colors submenu.
+    static let colorsDidChange           = Notification.Name("colorsDidChange")
+    /// Posted when the user changes difficulty from the Difficulty submenu.
+    static let difficultyDidChange       = Notification.Name("difficultyDidChange")
 }
