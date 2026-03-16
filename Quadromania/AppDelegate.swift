@@ -17,6 +17,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private var paletteMenuItems: [TilePalette: NSMenuItem] = [:]
     private var symbolMenuItem: NSMenuItem?
+    private var customPalettePanel: CustomPalettePanel?
 
     var transitionStyle: TransitionStyle = .ringSweep
     private var transitionMenuItems: [TransitionStyle: NSMenuItem] = [:]
@@ -99,7 +100,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func buildPaletteMenu() {
         let menu = NSMenu(title: "Palette")
 
-        for palette in TilePalette.allCases {
+        for palette in TilePalette.allCases where palette != .custom {
             let item = NSMenuItem(
                 title: palette.displayName,
                 action: #selector(selectPaletteItem(_:)),
@@ -111,6 +112,27 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             menu.addItem(item)
             paletteMenuItems[palette] = item
         }
+
+        menu.addItem(.separator())
+        let customItem = NSMenuItem(
+            title: TilePalette.custom.displayName,
+            action: #selector(selectPaletteItem(_:)),
+            keyEquivalent: ""
+        )
+        customItem.tag    = TilePalette.custom.rawValue  // 4
+        customItem.state  = (activePalette == .custom) ? .on : .off
+        customItem.target = self
+        paletteMenuItems[.custom] = customItem  // must be in paletteMenuItems so toggle-off works when switching away
+        menu.addItem(customItem)
+
+        menu.addItem(.separator())
+        let editItem = NSMenuItem(
+            title: "Edit Custom Colors…",
+            action: #selector(openCustomPaletteEditor(_:)),
+            keyEquivalent: ""
+        )
+        editItem.target = self
+        menu.addItem(editItem)
 
         menu.addItem(.separator())
 
@@ -139,6 +161,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             object: nil,
             userInfo: ["palette": palette.rawValue]
         )
+    }
+
+    @objc private func openCustomPaletteEditor(_ sender: NSMenuItem) {
+        if customPalettePanel == nil {
+            customPalettePanel = CustomPalettePanel()
+        }
+        // Reload wells so a reused panel always shows the current saved colours
+        customPalettePanel?.reloadColorWells()
+        customPalettePanel?.center()
+        customPalettePanel?.makeKeyAndOrderFront(nil)
     }
 
     @objc private func toggleSymbolOverlay(_ sender: NSMenuItem) {
