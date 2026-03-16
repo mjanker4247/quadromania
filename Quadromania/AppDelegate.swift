@@ -17,6 +17,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     /// Whether shape symbols are drawn on top of tiles for colour-blind accessibility.
     var symbolOverlayEnabled: Bool = false
 
+    /// The main game window. Held here so it is never silently released.
+    private var window: NSWindow?
+
     /// Retained so the panel can be reused without recreating it on every open.
     private var customPalettePanel: CustomPalettePanel?
 
@@ -54,6 +57,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Skip app initialization when running under XCTest.
         guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return }
         AppDelegate.shared = self
+
+        makeGameWindow()
+
         NSApp.activate()
         SoundManager.shared.startMusic()
         // Restore the previously chosen transition style from UserDefaults
@@ -61,6 +67,24 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if let style = TransitionStyle(rawValue: savedStyle) {
             transitionStyle = style
         }
+    }
+
+    /// Creates the main game window, centres it on screen, and makes it key.
+    /// Called once from applicationDidFinishLaunching. Owning the window here
+    /// removes any dependency on a storyboard isVisible attribute, which Xcode
+    /// can silently strip when it reformats the file.
+    private func makeGameWindow() {
+        let win = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 1280, height: 960),
+            styleMask:   [.titled, .closable, .miniaturizable, .resizable],
+            backing:     .buffered,
+            defer:       false
+        )
+        win.title = "Quadromania"
+        win.contentViewController = GameViewController()
+        win.center()
+        win.makeKeyAndOrderFront(nil)
+        window = win   // retain — NSWindow is released when its last strong reference drops
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
@@ -73,7 +97,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationShouldHandleReopen(_ sender: NSApplication,
                                        hasVisibleWindows: Bool) -> Bool {
         if !hasVisibleWindows {
-            sender.windows.forEach { $0.makeKeyAndOrderFront(self) }
+            window?.makeKeyAndOrderFront(self)
         }
         return true
     }
