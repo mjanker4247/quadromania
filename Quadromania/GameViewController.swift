@@ -4,7 +4,10 @@ import SpriteKit
 class GameViewController: NSViewController {
 
     override func loadView() {
-        let skView = SKView(frame: NSRect(x: 0, y: 0, width: 1280, height: 960))
+        let skView = SKView()
+        // Fill the window and track every resize; the scene's .aspectFit scale mode
+        // keeps the 1280×960 coordinate space proportionally scaled inside the view.
+        skView.autoresizingMask = [.width, .height]
         skView.ignoresSiblingOrder = true
         skView.showsFPS = false
         skView.showsNodeCount = false
@@ -22,6 +25,8 @@ class GameViewController: NSViewController {
         super.viewDidAppear()
         // Required for mouseMoved events to reach the SpriteKit scene.
         view.window?.acceptsMouseMovedEvents = true
+        // Prevent the window from being shrunk below a playable size.
+        view.window?.minSize = NSSize(width: 640, height: 480)
     }
 
 }
