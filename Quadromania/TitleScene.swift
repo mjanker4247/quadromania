@@ -44,7 +44,8 @@ class TitleScene: SKScene {
     override func didMove(to view: SKView) {
         backgroundColor = SKColor(red: 0.10, green: 0.08, blue: 0.15, alpha: 1)
         // Sync palette before building the grid so tiles start with the correct colours
-        currentPalette = AppDelegate.shared.activePalette
+        // Use optional chaining: AppDelegate.shared is nil during unit tests (XCTest guard skips launch)
+        currentPalette = AppDelegate.shared?.activePalette ?? .spring
         buildTitleText()
         buildDecorativeGrid()
         registerObservers()
