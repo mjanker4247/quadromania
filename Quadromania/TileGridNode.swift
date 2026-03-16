@@ -154,7 +154,7 @@ class TileGridNode: SKNode {
 
         // Gather 3×3 block data (only tiles whose colour actually changes)
         var blockTiles: [(tile: SKShapeNode, oldColor: SKColor, newColor: SKColor,
-                          colOffset: Int, rowOffset: Int, sym: SKLabelNode?, newSymText: String)] = []
+                          colOffset: Int, rowOffset: Int)] = []
         for dc in -1...1 {
             for dr in -1...1 {
                 let col = center.col + dc
@@ -173,9 +173,7 @@ class TileGridNode: SKNode {
                     oldColor: oldColor,
                     newColor: newColor,
                     colOffset: dc,
-                    rowOffset: dr,
-                    sym: sym,
-                    newSymText: newIndex < tileSymbols.count ? tileSymbols[newIndex] : ""
+                    rowOffset: dr
                 ))
             }
         }
@@ -189,7 +187,7 @@ class TileGridNode: SKNode {
 
     private func animateRingSweep(
         blockTiles: [(tile: SKShapeNode, oldColor: SKColor, newColor: SKColor,
-                      colOffset: Int, rowOffset: Int, sym: SKLabelNode?, newSymText: String)],
+                      colOffset: Int, rowOffset: Int)],
         center: (col: Int, row: Int)
     ) {
         let s = TileGridNode.tileSize
@@ -231,7 +229,7 @@ class TileGridNode: SKNode {
 
     private func animateSequential(
         blockTiles: [(tile: SKShapeNode, oldColor: SKColor, newColor: SKColor,
-                      colOffset: Int, rowOffset: Int, sym: SKLabelNode?, newSymText: String)]
+                      colOffset: Int, rowOffset: Int)]
     ) {
         let clockwiseOffsets: [(Int, Int)] = [
             (-1,-1), (0,-1), (1,-1), (1,0), (1,1), (0,1), (-1,1), (-1,0)
@@ -269,7 +267,7 @@ class TileGridNode: SKNode {
 
     private func animateRadialPulse(
         blockTiles: [(tile: SKShapeNode, oldColor: SKColor, newColor: SKColor,
-                      colOffset: Int, rowOffset: Int, sym: SKLabelNode?, newSymText: String)]
+                      colOffset: Int, rowOffset: Int)]
     ) {
         for entry in blockTiles {
             let distance = abs(entry.colOffset) + abs(entry.rowOffset)
@@ -279,7 +277,10 @@ class TileGridNode: SKNode {
                 SKAction.scale(to: 1.12, duration: 0.08),
                 SKAction.scale(to: 1.00, duration: 0.10)
             ])
-            let colourAction = colorTransition(from: entry.oldColor, to: entry.newColor)
+            let colourAction = SKAction.sequence([
+                SKAction.wait(forDuration: delay),
+                colorTransition(from: entry.oldColor, to: entry.newColor)
+            ])
             entry.tile.run(SKAction.group([scaleAction, colourAction]))
         }
     }
