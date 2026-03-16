@@ -21,6 +21,10 @@ public struct PuzzleGenerator {
         public let solutionMap: [[Int]]
     }
 
+    // Valid rotation-center ranges: the 1-tile border cannot be a 3×3 center.
+    private static let validX = 1...(GameModel.gridWidth  - 2)  // 1...16
+    private static let validY = 1...(GameModel.gridHeight - 2)  // 1...11
+
     /// Generate a solvable puzzle for the given level and color count.
     ///
     /// - Parameters:
@@ -37,19 +41,24 @@ public struct PuzzleGenerator {
         let limit = initialRotations * maxColors
         let margin = 0.60 + Double(level - 1) * (0.30 / 9.0)
 
-        let targetMoves = max(1, Int(Double(limit) * margin))
+        // Cap at grid capacity to guarantee buildSolutionMap terminates.
+        let gridCapacity = validX.count * validY.count * (modulus - 1)
+        let targetMoves  = max(1, min(Int(Double(limit) * margin), gridCapacity))
 
         let f = buildSolutionMap(targetMoves: targetMoves, modulus: modulus)
 
-        var board = Array(repeating: Array(repeating: 0, count: 13), count: 18)
+        var board = Array(
+            repeating: Array(repeating: 0, count: GameModel.gridHeight),
+            count: GameModel.gridWidth
+        )
 
-        for i in 0..<18 {
-            for j in 0..<13 {
+        for i in 0..<GameModel.gridWidth {
+            for j in 0..<GameModel.gridHeight {
 
                 var cover = 0
 
-                for x in max(1, i-1)...min(16, i+1) {
-                    for y in max(1, j-1)...min(11, j+1) {
+                for x in max(validX.lowerBound, i - 1)...min(validX.upperBound, i + 1) {
+                    for y in max(validY.lowerBound, j - 1)...min(validY.upperBound, j + 1) {
                         cover += f[x][y]
                     }
                 }
@@ -67,35 +76,30 @@ public struct PuzzleGenerator {
 
     static func buildSolutionMap(targetMoves: Int, modulus: Int) -> [[Int]] {
 
-        var f = Array(repeating: Array(repeating: 0, count: 13), count: 18)
+        var f = Array(
+            repeating: Array(repeating: 0, count: GameModel.gridHeight),
+            count: GameModel.gridWidth
+        )
 
         var remaining = targetMoves
 
-        var positions: [(Int,Int)] = []
-        for x in 1...16 {
-            for y in 1...11 {
-                positions.append((x,y))
-            }
-        }
+        let positions = validX.flatMap { x in validY.map { y in (x, y) } }.shuffled()
 
-        positions.shuffle()
-
-        for (x,y) in positions {
+        for (x, y) in positions {
 
             if remaining == 0 { break }
 
             let maxAdd = min(modulus - 1, remaining)
-
             let add = Int.random(in: 1...maxAdd)
 
             f[x][y] = add
             remaining -= add
         }
 
-        // If still remaining, distribute again
+        // Distribute any remainder one-by-one into cells that still have capacity.
         while remaining > 0 {
-            let x = Int.random(in: 1...16)
-            let y = Int.random(in: 1...11)
+            let x = Int.random(in: validX)
+            let y = Int.random(in: validY)
 
             if f[x][y] < modulus - 1 {
                 f[x][y] += 1
@@ -105,5 +109,4 @@ public struct PuzzleGenerator {
 
         return f
     }
-    
 }
