@@ -5,7 +5,7 @@
 import SpriteKit
 
 enum TilePalette: Int, CaseIterable {
-    case spring, ocean, sunset, forest
+    case spring, ocean, sunset, forest, custom
 
     var displayName: String {
         switch self {
@@ -13,6 +13,7 @@ enum TilePalette: Int, CaseIterable {
         case .ocean:  return "🌊 Ocean"
         case .sunset: return "🌅 Sunset"
         case .forest: return "🌿 Forest"
+        case .custom: return "🎨 Custom"
         }
     }
 
@@ -47,6 +48,7 @@ enum TilePalette: Int, CaseIterable {
             SKColor(red: 0.83, green: 0.45, blue: 0.12, alpha: 1),  // 3 autumn orange
             SKColor(red: 0.55, green: 0.37, blue: 0.24, alpha: 1),  // 4 bark brown
         ]
+        case .custom: return CustomPaletteStore.shared.colors
         }
     }
 }
